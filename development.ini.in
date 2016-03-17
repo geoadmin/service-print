@@ -35,7 +35,7 @@ port = ${server_port}
 ###
 
 [loggers]
-keys = root, chsdi, sqlalchemy
+keys = root, print, sqlalchemy
 
 [logger_sqlalchemy]
 level = INFO
@@ -55,10 +55,10 @@ keys = generic
 level = DEBUG
 handlers = console
 
-[logger_chsdi]
+[logger_print]
 level = DEBUG
 handlers =
-qualname = chsdi
+qualname = print
 
 [handler_console]
 class = StreamHandler

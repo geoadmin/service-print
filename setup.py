@@ -8,9 +8,9 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = open(os.path.join(here, 'requirements.txt')).read().split('\n')
 
-setup(name='chsdi',
+setup(name='print3',
       version='3.0.1',
-      description='chsdi',
+      description='Print service for geo.admin.ch',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
@@ -23,14 +23,14 @@ setup(name='chsdi',
       url='',
       keywords='web pyramid pylons',
       packages=find_packages(),
-      package_data = {'chsdi': ['locale/*/LC_MESSAGES/*.mo']},
+      package_data = {'print': ['locale/*/LC_MESSAGES/*.mo']},
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
       tests_require=requires,
-      test_suite="chsdi",
+      test_suite="print",
       entry_points="""\
       [paste.app_factory]
-      main = chsdi:main
+      main = print3:main
       """,
       )
