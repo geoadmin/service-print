@@ -28,9 +28,6 @@ WSGIPassAuthorization On
   Header set X-UA-Compatible "IE=Edge"
 </IfModule>
 
-# Redirect old main/wsgi stuff
-RedirectMatch permanent ^/main/wsgi/(.*)$ /$1
-RedirectMatch permanent ^${apache_entry_path}/iipimage/(.*)$ ${apache_entry_path}/luftbilder/$1
 
 # Redirect no-slash target to slashed version
 RedirectMatch ^${apache_entry_path}$ ${apache_entry_path}/
@@ -41,11 +38,6 @@ RedirectMatch ^${apache_entry_path}$ ${apache_entry_path}/
 RewriteRule ^${apache_entry_path}/[0-9]+/(.*)$ ${apache_entry_path}/$1 [E=${apache_base_path}setyearcache:true,PT]
 Header merge Cache-Control "max-age=31536013, public" env=${apache_base_path}setyearcache
 
-# Static for cross domain flash/arcgis
-RewriteRule ^${apache_entry_path}/(crossdomain.xml|clientaccesspolicy.xml) ${apache_entry_path}/static/$1 [PT]
-<LocationMatch ^${apache_entry_path}/static/(crossdomain.xml|clientaccesspolicy.xml)>
-    Header set Content-type "text/x-cross-domain-policy"
-</LocationMatch>
 
 # Robots static files
 RewriteRule ^${apache_entry_path}/robots.txt ${apache_entry_path}/static/${robots_file} [PT]
@@ -53,30 +45,9 @@ RewriteRule ^${apache_entry_path}/robots.txt ${apache_entry_path}/static/${robot
     Header set Content-type "text/plain"
 </LocationMatch>
 
-# WMTS Capabilities
-RewriteRule ^${apache_entry_path}/1.0.0/WMTSCapabilities\.xml$ ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml [PT,NC,QSA,L]
-RewriteRule ^${apache_entry_path}/1.0.0/WMTSCapabilities.EPSG.(\d+).xml ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml?epsg=$1 [L,QSA,PT]
-RewriteRule ^${apache_entry_path}/1.0.0/WMTSCapabilities.xml ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml [L,QSA,PT]
-# # Better ArcGis support
-RewriteRule ^${apache_entry_path}/EPSG/(\d+)/1.0.0/WMTSCapabilities.xml ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml?epsg=$1 [L,QSA,PT]
-RewriteRule ^${apache_entry_path}/EPSG/(\d+)/(de|fr|it|rm|en)/1.0.0/WMTSCapabilities.xml ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml?epsg=$1&lang=$2 [L,PT]
-
-# Frozen Capabilities, for swissmaponline 
-RewriteCond %{QUERY_STRING} lang=(de|fr|it|en) [NC] 
-RewriteRule ^${apache_entry_path}/1.0.0/WMTSCapabilities_v([0-9]{8})\.xml$ ${current_directory}/chsdi/static/capabilities/$1/WMTSCapabilities.%1.xml [NC,QSA,L]
-
-# Shorten service
-RewriteCond %{HTTP_HOST} ^s.geo.admin.ch$
-RewriteRule ^${apache_entry_path}/(.*)$ ${apache_entry_path}/shorten/$1 [PT]
-
-<LocationMatch ^${apache_entry_path}/(loader\.js|shorten|shorten.json)>
-    Order allow,deny
-    Allow from all
-</LocationMatch>
-
 # define a process group
 # WSGIDaemonProcess, default are 1 process and 15 threads
-WSGIDaemonProcess mf-chsdi3:${apache_base_path} display-name=%{GROUP} user=${modwsgi_user} threads=${wsgi_threads}
+WSGIDaemonProcess service-print:${apache_base_path} display-name=%{GROUP} user=${modwsgi_user} threads=${wsgi_threads}
 
 # define the path to the WSGI app
 WSGIScriptAliasMatch ^${apache_entry_path}/ ${wsgi_app}/
@@ -93,57 +64,8 @@ Header always set Access-Control-Allow-Headers "x-requested-with, Content-Type, 
 <Directory ${current_directory}/apache>
     Order allow,deny
     Allow from all
-    WSGIProcessGroup mf-chsdi3:${apache_base_path}
+    WSGIProcessGroup service-print:${apache_base_path}
     WSGIApplicationGroup %{GLOBAL}
 </Directory>
 
-# Some services are not "free": control is done at varnish level
-<LocationMatch ^${apache_entry_path}/rest/(height|profile)>
-   Order Deny,Allow
-   Allow from all
-</LocationMatch>
 
-# Static for cross domain flash/arcgis
-<LocationMatch ^${apache_entry_path}/files>
-   Header unset Access-Control-Allow-Methods
-   Header always set Access-Control-Allow-Methods "POST, GET, DELETE, OPTIONS"
-</LocationMatch>
-
-# kml file downloads
-AliasMatch ^${apache_entry_path}/kml/(map\.geo\.admin\.ch_KML_\d+\.kml)$ ${print_temp_dir}/kml/$1
-
-# static downloads from zadara
-<Directory ${zadara_dir}>
-    AllowOverride None
-    Order allow,deny
-    Allow from all
-</Directory>
-
-# Zadara downloads
-AliasMatch ^${apache_entry_path}/downloads/ch.(.*)$ ${zadara_dir}ch.$1
-
-# KML admin
-RewriteCond %{HTTP:X-Forwarded-Proto} !https
-RewriteRule ^${apache_entry_path}/admin         https://%{HTTP_HOST}%{REQUEST_URI} [R,L]
-
-<LocationMatch ^${apache_entry_path}/admin/kml>
-    AuthType Basic
-    AuthName "Your IWI credential"
-    # Optional line:
-    AuthBasicProvider file
-    AuthUserFile "/var/www/vhosts/mf-chsdi3/private/htpasswd"
-    AuthGroupFile "/var/www/vhosts/mf-chsdi3/private/htgroup"
-    Require group iwi-team bgdi-team
-</LocationMatch>
-
-# MapProxy access control
-RewriteRule ^${apache_entry_path}/1.0.0/WMTSCapabilities.EPSG.(\d+).xml ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml?epsg=$1 [L,QSA,PT]
-RewriteRule ^${apache_entry_path}/1.0.0/WMTSCapabilities.xml ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml [L,QSA,PT]
-# Better ArcGis support
-RewriteRule ^${apache_entry_path}/EPSG/(\d+)/1.0.0/WMTSCapabilities.xml ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml?epsg=$1 [L,QSA,PT]
-RewriteRule ^${apache_entry_path}/EPSG/(\d+)/(de|fr|it|rm|en)/1.0.0/WMTSCapabilities.xml ${apache_entry_path}/rest/services/api/1.0.0/WMTSCapabilities.xml?epsg=$1&lang=$2 [L,PT]
-
-# No GetFeatureInfo request is allowed for WMS service
-RewriteCond %{QUERY_STRING} SERVICE=WMS [NC]
-RewriteCond %{QUERY_STRING} REQUEST=GetFeatureInfo [NC]
-RewriteRule ^${apache_entry_path}/mapproxy/service - [F]

@@ -4,7 +4,7 @@
 ###
 
 [app:main]
-use = egg:chsdi
+use = egg:print3
 app_version = ${app_version}
 entry_path = ${apache_entry_path}
 available_languages = de fr it en rm
@@ -17,27 +17,9 @@ pyramid.prevent_http_cache = false
 pyramid.default_locale_name = de
 pyramid.includes = pyramid_tm
 
-# SQLAlchemy database URL
-sqlalchemy.are.url = postgresql://${dbhost}:${dbport}/are_${dbstaging}
-sqlalchemy.bafu.url = postgresql://${dbhost}:${dbport}/bafu_${dbstaging}
-sqlalchemy.bak.url = postgresql://${dbhost}:${dbport}/bak_${dbstaging}
-sqlalchemy.bod.url = postgresql://${dbhost}:${dbport}/bod_${dbstaging}
-sqlalchemy.dritte.url = postgresql://${dbhost}:${dbport}/dritte_${dbstaging}
-sqlalchemy.edi.url = postgresql://${dbhost}:${dbport}/edi_${dbstaging}
-sqlalchemy.evd.url = postgresql://${dbhost}:${dbport}/evd_${dbstaging}
-sqlalchemy.kogis.url = postgresql://${dbhost}:${dbport}/kogis_${dbstaging}
-sqlalchemy.stopo.url = postgresql://${dbhost}:${dbport}/stopo_${dbstaging}
-sqlalchemy.uvek.url = postgresql://${dbhost}:${dbport}/uvek_${dbstaging}
-sqlalchemy.vbs.url = postgresql://${dbhost}:${dbport}/vbs_${dbstaging}
-sqlalchemy.zeitreihen.url = postgresql://${dbhost}:${dbport}/zeitreihen_${dbstaging}
-sqlalchemy.lubis.url = postgresql://${dbhost}:${dbport}/lubis_${dbstaging}
 
 # Mako specific
-mako.directories = chsdi:templates
 
-dtm_base_path = /var/local/profile/
-zadara_dir = ${zadara_dir}
-geodata_staging = ${geodata_staging}
 sphinxhost = ${sphinxhost}
 wmshost = ${wmshost}
 mapproxyhost = ${mapproxyhost}
@@ -48,13 +30,10 @@ install_directory = ${current_directory}
 host = ${host}
 apache_base_path = ${apache_base_path}
 apache_entry_path = ${apache_entry_path}
-address_search_referers = localhost,admin.ch,awk.ch,cadastre.ch,rspp.ch,rollstuhlparkplatz.ch,placehandicape.ch,parcheggiodisabili.chi,zh.ch
 print_temp_dir=${print_temp_dir}
 http_proxy = ${http_proxy}
 geoadmin_file_storage_bucket = ${geoadmin_file_storage_bucket}
 
-shortener.allowed_hosts = ${shortener_allowed_hosts}
-shortener.allowed_domains = ${shortener_allowed_domains}
 
 ###
 # wsgi server configuration
@@ -71,7 +50,7 @@ port = 6543
 ###
 
 [loggers]
-keys = root, chsdi, sqlalchemy
+keys = root, print, sqlalchemy
 
 [logger_sqlalchemy]
 level = WARN
@@ -91,10 +70,10 @@ keys = generic
 level = WARN
 handlers = console
 
-[logger_chsdi]
+[logger_print]
 level = WARN
 handlers =
-qualname = chsdi
+qualname = print
 
 [handler_console]
 class = StreamHandler

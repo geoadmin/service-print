@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Mapfish-Print-Version: 3.3-SNAPSHOT
+Git-Revision: aa2e7ddf139412a73cc35f3c143efffa7d994976
+Build-Time: 11/19/15 5:16:15 PM
+Build-By: tsauerwein
+Build-Java-Runtime-Name: OpenJDK Runtime Environment
+Build-Java-Version: 1.7.0_79
+Build-OS-Arch: amd64
+Build-OS-Name: Linux
+
