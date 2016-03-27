@@ -13,6 +13,7 @@ INSTALL_DIRECTORY := .venv
 MODWSGI_USER := www-data
 NO_TESTS ?= withtests
 NODE_DIRECTORY := node_modules
+PRINT_URL ?= //service-print.dev.bgdi.ch
 PRINT_INPUT :=  index.html favicon.ico print-apps mapfish_transparent.png META-INF WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
@@ -58,6 +59,7 @@ GREEN := $(shell tput setaf 2)
 GDAL_VERSION ?= 1.9.0
 PYTHON_VERSION := $(shell python --version 2>&1 | cut -d ' ' -f 2 | cut -d '.' -f 1,2)
 PYTHONPATH ?= .venv/lib/python${PYTHON_VERSION}/site-packages:/usr/lib64/python${PYTHON_VERSION}/site-packages
+SERVER_ID := $(shell ${PYTHON_CMD}  -c 'import uuid; print uuid.uuid1()')
 
 .PHONY: help
 help:
@@ -89,6 +91,7 @@ help:
 	@echo "Variables:"
 	@echo "APACHE_ENTRY_PATH:   ${APACHE_ENTRY_PATH}"
 	@echo "API_URL:             ${API_URL}"
+	@echo "PRINT_URL:           ${PRINT_URL}"
 	@echo "BRANCH_STAGING:      ${BRANCH_STAGING}"
 	@echo "DBHOST:              ${DBHOST}"
 	@echo "DBSTAGING:           ${DBSTAGING}"
@@ -235,6 +238,7 @@ apache/tomcat-print.conf: apache/tomcat-print.conf.in
 	${MAKO_CMD} \
 		--var "print_war=$(PRINT_WAR)" \
 		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
+		--var "apache_base_path=$(APACHE_BASE_PATH)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
 tomcat/WEB-INF/web.xml.in:
@@ -285,6 +289,7 @@ production.ini: production.ini.in
 	@echo "${GREEN}Creating production.ini...${RESET}";
 	${MAKO_CMD} \
 		--var "app_version=$(APP_VERSION)" \
+		--var "server_id=$(SERVER_ID)" \
 		--var "server_port=$(SERVER_PORT)" \
 		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
 		--var "apache_base_path=$(APACHE_BASE_PATH)" \
@@ -294,6 +299,7 @@ production.ini: production.ini.in
 		--var "dbstaging=$(DBSTAGING)" \
 		--var "zadara_dir=$(ZADARA_DIR)" \
 		--var "api_url=$(API_URL)" \
+		--var "print_url=$(PRINT_URL)" \
 		--var "geodata_staging=$(GEODATA_STAGING)" \
 		--var "sphinxhost=$(SPHINXHOST)" \
 		--var "wmshost=$(WMSHOST)" \

@@ -1,5 +1,6 @@
 export APACHE_BASE_PATH=main
 export API_URL=//mf-chsdi3.int.bgdi.ch
+export PRINT_URL=//service-print.int.bgdi.ch
 export DBHOST=pg-sandbox.bgdi.ch
 export DBPORT=5432
 export DBSTAGING=int

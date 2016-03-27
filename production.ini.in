@@ -6,6 +6,7 @@
 [app:main]
 use = egg:print3
 app_version = ${app_version}
+server_id = ${server_id}
 entry_path = ${apache_entry_path}
 available_languages = de fr it en rm
 
@@ -26,6 +27,7 @@ mapproxyhost = ${mapproxyhost}
 geoadminhost = ${geoadminhost}
 webdav_host = ${webdav_host}
 api_url = ${api_url}
+print_url = ${print_url}
 install_directory = ${current_directory}
 host = ${host}
 apache_base_path = ${apache_base_path}
