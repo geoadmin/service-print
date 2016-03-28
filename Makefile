@@ -1,7 +1,7 @@
 # Variables
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
-BASEWAR := print-servlet-3.3-SNAPSHOT.war
+BASEWAR ?= print-servlet-3.3-SNAPSHOT.war
 BRANCH_STAGING := $(shell if [ '$(DEPLOY_TARGET)' = 'dev' ]; then echo 'test'; else echo 'integration'; fi)
 BRANCH_TO_DELETE :=
 CURRENT_DIRECTORY := $(shell pwd)
@@ -18,7 +18,7 @@ PRINT_INPUT :=  index.html favicon.ico print-apps mapfish_transparent.png META-I
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
 PRINT_TEMP_DIR := /var/cache/print
-PYTHON_FILES := $(shell find print/* -path print/static -prune -o -type f -name "*.py" -print)
+PYTHON_FILES := $(shell find print3/* -path print/static -prune -o -type f -name "*.py" -print)
 SHORTENER_ALLOWED_DOMAINS := admin.ch, swisstopo.ch, bgdi.ch
 SHORTENER_ALLOWED_HOSTS :=
 TEMPLATE_FILES := $(shell find -type f -name "*.in" -print)
@@ -330,6 +330,12 @@ fixrights:
 	@echo "${GREEN}Fixing rights...${RESET}";
 	chgrp -f -R geodata . || :
 	chmod -f -R g+srwX . || :
+
+.PHONY: cleancache
+cleancache:
+	rm -rf /var/cache/print/*.pdf
+	rm -rf /var/cache/print/*.json
+	rm -rf /var/cache/print/mapfish*
 
 .PHONY: clean
 clean:
