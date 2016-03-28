@@ -31,21 +31,36 @@
 # GET /print/-multi23444545.pdf.printout
 
 # V3
-RewriteRule  ${apache_entry_path}/print/service-print-${apache_base_path}/print/report/(.*)   ${apache_entry_path}/print/print/report/$1 [PT]
-
-
-# JSON print requests to print server
-ProxyPassMatch ${apache_entry_path}/print/(.*) ajp://localhost:8009/service-print-${print_war}/$1
-ProxyPassReverse ${apache_entry_path}/print/ ajp://localhost:8009/service-print-${print_war}/
-
-# Get resulting files directly from filesystem
-AliasMatch ^${apache_entry_path}/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ ${print_temp_dir}/mapfish-print$2$3
+#RewriteRule  ${apache_entry_path}/print/service-print-${apache_base_path}/print/report/(.*)   ${apache_entry_path}/print/print/report/$1 [PT]
 
 
 
+# Three base path are defined
+# - /printserver     Tomcat application
+# - /print           Print proxy (pyramid WSGI)
+# - /download        Aapche direct download
 
 
-<LocationMatch ^${apache_entry_path}/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ >
+# capabilities document direct to tomcat
+RewriteRule  ^${apache_entry_path}/print/print/(\w+)/capabilities.json    /printserver/print/$1/capabilities.json [PT]
+
+# Print server
+ProxyPassMatch   ${apache_entry_path}/printserver/(.*) ajp://localhost:8009/service-print-${print_war}/$1
+ProxyPassReverse ${apache_entry_path}/printserver/ ajp://localhost:8009/service-print-${print_war}/
+
+
+# Print proxy
+RewriteRule  ^${apache_entry_path}/print/print/(.*)     /print/$1 [PT]
+
+
+
+# Download 
+AliasMatch ^${apache_entry_path}/download/(.+) ${print_temp_dir}/mapfish-print$1
+
+
+
+
+<LocationMatch ^${apache_entry_path}/download/(\-multi)?([0-9a-f@-_]+\.pdf\.printout)$ >
   Header set Content-Disposition "attachment; filename=map.geo.admin.ch.pdf"
   # Try to force IE to open the PDF in a new window
   # overriding what set by the print server
