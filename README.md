@@ -9,11 +9,11 @@ Print service for [https://map.geo.admin.ch], based on [MapFish Print v3](http:/
 
 Checkout the source code:
 
-    git clone https://github.com/geoadmin/mf-chsdi3.git
+    git clone https://github.com/geoadmin/print-service.git
 
 or when you're using ssh key (see https://help.github.com/articles/generating-ssh-keys):
 
-    git clone git@github.com:geoadmin/mf-chsdi3.git
+    git clone git@github.com:geoadmin/print-service.git
 
 
 Create a developer specific build configuration:
@@ -28,11 +28,11 @@ Where "username" is your specific rc configuration. To create the specific build
 
 If you do this on mf1t, you need to make sure that a correct configuration exists under
     
-    /var/www/vhosts/mf-chsdi3/conf
+    /var/www/vhosts/print-service/conf
 
 that points to your working directory. If all is well, you can reach your pages at:
 
-    http://mf-chsdi3.dev.bgdi.ch/<username>/
+    http://print-service.dev.bgdi.ch/<username>/
 
 ## Python Code Styling
 
