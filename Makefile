@@ -1,7 +1,7 @@
 # Variables
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
-BASEWAR := print-servlet-3.3-SNAPSHOT.war
+BASEWAR ?= print-servlet-3.3-SNAPSHOT.war
 BRANCH_STAGING := $(shell if [ '$(DEPLOY_TARGET)' = 'dev' ]; then echo 'test'; else echo 'integration'; fi)
 BRANCH_TO_DELETE :=
 CURRENT_DIRECTORY := $(shell pwd)
@@ -12,19 +12,16 @@ HTTP_PROXY := http://ec2-52-28-118-239.eu-central-1.compute.amazonaws.com:80
 INSTALL_DIRECTORY := .venv
 MODWSGI_USER := www-data
 NO_TESTS ?= withtests
-NODE_DIRECTORY := node_modules
-PRINT_URL ?= //service-print.dev.bgdi.ch
+PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
+PRINT_SERVER_URL ?= ${PRINT_PROXY_URL}/printserver
 PRINT_INPUT :=  index.html favicon.ico print-apps mapfish_transparent.png META-INF WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
 PRINT_TEMP_DIR := /var/cache/print
-PYTHON_FILES := $(shell find print/* -path print/static -prune -o -type f -name "*.py" -print)
-SHORTENER_ALLOWED_DOMAINS := admin.ch, swisstopo.ch, bgdi.ch
-SHORTENER_ALLOWED_HOSTS :=
+PYTHON_FILES := $(shell find print3/* -path print/static -prune -o -type f -name "*.py" -print)
 TEMPLATE_FILES := $(shell find -type f -name "*.in" -print)
 USERNAME := $(shell whoami)
 WSGI_APP := $(CURRENT_DIRECTORY)/apache/application.wsgi
-ZADARA_DIR := /var/local/cartoweb/downloads/
 
 # Commands
 AUTOPEP8_CMD := $(INSTALL_DIRECTORY)/bin/autopep8
@@ -34,7 +31,6 @@ NOSE_CMD := $(INSTALL_DIRECTORY)/bin/nosetests
 PIP_CMD := $(INSTALL_DIRECTORY)/bin/pip
 PSERVE_CMD := $(INSTALL_DIRECTORY)/bin/pserve
 PYTHON_CMD := $(INSTALL_DIRECTORY)/bin/python
-SPHINX_CMD := $(INSTALL_DIRECTORY)/bin/sphinx-build
 
 # Linting rules
 PEP8_IGNORE := "E128,E221,E241,E251,E272,E501,E711,E731"
@@ -56,7 +52,6 @@ GREEN := $(shell tput setaf 2)
 # Versions
 # We need GDAL which is hard to install in a venv, modify PYTHONPATH to use the
 # system wide version.
-GDAL_VERSION ?= 1.9.0
 PYTHON_VERSION := $(shell python --version 2>&1 | cut -d ' ' -f 2 | cut -d '.' -f 1,2)
 PYTHONPATH ?= .venv/lib/python${PYTHON_VERSION}/site-packages:/usr/lib64/python${PYTHON_VERSION}/site-packages
 SERVER_ID := $(shell ${PYTHON_CMD}  -c 'import uuid; print uuid.uuid1()')
@@ -73,13 +68,9 @@ help:
 	@echo "- teste2e            Launch end-to-end tests"
 	@echo "- lint               Run the linter"
 	@echo "- autolint           Run the autolinter"
-	@echo "- translate          Generate the translation files"
-	@echo "- doc                Generate the doc for api3.geo.admin.ch"
 	@echo "- deploybranch       Deploy current branch to dev (must be pushed before hand)"
 	@echo "- deploybranchint    Deploy current branch to dev and int (must be pushed before hand)"
-	@echo "- deploybranchdemo   Deploy current branch to dev and demo (must be pushed before hand)"
 	@echo "- deletebranch       List deployed branches or delete a deployed branch (BRANCH_TO_DELETE=...)"
-	@echo "- updateapi          Updates geoadmin api source code (ol3 fork)"
 	@echo "- printconfig        Set tomcat print env variables"
 	@echo "- printwar           Creates the .jar print file (only one per env per default)"
 	@echo "- deploydev          Deploys master to dev (SNAPSHOT=true to also create a snapshot)"
@@ -91,11 +82,9 @@ help:
 	@echo "Variables:"
 	@echo "APACHE_ENTRY_PATH:   ${APACHE_ENTRY_PATH}"
 	@echo "API_URL:             ${API_URL}"
-	@echo "PRINT_URL:           ${PRINT_URL}"
+	@echo "PRINT_PROXY_URL:     ${PRINT_PROXY_URL}"
+	@echo "PRINT_SERVER_URL:    ${PRINT_SERVER_URL}"
 	@echo "BRANCH_STAGING:      ${BRANCH_STAGING}"
-	@echo "DBHOST:              ${DBHOST}"
-	@echo "DBSTAGING:           ${DBSTAGING}"
-	@echo "GEOADMINHOST:        ${GEOADMINHOST}"
 	@echo "GIT_BRANCH:          ${GIT_BRANCH}"
 	@echo "SERVER_PORT:         ${SERVER_PORT}"
 	@echo
@@ -206,9 +195,6 @@ deployint:
 deployprod:
 	scripts/deploysnapshot.sh $(SNAPSHOT) prod $(NO_TESTS) $(DEPLOYCONFIG)
 
-.PHONY: deploydemo
-deploydemo:
-	scritps/deploysnapshot.sh $(SNAPSHOT) demo
 
 rc_branch.mako:
 	@echo "${GREEN}Branch has changed${RESET}";
@@ -272,7 +258,6 @@ apache/wsgi.conf: apache/wsgi.conf.in apache/application.wsgi
 		--var "modwsgi_user=$(MODWSGI_USER)" \
 		--var "wsgi_threads=$(WSGI_THREADS)" \
 		--var "wsgi_app=$(WSGI_APP)" \
-		--var "zadara_dir=$(ZADARA_DIR)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
 development.ini.in:
@@ -294,24 +279,12 @@ production.ini: production.ini.in
 		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
 		--var "apache_base_path=$(APACHE_BASE_PATH)" \
 		--var "current_directory=$(CURRENT_DIRECTORY)" \
-		--var "dbhost=$(DBHOST)" \
-		--var "dbport=$(DBPORT)" \
-		--var "dbstaging=$(DBSTAGING)" \
-		--var "zadara_dir=$(ZADARA_DIR)" \
 		--var "api_url=$(API_URL)" \
-		--var "print_url=$(PRINT_URL)" \
-		--var "geodata_staging=$(GEODATA_STAGING)" \
-		--var "sphinxhost=$(SPHINXHOST)" \
-		--var "wmshost=$(WMSHOST)" \
-		--var "webdav_host=$(WEBDAV_HOST)" \
-		--var "mapproxyhost=$(MAPPROXYHOST)" \
-		--var "geoadminhost=$(GEOADMINHOST)" \
+		--var "print_proxy_url=$(PRINT_PROXY_URL)" \
+		--var "print_server_url=$(PRINT_SERVER_URL)" \
 		--var "host=$(HOST)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" \
-		--var "http_proxy=$(HTTP_PROXY)" \
-		--var "geoadmin_file_storage_bucket=$(GEOADMIN_FILE_STORAGE_BUCKET)" \
-		--var "shortener_allowed_hosts=$(SHORTENER_ALLOWED_HOSTS)" \
-		--var "shortener_allowed_domains=$(SHORTENER_ALLOWED_DOMAINS)" $< > $@
+		--var "http_proxy=$(HTTP_PROXY)"  $< > $@
 
 requirements.txt:
 	@echo "${GREEN}File requirements.txt has changed${RESET}";
@@ -330,6 +303,12 @@ fixrights:
 	@echo "${GREEN}Fixing rights...${RESET}";
 	chgrp -f -R geodata . || :
 	chmod -f -R g+srwX . || :
+
+.PHONY: cleancache
+cleancache:
+	rm -rf /var/cache/print/*.pdf
+	rm -rf /var/cache/print/*.json
+	rm -rf /var/cache/print/mapfish*
 
 .PHONY: clean
 clean:

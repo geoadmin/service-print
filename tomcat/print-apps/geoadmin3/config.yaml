@@ -1,10 +1,10 @@
 pdfConfig: !pdfConfig
-  compressed: false
-  author: "Jeff Konnen"
-  subject: "map.geoportail.lu Print"
-  creator: "Mapfish Print"
+  compressed: true
+  author: "geo.admin.ch team"
+  subject: "map.geo.admin.ch Print"
+  creator: "Mapfish Print V3"
 
-throwErrorOnExtraParameters: true
+throwErrorOnExtraParameters: false
 
 templates:
 
