@@ -267,7 +267,7 @@ def worker(job):
         elif err.code == 403:
             log.error("Access to %s denied", url)
         else:
-            log.error("Unkonw error while accessing %s:", url, err.code)
+            log.error("Unkonw error while accessing %s: %s", url, err.code)
 
         return (timestamp, None)
 
