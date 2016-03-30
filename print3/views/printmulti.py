@@ -326,39 +326,53 @@ def create_and_merge(info):
         log.info('[_merge_pdfs] Starting merge')
         merger = PdfFileMerger()
         expected_file_size = 0
-        for pdf in sorted(pdfs, key=lambda x: x[0]):
-
+        # Send PDF as is if only one
+        if len(pdfs) == 1:
+            pdf = pdfs[0]
             ts, localname = pdf
             if localname is not None:
                 try:
-                    path = open(localname, 'rb')
-                    expected_file_size += os.path.getsize(localname)
-                    merger.append(fileobj=path)
-                    info_json['merged'] += 1
-                    write_info()
+                    info_json['done'] = True
+                    info_json['status'] = 'finished'
+                    filename = create_pdf_path(print_temp_dir, unique_filename)
+                    log.info('[_merge_pdfs] Only one PDF, copied to: %s', filename)
+                    os.rename(localname, filename)
                 except:
-                    return None
+                    return False
+        else:
+            for pdf in sorted(pdfs, key=lambda x: x[0]):
 
-        try:
-            info_json['filesize'] = expected_file_size
-            info_json['written'] = 0
-            info_json['done'] = True
-            info_json['status'] = 'finished'
-            write_info()
-            filename = create_pdf_path(print_temp_dir, unique_filename)
-            log.info('[_merge_pdfs] Writing file.')
-            out = open(filename, 'wb')
-            merger.write(out)
-            log.info('[_merge_pdfs] Merged PDF written to: %s', filename)
-            log.debug(json.dumps(info_json, indent=4))
-        except:
-            return False
+                ts, localname = pdf
+                if localname is not None:
+                    try:
+                        path = open(localname, 'rb')
+                        expected_file_size += os.path.getsize(localname)
+                        merger.append(fileobj=path)
+                        info_json['merged'] += 1
+                        write_info()
+                    except:
+                        return None
 
-        finally:
-            out.close()
-            merger.close()
+            try:
+                info_json['filesize'] = expected_file_size
+                info_json['written'] = 0
+                info_json['done'] = True
+                info_json['status'] = 'finished'
+                write_info()
+                filename = create_pdf_path(print_temp_dir, unique_filename)
+                log.info('[_merge_pdfs] Writing file.')
+                out = open(filename, 'wb')
+                merger.write(out)
+                log.info('[_merge_pdfs] Merged PDF written to: %s', filename)
+                log.debug(json.dumps(info_json, indent=4))
+            except:
+                return False
 
-        return True
+            finally:
+                out.close()
+                merger.close()
+
+            return True
 
     jobs = []
     all_timestamps = []
