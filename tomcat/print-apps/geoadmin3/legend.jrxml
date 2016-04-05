@@ -7,28 +7,21 @@
 	<property name="ireport.y" value="0"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="icon" class="java.awt.Image"/>
-  <field name="report" class="java.lang.String"/>
 	<field name="level" class="java.lang.Integer"/>
 	<detail>
 		<band height="15" splitType="Prevent">
 			<printWhenExpression><![CDATA[!$F{name}.equals("")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement x="0" y="0" width="185" height="13" uuid="804c03e8-4edc-4888-8dba-0c683717bfeb"/>
-        <!--<textElement>
-          <font isBold="true"/>
-        </textElement>-->
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="14" splitType="Stretch">
-			<printWhenExpression><![CDATA[$F{report} != null]]></printWhenExpression>
-      <subreport>
-				<reportElement x="0" y="0" width="185" height="13" uuid="fa145068-76a5-4834-98ed-ce65b1976b3d">
-          <property name="local_mesure_unitheight" value="pixel"/>
-          <property name="com.jaspersoft.studio.unit.height" value="px"/>
-        </reportElement>
-				<subreportExpression><![CDATA[$F{report}]]></subreportExpression>
-			</subreport>
+		<band height="50" splitType="Prevent">
+			<printWhenExpression><![CDATA[$F{icon} != null]]></printWhenExpression>
+			<image scaleImage="RetainShape">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="185" height="45" uuid="067c1436-8c32-4bd6-9fd2-db394dc7366a"/>
+				<imageExpression><![CDATA[$F{icon}]]></imageExpression>
+			</image>
 		</band>
 	</detail>
-</jasperReport>
+ </jasperReport>
