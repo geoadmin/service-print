@@ -1,7 +1,7 @@
 # Variables
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
-BASEWAR ?= print-servlet-3.3-SNAPSHOT.war
+BASEWAR ?= print-servlet-2.0-SNAPSHOT-IMG-MAGICK.war
 BRANCH_STAGING := $(shell if [ '$(DEPLOY_TARGET)' = 'dev' ]; then echo 'test'; else echo 'integration'; fi)
 BRANCH_TO_DELETE :=
 CURRENT_DIRECTORY := $(shell pwd)
@@ -160,19 +160,19 @@ printconfig:
 	@echo 'export JAVA_XMX="2G"'  >> /srv/tomcat/tomcat1/bin/setenv-local.sh
 
 .PHONY: printwar
-printwar: printconfig tomcat/WEB-INF/web.xml.in
+printwar: printconfig print/WEB-INF/web.xml.in
 	cd tomcat && \
-	mkdir temp_$(APP_VERSION) && \
+	mkdir temp_$(VERSION) && \
 	echo "${GREEN}Updating print war...${RESET}" && \
-	cp -f ${BASEWAR} temp_$(APP_VERSION)/service-print-$(APACHE_BASE_PATH).war && \
-	cp -fr ${PRINT_INPUT} temp_$(APP_VERSION)/ && \
-	cd temp_$(APP_VERSION) && \
+	cp -f ${BASEWAR} temp_$(VERSION)/service-print-$(APACHE_BASE_PATH).war && \
+	cp -fr ${PRINT_INPUT} temp_$(VERSION)/ && \
+	cd temp_$(VERSION) && \
 	jar uf service-print-$(APACHE_BASE_PATH).war ${PRINT_INPUT} && \
 	echo "${GREEN}Print war creation was successful.${RESET}" && \
 	rm -rf $(PRINT_OUTPUT) $(PRINT_OUTPUT_BASE) && \
 	cp -f service-print-$(APACHE_BASE_PATH).war $(PRINT_OUTPUT) && chmod 666 $(PRINT_OUTPUT) && cd .. && \
 	echo "${GREEN}Removing temp directory${RESET}" && \
-	rm -rf temp_$(APP_VERSION) && \
+	rm -rf temp_$(VERSION) && \
 	echo "${GREEN}Restarting tomcat...${RESET}" && \
 	sudo /etc/init.d/tomcat-tomcat1 restart && \
 	echo "${GREEN}It may take a few seconds for $(PRINT_OUTPUT_BASE) directory to appear...${RESET}";
