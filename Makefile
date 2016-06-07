@@ -2,6 +2,7 @@
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
 BASEWAR ?= print-servlet-2.0-SNAPSHOT-IMG-MAGICK.war
+VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else python -c "print __import__('time').strftime('%s')"; fi)
 BRANCH_STAGING := $(shell if [ '$(DEPLOY_TARGET)' = 'dev' ]; then echo 'test'; else echo 'integration'; fi)
 BRANCH_TO_DELETE :=
 CURRENT_DIRECTORY := $(shell pwd)
@@ -14,7 +15,7 @@ MODWSGI_USER := www-data
 NO_TESTS ?= withtests
 PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
 PRINT_SERVER_URL ?= ${PRINT_PROXY_URL}/printserver
-PRINT_INPUT :=  index.html favicon.ico print-apps mapfish_transparent.png META-INF WEB-INF
+PRINT_INPUT :=  *.yaml *.png WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
 PRINT_TEMP_DIR := /var/cache/print
@@ -154,6 +155,15 @@ deploybranchdemo:
 	@echo "${GREEN}Deploying branch $(GIT_BRANCH) to dev and demo...${RESET}";
 	./scripts/deploybranch.sh demo
 
+
+
+
+print/WEB-INF/web.xml.in:
+	@echo "${GREEN}Template file print/WEB-INF/web.xml has changed${RESET}"
+print/WEB-INF/web.xml: print/WEB-INF/web.xml.in
+	@echo "${GREEN}Creating print/WEB-INF/web.xml...${RESET}"
+	${MAKO_CMD} \
+		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 .PHONY: printconfig
 printconfig:
 	@echo '# File managed by Makefile service-print'  > /srv/tomcat/tomcat1/bin/setenv-local.sh
