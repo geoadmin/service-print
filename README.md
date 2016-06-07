@@ -34,6 +34,13 @@ that points to your working directory. If all is well, you can reach your pages 
 
     http://print-service.dev.bgdi.ch/<username>/
 
+## Using an alternative base.war
+
+As MapFish Print v3 is currently under developpment, you may use an alternative war files
+as base:
+
+     make printwar BASEWAR=print-servlet-3.5-tsauerwein_tiles-parallel.war
+
 ## Python Code Styling
 
 We are currently using the FLAKES 8 convention for Python code.
