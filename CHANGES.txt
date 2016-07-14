@@ -1,4 +1,0 @@
-3.0.1
------
-
--  Changelog can be found here: http://api3.geo.admin.ch/releasenotes/index.html

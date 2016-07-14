@@ -6,18 +6,18 @@ T="$(date +%s)"
 set -o errexit
 
 # Check if snapshot parameter is supplied and there are 2 parameters
-if [ "$2" != "int" ] && [ "$2" != "prod" ] && [ "$2" != "demo" ]
+if [ "$2" != "int" ] && [ "$2" != "prod" ]
 then
   echo "Error: Please specify 1) snapshot directoy and 2) target."
   exit 1
 fi
 
-SNAPSHOTDIR=/var/www/vhosts/mf-chsdi3/private/snapshots/$1
+SNAPSHOTDIR=/var/www/vhosts/service-print/private/snapshots/$1
 
 cwd=$(pwd)
 
 # Go into snapshot directory to run nose-tests
-SNAPSHOTDIR_CODE=$SNAPSHOTDIR/chsdi3/code/chsdi3
+SNAPSHOTDIR_CODE=$SNAPSHOTDIR/service-print/code/service-print
 cd $SNAPSHOTDIR_CODE
 
 # Run nose tests with target cluster db
@@ -56,4 +56,3 @@ sudo -u deploy deploy -r $DEPLOYCONFIG $2 $SNAPSHOTDIR
 T="$(($(date +%s)-T))"
 
 printf "Deploy time: %02d:%02d:%02d:%02d\n" "$((T/86400))" "$((T/3600%24))" "$((T/60%60))" "$((T%60))"
-

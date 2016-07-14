@@ -27,7 +27,5 @@ def main(global_config, **settings):
 
     config.add_route('get_timestamps', '/printmulti/timestamps')
     config.add_static_view('/', 'print3:static/')
-
-    # required to find code decorated by view_config
-    config.scan(ignore=['print3.tests', 'print3.models.bod'])
+    config.scan()
     return config.make_wsgi_app()

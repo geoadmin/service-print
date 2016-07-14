@@ -1,7 +1,7 @@
 #!/bin/bash
 
-BRANCHES=$(ls   /var/www/vhosts/mf-chsdi3/private/branch/)
-BASE=/var/www/vhosts/mf-chsdi3
+BRANCHES=$(ls   /var/www/vhosts/service-print/private/branch/)
+BASE=/var/www/vhosts/service-print
 
 
 if [ "$#" -ne 1 ]; then
