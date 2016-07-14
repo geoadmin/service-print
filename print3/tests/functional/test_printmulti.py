@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from chsdi.views.printmulti import _get_timestamps
+from print3.views.printmulti import _get_timestamps
 
 
 class Test_PrintMulti(unittest.TestCase):

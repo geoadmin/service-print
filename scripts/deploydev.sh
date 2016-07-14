@@ -7,9 +7,9 @@ umask 0002
 
 # set some variables
 UUID=$(uuidgen)
-ROOTDIR=/var/www/vhosts/mf-chsdi3/private
-DEPLOYDIR=$ROOTDIR/chsdi
-TEMPDIR=$ROOTDIR/chsdi_temp_$UUID
+ROOTDIR=/var/www/vhosts/service-print/private
+DEPLOYDIR=$ROOTDIR/print
+TEMPDIR=$ROOTDIR/service_print_temp_$UUID
 SNAPSHOT=`date '+%Y%m%d%H%M'`
 SNAPSHOTDIR=$ROOTDIR/snapshots/$SNAPSHOT
 
@@ -33,7 +33,7 @@ else
 fi
 
 if cd $ROOTDIR; then
-  git clone https://github.com/geoadmin/mf-chsdi3.git $DEPLOYDIR
+  git clone https://github.com/geoadmin/service-print.git $DEPLOYDIR
 else
   echo "Could not change directory. Restoring previous project." 1>&2
   rm -rf $DEPLOYDIR
@@ -78,7 +78,7 @@ echo "Deployed branch $GITBRANCH to dev main."
 if [ $CREATE_SNAPSHOT == 'true' ]; then
   sudo -u deploy deploy -c deploy/deploy.cfg $SNAPSHOTDIR
   echo "Snapshot of branch $GITBRANCH created at $SNAPSHOTDIR"
-  cd $SNAPSHOTDIR/chsdi3/code/chsdi3/
+  cd $SNAPSHOTDIR/service-print/code/service-print/
   git describe --tags --abbrev=0 > .venv/last-release
   git log -1 --pretty=format:"%h - %an, %ar : %s" > .venv/last-commit-ref
   git rev-parse --symbolic-full-name --abbrev-ref HEAD > .venv/deployed-git-branch

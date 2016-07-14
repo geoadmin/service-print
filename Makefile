@@ -1,3 +1,4 @@
+SHELL = /bin/bash
 # Variables
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
@@ -22,6 +23,7 @@ PRINT_TEMP_DIR := /var/cache/print
 PYTHON_FILES := $(shell find print3/* -path print/static -prune -o -type f -name "*.py" -print)
 TEMPLATE_FILES := $(shell find -type f -name "*.in" -print)
 USERNAME := $(shell whoami)
+USER_SOURCE ?= rc_user
 WSGI_APP := $(CURRENT_DIRECTORY)/apache/application.wsgi
 
 # Commands
@@ -66,7 +68,6 @@ help:
 	@echo "- user               Build the user specific version of the app"
 	@echo "- serve              Serve the application with pserve"
 	@echo "- test               Launch the tests (no e2e tests)"
-	@echo "- teste2e            Launch end-to-end tests"
 	@echo "- lint               Run the linter"
 	@echo "- autolint           Run the autolinter"
 	@echo "- deploybranch       Deploy current branch to dev (must be pushed before hand)"
@@ -77,6 +78,7 @@ help:
 	@echo "- deploydev          Deploys master to dev (SNAPSHOT=true to also create a snapshot)"
 	@echo "- deployint          Deploys a snapshot to integration (SNAPSHOT=201512021146)"
 	@echo "- deployprod         Deploys a snapshot to production (SNAPSHOT=201512021146)"
+	@echo "- cleancache         Remove print cache"
 	@echo "- clean              Remove generated files"
 	@echo "- cleanall           Remove all the build artefacts"
 	@echo
@@ -99,19 +101,19 @@ templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml deve
 
 .PHONY: user
 user:
-	./scripts/build.sh $(USERNAME)
+	source $(USER_SOURCE) && make all
 
 .PHONY: dev
 dev:
-	./scripts/build.sh dev
+	source rc_dev && make all
 
 .PHONY: int
 int:
-	./scripts/build.sh int
+	source rc_int && make all
 
 .PHONY: prod
 prod:
-	./scripts/build.sh prod
+	source rc_prod && make all
 
 .PHONY: serve
 serve:
@@ -119,11 +121,7 @@ serve:
 
 .PHONY: test
 test:
-	PYTHONPATH=${PYTHONPATH} ${NOSE_CMD} print3/tests/ -e .*e2e.*
-
-.PHONY: teste2e
-teste2e:
-	PYTHONPATH=${PYTHONPATH} ${NOSE_CMD} print3/tests/e2e/
+	PYTHONPATH=${PYTHONPATH} ${NOSE_CMD} print3/tests/
 
 .PHONY: lint
 lint:
@@ -149,14 +147,6 @@ deletebranch:
 deploybranchint:
 	@echo "${GREEN}Deploying branch $(GIT_BRANCH) to dev and int...${RESET}";
 	./scripts/deploybranch.sh int
-
-.PHONY: deploybranchdemo
-deploybranchdemo:
-	@echo "${GREEN}Deploying branch $(GIT_BRANCH) to dev and demo...${RESET}";
-	./scripts/deploybranch.sh demo
-
-
-
 
 print/WEB-INF/web.xml.in:
 	@echo "${GREEN}Template file print/WEB-INF/web.xml has changed${RESET}"
@@ -306,7 +296,6 @@ requirements.txt:
 		${PIP_CMD} install -U pip; \
 	fi
 	${PYTHON_CMD} setup.py develop
-	${PIP_CMD} install Pillow==3.1.0
 
 
 fixrights:

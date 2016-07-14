@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from chsdi.tests.integration import TestsBase
+from print3.tests.integration import TestsBase
 
 
 class TestOGCproxyView(TestsBase):
@@ -14,7 +14,7 @@ class TestOGCproxyView(TestsBase):
         self.testapp.get('/ogcproxy', params=params, status=403)
 
     def test_proxy_authorized(self):
-        params = {'url': 'http://www.geo.admin.ch/'}
+        params = {'url': 'http://www.geo.admin.ch/de/home.html'}
         resp = self.testapp.get('/ogcproxy', params=params, headers=self.headers, status=200)
         self.assertTrue(resp.content_type == 'text/html')
         resp.mustcontain('Bundesgeoportal')
