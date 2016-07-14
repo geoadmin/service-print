@@ -93,7 +93,7 @@ help:
 	@echo
 
 .PHONY: all
-all: setup  templates  fixrights
+all: setup  templates printconfig printwar fixrights
 
 setup: .venv 
 
