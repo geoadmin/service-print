@@ -1,7 +1,9 @@
+SHELL = /bin/bash
 # Variables
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
-BASEWAR ?= print-servlet-3.3-SNAPSHOT.war
+BASEWAR ?= print-servlet-2.0-SNAPSHOT-IMG-MAGICK.war
+VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else python -c "print __import__('time').strftime('%s')"; fi)
 BRANCH_STAGING := $(shell if [ '$(DEPLOY_TARGET)' = 'dev' ]; then echo 'test'; else echo 'integration'; fi)
 BRANCH_TO_DELETE :=
 CURRENT_DIRECTORY := $(shell pwd)
@@ -14,13 +16,14 @@ MODWSGI_USER := www-data
 NO_TESTS ?= withtests
 PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
 PRINT_SERVER_URL ?= ${PRINT_PROXY_URL}/printserver
-PRINT_INPUT :=  index.html favicon.ico print-apps mapfish_transparent.png META-INF WEB-INF
+PRINT_INPUT :=  *.yaml *.png WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
 PRINT_TEMP_DIR := /var/cache/print
 PYTHON_FILES := $(shell find print3/* -path print/static -prune -o -type f -name "*.py" -print)
 TEMPLATE_FILES := $(shell find -type f -name "*.in" -print)
 USERNAME := $(shell whoami)
+USER_SOURCE ?= rc_user
 WSGI_APP := $(CURRENT_DIRECTORY)/apache/application.wsgi
 
 # Commands
@@ -65,7 +68,6 @@ help:
 	@echo "- user               Build the user specific version of the app"
 	@echo "- serve              Serve the application with pserve"
 	@echo "- test               Launch the tests (no e2e tests)"
-	@echo "- teste2e            Launch end-to-end tests"
 	@echo "- lint               Run the linter"
 	@echo "- autolint           Run the autolinter"
 	@echo "- deploybranch       Deploy current branch to dev (must be pushed before hand)"
@@ -76,6 +78,7 @@ help:
 	@echo "- deploydev          Deploys master to dev (SNAPSHOT=true to also create a snapshot)"
 	@echo "- deployint          Deploys a snapshot to integration (SNAPSHOT=201512021146)"
 	@echo "- deployprod         Deploys a snapshot to production (SNAPSHOT=201512021146)"
+	@echo "- cleancache         Remove print cache"
 	@echo "- clean              Remove generated files"
 	@echo "- cleanall           Remove all the build artefacts"
 	@echo
@@ -90,7 +93,7 @@ help:
 	@echo
 
 .PHONY: all
-all: setup  templates  fixrights
+all: setup  templates printconfig printwar fixrights
 
 setup: .venv 
 
@@ -98,19 +101,19 @@ templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml deve
 
 .PHONY: user
 user:
-	./scripts/build.sh $(USERNAME)
+	source $(USER_SOURCE) && make all
 
 .PHONY: dev
 dev:
-	./scripts/build.sh dev
+	source rc_dev && make all
 
 .PHONY: int
 int:
-	./scripts/build.sh int
+	source rc_int && make all
 
 .PHONY: prod
 prod:
-	./scripts/build.sh prod
+	source rc_prod && make all
 
 .PHONY: serve
 serve:
@@ -118,11 +121,7 @@ serve:
 
 .PHONY: test
 test:
-	PYTHONPATH=${PYTHONPATH} ${NOSE_CMD} print3/tests/ -e .*e2e.*
-
-.PHONY: teste2e
-teste2e:
-	PYTHONPATH=${PYTHONPATH} ${NOSE_CMD} print3/tests/e2e/
+	PYTHONPATH=${PYTHONPATH} ${NOSE_CMD} print3/tests/
 
 .PHONY: lint
 lint:
@@ -149,30 +148,31 @@ deploybranchint:
 	@echo "${GREEN}Deploying branch $(GIT_BRANCH) to dev and int...${RESET}";
 	./scripts/deploybranch.sh int
 
-.PHONY: deploybranchdemo
-deploybranchdemo:
-	@echo "${GREEN}Deploying branch $(GIT_BRANCH) to dev and demo...${RESET}";
-	./scripts/deploybranch.sh demo
-
+print/WEB-INF/web.xml.in:
+	@echo "${GREEN}Template file print/WEB-INF/web.xml has changed${RESET}"
+print/WEB-INF/web.xml: print/WEB-INF/web.xml.in
+	@echo "${GREEN}Creating print/WEB-INF/web.xml...${RESET}"
+	${MAKO_CMD} \
+		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 .PHONY: printconfig
 printconfig:
 	@echo '# File managed by Makefile service-print'  > /srv/tomcat/tomcat1/bin/setenv-local.sh
 	@echo 'export JAVA_XMX="2G"'  >> /srv/tomcat/tomcat1/bin/setenv-local.sh
 
 .PHONY: printwar
-printwar: printconfig tomcat/WEB-INF/web.xml.in
+printwar: printconfig print/WEB-INF/web.xml.in
 	cd tomcat && \
-	mkdir temp_$(APP_VERSION) && \
+	mkdir temp_$(VERSION) && \
 	echo "${GREEN}Updating print war...${RESET}" && \
-	cp -f ${BASEWAR} temp_$(APP_VERSION)/service-print-$(APACHE_BASE_PATH).war && \
-	cp -fr ${PRINT_INPUT} temp_$(APP_VERSION)/ && \
-	cd temp_$(APP_VERSION) && \
+	cp -f ${BASEWAR} temp_$(VERSION)/service-print-$(APACHE_BASE_PATH).war && \
+	cp -fr ${PRINT_INPUT} temp_$(VERSION)/ && \
+	cd temp_$(VERSION) && \
 	jar uf service-print-$(APACHE_BASE_PATH).war ${PRINT_INPUT} && \
 	echo "${GREEN}Print war creation was successful.${RESET}" && \
 	rm -rf $(PRINT_OUTPUT) $(PRINT_OUTPUT_BASE) && \
 	cp -f service-print-$(APACHE_BASE_PATH).war $(PRINT_OUTPUT) && chmod 666 $(PRINT_OUTPUT) && cd .. && \
 	echo "${GREEN}Removing temp directory${RESET}" && \
-	rm -rf temp_$(APP_VERSION) && \
+	rm -rf temp_$(VERSION) && \
 	echo "${GREEN}Restarting tomcat...${RESET}" && \
 	sudo /etc/init.d/tomcat-tomcat1 restart && \
 	echo "${GREEN}It may take a few seconds for $(PRINT_OUTPUT_BASE) directory to appear...${RESET}";
@@ -296,7 +296,6 @@ requirements.txt:
 		${PIP_CMD} install -U pip; \
 	fi
 	${PYTHON_CMD} setup.py develop
-	${PIP_CMD} install Pillow==3.1.0
 
 
 fixrights:

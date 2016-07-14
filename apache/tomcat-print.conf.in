@@ -5,18 +5,7 @@
 
 
 
-# V3
-# 
-# GET  /print/print/geoadmin3/capabilities.json
-#
-# POST /print/print/geoadmin3/report.json
-#
-# GET  /print/print/status/fcacc8d5-3970-4477-b98a-718fd6abcadd@505d796f-3ffc-4e55-889e-226e189dba37.json 
-# 
-# GET  /print/service-print-main/print/report/08e117fd-fd16-4074-8bea-b1329fb98b6b@050480a2-0a05-44e4-8a90-8a68d8d24545
-
-
-# V2
+# MapFish print V2
 #
 # GET  /print/info.json
 #
@@ -30,37 +19,15 @@
 #
 # GET /print/-multi23444545.pdf.printout
 
-# V3
-#RewriteRule  ${apache_entry_path}/print/service-print-${apache_base_path}/print/report/(.*)   ${apache_entry_path}/print/print/report/$1 [PT]
 
+# JSON print requests to print server
+ProxyPassMatch ${apache_entry_path}/print/(info|create)\.json$ ajp://localhost:8009/service-print-${print_war}/pdf/$1.json
+ProxyPassReverse ${apache_entry_path}/print/ ajp://localhost:8009/service-print-${print_war}/pdf/
 
+# Get resulting files directly from filesystem
+AliasMatch ^${apache_entry_path}/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ ${print_temp_dir}/mapfish-print$2$3
 
-# Three base path are defined
-# - /printserver     Tomcat application
-# - /print           Print proxy (pyramid WSGI)
-# - /download        Aapche direct download
-
-
-# capabilities document direct to tomcat
-RewriteRule  ^${apache_entry_path}/print/print/(\w+)/capabilities.json    /printserver/print/$1/capabilities.json [PT]
-
-# Print server
-ProxyPassMatch   ${apache_entry_path}/printserver/(.*) ajp://localhost:8009/service-print-${print_war}/$1
-ProxyPassReverse ${apache_entry_path}/printserver/ ajp://localhost:8009/service-print-${print_war}/
-
-
-# Print proxy
-RewriteRule  ^${apache_entry_path}/print/print/(.*)     /print/$1 [PT]
-
-
-
-# Download 
-AliasMatch ^${apache_entry_path}/download/(.+) ${print_temp_dir}/mapfish-print$1
-
-
-
-
-<LocationMatch ^${apache_entry_path}/download/(\-multi)?([0-9a-f@-_]+\.pdf\.printout)$ >
+<LocationMatch ^${apache_entry_path}/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ >
   Header set Content-Disposition "attachment; filename=map.geo.admin.ch.pdf"
   # Try to force IE to open the PDF in a new window
   # overriding what set by the print server
@@ -74,4 +41,3 @@ AliasMatch ^${apache_entry_path}/download/(.+) ${print_temp_dir}/mapfish-print$1
   Header set Content-Type "application/pdf"  env=IE10
   Header set Content-Disposition "attachment; filename=map.geo.admin.ch.pdf" env=IE10
 </LocationMatch>
-
