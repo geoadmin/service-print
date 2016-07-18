@@ -21,7 +21,6 @@ def main(global_config, **settings):
     config.add_route('print_progress', '/printprogress')
     config.add_route('print_cancel', '/printcancel')
 
-    config.add_route('dev', '/dev')
     config.add_route('checker', '/checker')
     config.add_route('checker_dev', '/checker_dev')
 
