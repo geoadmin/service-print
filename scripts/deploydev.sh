@@ -55,6 +55,7 @@ fi
 # Build the project
 source rc_dev
 make all
+make printwar
 
 exit_code=$?
 
