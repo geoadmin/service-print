@@ -15,7 +15,6 @@ INSTALL_DIRECTORY := .venv
 MODWSGI_USER := www-data
 NO_TESTS ?= withtests
 PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
-PRINT_SERVER_URL ?= ${PRINT_PROXY_URL}/printserver
 PRINT_INPUT :=  *.yaml *.png WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
@@ -86,7 +85,6 @@ help:
 	@echo "APACHE_ENTRY_PATH:   ${APACHE_ENTRY_PATH}"
 	@echo "API_URL:             ${API_URL}"
 	@echo "PRINT_PROXY_URL:     ${PRINT_PROXY_URL}"
-	@echo "PRINT_SERVER_URL:    ${PRINT_SERVER_URL}"
 	@echo "BRANCH_STAGING:      ${BRANCH_STAGING}"
 	@echo "GIT_BRANCH:          ${GIT_BRANCH}"
 	@echo "SERVER_PORT:         ${SERVER_PORT}"
@@ -281,7 +279,6 @@ production.ini: production.ini.in
 		--var "current_directory=$(CURRENT_DIRECTORY)" \
 		--var "api_url=$(API_URL)" \
 		--var "print_proxy_url=$(PRINT_PROXY_URL)" \
-		--var "print_server_url=$(PRINT_SERVER_URL)" \
 		--var "host=$(HOST)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" \
 		--var "http_proxy=$(HTTP_PROXY)"  $< > $@

@@ -1,6 +1,6 @@
 export APACHE_BASE_PATH=main
 export API_URL=//mf-chsdi3.int.bgdi.ch
-export PRINT_URL=//service-print.int.bgdi.ch
+export PRINT_PROXY_URL=//service-print.int.bgdi.ch
 export DEPLOY_TARGET=int
 export MODWSGI_CONFIG=production.ini
 export PRINT_WAR=main
