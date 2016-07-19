@@ -38,6 +38,49 @@ that points to your working directory. If all is well, you can reach your pages 
 
     http://print-service.dev.bgdi.ch/<username>/
 
+
+## Deploying to dev, int, prod and demo
+
+Do the following commands **inside your working directory**. Here's how a standard
+deploy process is done.
+
+`make deploydev SNAPSHOT=true`
+
+This updates the source in /var/www... to the latest master branch from github,
+creates a snapshot and runs nosetests against the test db. The snapshot directory
+will be shown when the script is done. *Note*: you can omit the `-s` parameter if
+you don't want to create a snapshot e.g. for intermediate releases on dev main.
+
+Once a snapshot has been created, you are able to deploy this snapshot to a
+desired target. For integration, do
+
+`make deployint SNAPSHOT=201512011411`
+
+This will run the full nose tests **from inside the 201512011411 snapshot directory** against the **integration db cluster**. Only if these tests are successfull, the snapshot is deployed to the integration cluster.
+
+`make deployprod SNAPSHOT=201512011411`
+
+This will do the corresponding thing for prod (tests will be run **against prod backends**)
+The same is valid for demo too:
+
+`make deploydemo SNAPSHOT=201512011411`
+
+You can disable the running of the nosetests against the target backends by adding
+`notests` parameter to the snapshot command. This is handy in an emergency (when
+deploying an old known-to-work snapshot) or when you have to re-deploy
+a snapshot that you know has passed the tests for the given backend.
+To disable the tests, use the following command:
+
+`make deployint SNAPSHOT=201512011411 NO_TESTS=notests`
+
+Use `notests` parameter with care, as it removes a level of tests.
+
+Per default the deploy command uses the deploy configuration of the snapshot directory.
+If you want to use the deploy configuration of directory from which you are executing this command, you can use:
+
+`make deployint SNAPSHOT=201512011411 DEPLOYCONFIG=from_current_directory`
+
+
 ## Python Code Styling
 
 We are currently using the FLAKES 8 convention for Python code.
