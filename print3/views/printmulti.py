@@ -241,7 +241,7 @@ def worker(job):
 def create_and_merge(info):
 
     lock = multiprocessing.Manager().Lock()
-    (spec, print_temp_dir, scheme, api_url, headers, unique_filename) = info
+    (spec, print_temp_dir, scheme, api_url, print_url, headers, unique_filename) = info
 
     def _isMultiPage(spec):
         isMultiPage = False
@@ -400,7 +400,7 @@ def create_and_merge(info):
         log.error('Something went wrong while merging PDFs')
         return 3
 
-    pdf_download_url = scheme + ':' + api_url + '/print/-multi' + unique_filename + '.pdf.printout'
+    pdf_download_url = scheme + ':' + print_url + '/print/-multi' + unique_filename + '.pdf.printout'
     with open(infofile, 'w+') as outfile:
         json.dump({'status': 'done', 'getURL': pdf_download_url}, outfile)
 
@@ -500,6 +500,7 @@ class PrintMulti(object):
         scheme = self.request.headers.get('X-Forwarded-Proto',
                                           self.request.scheme)
         api_url = self.request.registry.settings['api_url']
+        print_url = self.request.registry.settings['print_proxy_url']
         headers = dict(self.request.headers)
         headers.pop("Host", headers)
         unique_filename = datetime.datetime.now().strftime("%y%m%d%H%M%S") + str(random.randint(1000, 9999))
@@ -507,7 +508,7 @@ class PrintMulti(object):
         with open(create_info_file(print_temp_dir, unique_filename), 'w+') as outfile:
             json.dump({'status': 'ongoing'}, outfile)
 
-        info = (spec, print_temp_dir, scheme, api_url, headers, unique_filename)
+        info = (spec, print_temp_dir, scheme, api_url, print_url, headers, unique_filename)
         p = multiprocessing.Process(target=create_and_merge, args=(info,))
         p.start()
         response = {'idToCheck': unique_filename}
