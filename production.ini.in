@@ -22,7 +22,6 @@ pyramid.default_locale_name = de
 
 api_url = ${api_url}
 print_proxy_url = ${print_proxy_url}
-print_server_url = ${print_server_url}
 install_directory = ${current_directory}
 host = ${host}
 apache_base_path = ${apache_base_path}
