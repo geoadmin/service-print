@@ -459,7 +459,7 @@ class PrintMulti(object):
         pdffile = create_pdf_path(print_temp_dir, fileid)
 
         if not os.path.isfile(filename):
-            raise HTTPBadRequest()
+            raise HTTPBadRequest('%s does not exists' % filename)
 
         with open(filename, 'r') as data_file:
             data = json.load(data_file)
