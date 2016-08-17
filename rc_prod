@@ -1,6 +1,6 @@
 export APACHE_BASE_PATH=main
 export API_URL=//api3.geo.admin.ch
-export PRINT_PROXY_URL=//print.geo.admin.ch
+export PRINT_PROXY_URL=//service-print.prod.bgdi.ch
 export DEPLOY_TARGET=prod
 export MODWSGI_CONFIG=production.ini
 export PRINT_WAR=main
