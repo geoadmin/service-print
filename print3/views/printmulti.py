@@ -299,7 +299,7 @@ def create_and_merge(info):
     jobs = []
     all_timestamps = []
 
-    create_pdf_url = 'http:' + api_url + '/print/create.json'
+    create_pdf_url = 'http:' + print_url + '/print/create.json'
 
     url = create_pdf_url + '?url=' + urllib.quote_plus(create_pdf_url)
     infofile = create_info_file(print_temp_dir, unique_filename)
