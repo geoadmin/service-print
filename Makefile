@@ -18,7 +18,7 @@ PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
 PRINT_INPUT :=  *.yaml *.png WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
-PRINT_TEMP_DIR := /var/cache/print
+PRINT_TEMP_DIR := /var/local/print
 PYTHON_FILES := $(shell find print3/* -path print/static -prune -o -type f -name "*.py" -print)
 TEMPLATE_FILES := $(shell find -type f -name "*.in" -print)
 USERNAME := $(shell whoami)
@@ -302,9 +302,9 @@ fixrights:
 
 .PHONY: cleancache
 cleancache:
-	rm -rf /var/cache/print/*.pdf
-	rm -rf /var/cache/print/*.json
-	rm -rf /var/cache/print/mapfish*
+	rm -rf /var/local/print/*.pdf
+	rm -rf /var/local/print/*.json
+	rm -rf /var/local/print/mapfish*
 
 .PHONY: clean
 clean:
