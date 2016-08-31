@@ -16,3 +16,4 @@ six==1.5.0
 waitress==0.9
 WebOb==1.6.1
 WebTest==2.0.21
+zope.interface==4.2.0
