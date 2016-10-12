@@ -68,8 +68,8 @@ layouts:
             - !image
               rotation: '${rotation}'
               align: right
-              maxWidth: 30
-              maxHeight: 30
+              maxWidth: 35
+              maxHeight: 46
               url: "${configDir}/north_arrow.png"
 
 #---------------------------------------
@@ -398,8 +398,8 @@ layouts:
             - !image
               rotation: '${rotation}'
               align: right
-              maxWidth: 30
-              maxHeight: 30
+              maxWidth: 35
+              maxHeight: 46
               url: "${configDir}/north_arrow.png"
 
 #---------------------------------------
@@ -729,8 +729,8 @@ layouts:
             - !image
               rotation: '${rotation}'
               align: right
-              maxWidth: 30
-              maxHeight: 30
+              maxWidth: 35
+              maxHeight: 46
               url: "${configDir}/north_arrow.png"
 
 #---------------------------------------
@@ -1060,8 +1060,8 @@ layouts:
             - !image
               rotation: '${rotation}'
               align: right
-              maxWidth: 30
-              maxHeight: 30
+              maxWidth: 35
+              maxHeight: 46
               url: "${configDir}/north_arrow.png"
 
 #---------------------------------------
