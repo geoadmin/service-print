@@ -299,6 +299,7 @@ fixrights:
 	@echo "${GREEN}Fixing rights...${RESET}";
 	chgrp -f -R geodata . || :
 	chmod -f -R g+srwX . || :
+	chmod -f -R o+r    . || :
 
 .PHONY: cleancache
 cleancache:
