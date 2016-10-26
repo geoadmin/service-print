@@ -93,7 +93,7 @@ help:
 .PHONY: all
 all: setup  templates printconfig printwar fixrights
 
-setup: .venv 
+setup: .venv
 
 templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml development.ini production.ini
 
@@ -292,7 +292,7 @@ requirements.txt:
 		virtualenv $(INSTALL_DIRECTORY); \
 		${PIP_CMD} install -U pip wheel setuptools; \
 	fi
-	${PYTHON_CMD} setup.py develop
+	${PIP_CMD} install -e .
 
 
 fixrights:
