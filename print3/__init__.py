@@ -14,9 +14,6 @@ def main(global_config, **settings):
     # renderers
     config.add_renderer('jsonp', JSONP(param_name='callback', indent=None, separators=(',', ':')))
 
-    # route definitions
-    config.add_route('ogcproxy', '/ogcproxy')
-
     config.add_route('print_create', '/printmulti/create.json')
     config.add_route('print_progress', '/printprogress')
     config.add_route('print_cancel', '/printcancel')
