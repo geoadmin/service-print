@@ -290,7 +290,7 @@ requirements.txt:
 	@if [ ! -d $(INSTALL_DIRECTORY) ]; \
 	then \
 		virtualenv $(INSTALL_DIRECTORY); \
-		${PIP_CMD} install -U pip; \
+		${PIP_CMD} install -U pip wheel setuptools; \
 	fi
 	${PYTHON_CMD} setup.py develop
 
@@ -299,6 +299,7 @@ fixrights:
 	@echo "${GREEN}Fixing rights...${RESET}";
 	chgrp -f -R geodata . || :
 	chmod -f -R g+srwX . || :
+	chmod -f -R o+sr . || :
 
 .PHONY: cleancache
 cleancache:
