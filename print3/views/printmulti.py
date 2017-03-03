@@ -23,7 +23,7 @@ from PyPDF2 import PdfFileMerger
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError
 from pyramid.response import Response
-# from print3.lib.decorators import requires_authorization
+from print3.lib.decorators import validates_spec
 
 import logging
 log = logging.getLogger(__name__)
@@ -472,6 +472,7 @@ class PrintMulti(object):
 
     # @requires_authorization()
     @view_config(route_name='print_create', renderer='jsonp')
+    @validates_spec()
     def print_create(self):
         if self.request.method == 'OPTIONS':
             return Response(status=200)

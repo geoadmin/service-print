@@ -290,7 +290,8 @@ requirements.txt:
 	@if [ ! -d $(INSTALL_DIRECTORY) ]; \
 	then \
 		virtualenv $(INSTALL_DIRECTORY); \
-		${PIP_CMD} install -U pip wheel setuptools; \
+		${PIP_CMD} install setuptools==33.1.1; \
+		${PIP_CMD} install -U pip six wheel; \
 	fi
 	${PYTHON_CMD} setup.py develop
 
