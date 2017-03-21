@@ -15,7 +15,8 @@ INSTALL_DIRECTORY := .venv
 MODWSGI_USER := www-data
 NO_TESTS ?= withtests
 PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
-PRINT_INPUT :=  *.yaml *.png WEB-INF
+TOMCAT_BASE_URL ?= ajp://localhost:8009
+PRINT_INPUT :=  *.html *.yaml *.png WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
 PRINT_TEMP_DIR := /var/local/print
@@ -87,6 +88,7 @@ help:
 	@echo "PRINT_PROXY_URL:     ${PRINT_PROXY_URL}"
 	@echo "BRANCH_STAGING:      ${BRANCH_STAGING}"
 	@echo "GIT_BRANCH:          ${GIT_BRANCH}"
+	@echo "TOMCAT_BASE_URL      ${TOMCAT_BASE_URL}"
 	@echo "SERVER_PORT:         ${SERVER_PORT}"
 	@echo
 
@@ -95,7 +97,7 @@ all: setup  templates printconfig printwar fixrights
 
 setup: .venv 
 
-templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml development.ini production.ini
+templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml development.ini production.ini print3/static/index.html.in
 
 .PHONY: user
 user:
@@ -223,6 +225,7 @@ apache/tomcat-print.conf: apache/tomcat-print.conf.in
 		--var "print_war=$(PRINT_WAR)" \
 		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
 		--var "apache_base_path=$(APACHE_BASE_PATH)" \
+		--var "tomcat_base_url=$(TOMCAT_BASE_URL)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
 tomcat/WEB-INF/web.xml.in:
@@ -282,6 +285,16 @@ production.ini: production.ini.in
 		--var "host=$(HOST)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" \
 		--var "http_proxy=$(HTTP_PROXY)"  $< > $@
+print3/static/index.html.in:
+	@echo "${GREEN}Template file print3/static/index.html.in has changed${RESET}";
+print3/static/index.html: print3/static/index.html.in
+	@echo "${GREEN}Creating print3/static/index.html..${RESET}";
+	${MAKO_CMD} \
+		--var "print_war=$(PRINT_WAR)" \
+		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
+		--var "apache_base_path=$(APACHE_BASE_PATH)" \
+		--var "tomcat_base_url=$(TOMCAT_BASE_URL)" \
+		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
 requirements.txt:
 	@echo "${GREEN}File requirements.txt has changed${RESET}";
@@ -290,7 +303,8 @@ requirements.txt:
 	@if [ ! -d $(INSTALL_DIRECTORY) ]; \
 	then \
 		virtualenv $(INSTALL_DIRECTORY); \
-		${PIP_CMD} install -U pip wheel setuptools; \
+		${PIP_CMD} install -U pip wheel; \
+		${PIP_CMD} install setuptools==33.1.1;  \
 	fi
 	${PYTHON_CMD} setup.py develop
 

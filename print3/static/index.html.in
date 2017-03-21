@@ -13,9 +13,12 @@
 
 <h2>Tomcat backend</h2>
 <ul>
-    <li><a href="/service-print-/pdf/info.json">info.json</a></li>
+% if 'http' in  tomcat_base_url:
+    <li><a href="${tomcat_base_url}/${apache_entry_path}/service-print-${print_war}/pdf/info.json">info.json</a></li>
+% else:
+    <li><a href="${apache_entry_path}service-print-${print_war}/pdf/info.json">info.json</a></li>
     
+% endif
 
 </ul>
-
 
