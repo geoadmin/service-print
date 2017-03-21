@@ -1,4 +1,4 @@
-<Proxy  ${tomcat_base_url}/service-print-${print_war} >
+<Proxy  ${tomcat_base_url}/service-print-${print_war}>
     Order deny,allow
     Allow from all
 </Proxy>

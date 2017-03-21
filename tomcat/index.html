@@ -3,18 +3,17 @@
       <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
       <script type="text/javascript">
           function post() {
-          var data = $('#spec').serialize(true);
-          $.ajax({
-              type: 'POST',
-              url: 'pdf/create.json',
-              data: data,
-              success: function (data) {
-                var result = jQuery.parseJSON(data)
-                location.href = result.getURL;
-              },
-              dataType: 'application/json'
+            var data = $('#spec').serialize(true);
+            $.ajax({
+                type: 'POST',
+                url: 'pdf/create.json',
+                data: data,
+                success: function (data) {
+                  var result = jQuery.parseJSON(data)
+                  location.href = result.getURL;
+                },
+                dataType: 'application/json'
             });
-
           }
       </script>
   </head>
