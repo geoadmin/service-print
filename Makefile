@@ -25,6 +25,7 @@ TEMPLATE_FILES := $(shell find -type f -name "*.in" -print)
 USERNAME := $(shell whoami)
 USER_SOURCE ?= rc_user
 WSGI_APP := $(CURRENT_DIRECTORY)/apache/application.wsgi
+SERVER_PORT ?= 9000
 
 # Commands
 AUTOPEP8_CMD := $(INSTALL_DIRECTORY)/bin/autopep8
@@ -95,7 +96,7 @@ help:
 .PHONY: all
 all: setup  templates printconfig printwar fixrights
 
-setup: .venv 
+setup: .venv
 
 templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml development.ini production.ini print3/static/index.html.in
 
