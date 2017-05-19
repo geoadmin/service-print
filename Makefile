@@ -1,5 +1,6 @@
 SHELL = /bin/bash
 # Variables
+APACHE_BASE_PATH ?= main
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
 BASEWAR ?= print-servlet-2.0-SNAPSHOT-IMG-MAGICK.war
@@ -17,7 +18,7 @@ NO_TESTS ?= withtests
 PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_BASE_URL ?= ajp://localhost:8009
 PRINT_INPUT :=  *.html *.yaml *.png WEB-INF
-PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
+PRINT_OUTPUT_BASE := $(CURRENT_DIRECTORY)/software/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
 PRINT_TEMP_DIR := /var/local/print
 PYTHON_FILES := $(shell find print3/* -path print/static -prune -o -type f -name "*.py" -print)
@@ -173,10 +174,7 @@ printwar: printconfig print/WEB-INF/web.xml.in
 	rm -rf $(PRINT_OUTPUT) $(PRINT_OUTPUT_BASE) && \
 	cp -f service-print-$(APACHE_BASE_PATH).war $(PRINT_OUTPUT) && chmod 666 $(PRINT_OUTPUT) && cd .. && \
 	echo "${GREEN}Removing temp directory${RESET}" && \
-	rm -rf temp_$(VERSION) && \
-	echo "${GREEN}Restarting tomcat...${RESET}" && \
-	sudo /etc/init.d/tomcat-tomcat1 restart && \
-	echo "${GREEN}It may take a few seconds for $(PRINT_OUTPUT_BASE) directory to appear...${RESET}";
+	rm -rf temp_$(VERSION) 
 
 # Remove when ready to be merged
 .PHONY: deploydev
