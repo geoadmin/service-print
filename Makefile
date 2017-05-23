@@ -2,7 +2,7 @@ SHELL = /bin/bash
 # Variables
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
-BASEWAR ?= print-servlet-2.0-SNAPSHOT-IMG-MAGICK.war
+BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
 VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else python -c "print __import__('time').strftime('%s')"; fi)
 BRANCH_STAGING := $(shell if [ '$(DEPLOY_TARGET)' = 'dev' ]; then echo 'test'; else echo 'integration'; fi)
 BRANCH_TO_DELETE :=
