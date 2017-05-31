@@ -21,3 +21,4 @@ deploy/conf/00-branch.conf
 tomcat/WEB-INF/web.xml
 tomcat/temp_*
 *.egg-info
+print3/static/index.html
