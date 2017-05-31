@@ -12,7 +12,6 @@ DEPLOY_TARGET ?=
 GIT_BRANCH := $(shell if [ -f '.venv/deployed-git-branch' ]; then cat .venv/deployed-git-branch 2> /dev/null; else git rev-parse --symbolic-full-name --abbrev-ref HEAD; fi)
 GIT_COMMIT_HASH ?= $(shell git rev-parse --verify HEAD)
 GIT_COMMIT_DATE ?= $(shell git log -1  --date=iso --pretty=format:%cd)
-HTTP_PROXY := http://ec2-52-28-118-239.eu-central-1.compute.amazonaws.com:80
 INSTALL_DIRECTORY := .venv
 MODWSGI_USER := www-data
 NO_TESTS ?= withtests
@@ -286,8 +285,7 @@ production.ini: production.ini.in
 		--var "api_url=$(API_URL)" \
 		--var "print_proxy_url=$(PRINT_PROXY_URL)" \
 		--var "host=$(HOST)" \
-		--var "print_temp_dir=$(PRINT_TEMP_DIR)" \
-		--var "http_proxy=$(HTTP_PROXY)"  $< > $@
+		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
 print3/static/index.html.in:
 	@echo "${GREEN}Template file print3/static/index.html.in has changed${RESET}";

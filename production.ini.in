@@ -27,7 +27,6 @@ host = ${host}
 apache_base_path = ${apache_base_path}
 apache_entry_path = ${apache_entry_path}
 print_temp_dir=${print_temp_dir}
-http_proxy = ${http_proxy}
 
 
 ###
