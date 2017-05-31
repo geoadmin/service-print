@@ -2,7 +2,7 @@ SHELL = /bin/bash
 # Variables
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
-BASEWAR ?= print-servlet-2.0-SNAPSHOT-IMG-MAGICK.war
+BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
 VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else python -c "print __import__('time').strftime('%s')"; fi)
 BRANCH_STAGING := $(shell if [ '$(DEPLOY_TARGET)' = 'dev' ]; then echo 'test'; else echo 'integration'; fi)
 BRANCH_TO_DELETE :=
@@ -10,6 +10,8 @@ CURRENT_DIRECTORY := $(shell pwd)
 DEPLOYCONFIG ?=
 DEPLOY_TARGET ?=
 GIT_BRANCH := $(shell if [ -f '.venv/deployed-git-branch' ]; then cat .venv/deployed-git-branch 2> /dev/null; else git rev-parse --symbolic-full-name --abbrev-ref HEAD; fi)
+GIT_COMMIT_HASH ?= $(shell git rev-parse --verify HEAD)
+GIT_COMMIT_DATE ?= $(shell git log -1  --date=iso --pretty=format:%cd)
 HTTP_PROXY := http://ec2-52-28-118-239.eu-central-1.compute.amazonaws.com:80
 INSTALL_DIRECTORY := .venv
 MODWSGI_USER := www-data
@@ -98,7 +100,7 @@ all: setup  templates printconfig printwar fixrights
 
 setup: .venv
 
-templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml development.ini production.ini print3/static/index.html.in
+templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml development.ini production.ini print3/static/index.html
 
 .PHONY: user
 user:
@@ -286,8 +288,10 @@ production.ini: production.ini.in
 		--var "host=$(HOST)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" \
 		--var "http_proxy=$(HTTP_PROXY)"  $< > $@
+
 print3/static/index.html.in:
 	@echo "${GREEN}Template file print3/static/index.html.in has changed${RESET}";
+
 print3/static/index.html: print3/static/index.html.in
 	@echo "${GREEN}Creating print3/static/index.html..${RESET}";
 	${MAKO_CMD} \
@@ -295,6 +299,9 @@ print3/static/index.html: print3/static/index.html.in
 		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
 		--var "apache_base_path=$(APACHE_BASE_PATH)" \
 		--var "tomcat_base_url=$(TOMCAT_BASE_URL)" \
+		--var "git_branch=$(GIT_BRANCH)" \
+		--var "git_commit_hash=$(GIT_COMMIT_HASH)" \
+		--var "git_commit_date=$(GIT_COMMIT_DATE)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
 requirements.txt:
