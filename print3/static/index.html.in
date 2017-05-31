@@ -1,5 +1,10 @@
 <h1>service-print</h1>
 
+<pre>
+git_branch=${git_branch}
+git_commit_hash=${git_commit_hash}
+git_commit_date=${git_commit_date}
+</pre>
 
 <h2>Print proxy</h2>
 <ul>
