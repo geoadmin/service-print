@@ -5,6 +5,11 @@ service-print
 Print service for [https://map.geo.admin.ch], based on [MapFish Print v3](http://mapfish.github.io/)
 
 
+# Print war
+
+The war file `print-servlet-2.1.3-SNAPSHOT.war` is base on the mapfish-print 2.1.3 branch [#46d901520](https://github.com/mapfish/mapfish-print/commit/46d9015209fb2d975cee3f580bf387cd2f15b2e0)
+with the patch `0001-do-not-recycle-connection.patch? applied.
+
 # Getting started
 
 Checkout the source code:
