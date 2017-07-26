@@ -99,7 +99,6 @@ def _get_timestamps(spec, api_url):
                 center = page['center']
                 bbox = page['bbox']
                 mapExtent = bbox
-                mapExtent[3], mapExtent[1] = mapExtent[1], mapExtent[3]
                 imageDisplay = _normalize_imageDisplay(display)
                 params = {
                     'mapExtent': ','.join(map(str, mapExtent)),
