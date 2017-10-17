@@ -516,8 +516,8 @@ class PrintMulti(object):
         except:
             log.debug('JSON content could not be parsed')
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            log.debug("*** Traceback:/n" + traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
-            log.debug("*** Exception:/n" + traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+            log.debug("*** Traceback:/%s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
+            log.debug("*** Exception:/n%s" %  traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
             raise HTTPBadRequest('JSON content could not be parsed')
 
         print_temp_dir = self.request.registry.settings['print_temp_dir']
