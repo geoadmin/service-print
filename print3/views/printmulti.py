@@ -12,7 +12,6 @@ import datetime
 import time
 import multiprocessing
 import random
-import pyproj
 from urlparse import urlparse, parse_qs, urlsplit, urlunparse
 from urllib import urlencode, quote_plus, unquote_plus
 
@@ -28,21 +27,19 @@ from pyramid.response import Response
 
 import logging
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 
 NUMBER_POOL_PROCESSES = multiprocessing.cpu_count()
 MAPFISH_FILE_PREFIX = 'mapfish-print'
 MAPFISH_MULTI_FILE_PREFIX = MAPFISH_FILE_PREFIX + '-multi'
-USE_MULTIPROCESS = False
-USE_LV95 = False
+USE_MULTIPROCESS = True
+USE_LV95_SERVICES = False
 
-lv95=pyproj.Proj("+init=EPSG:2056")
-lv03=pyproj.Proj("+init=EPSG:21781") 
-
-
-
-def _normalize_projection(coords, use_lv95=USE_LV95):
+def _normalize_projection(coords, use_lv95=USE_LV95_SERVICES):
+    '''Converts point and bbox to LV95, if needed, i.e. if source coords is
+       LV03 and backend service supports LV95
+    '''
     eastings = coords[::2]
     northings = coords[1::2]
     is_lv95 = (coords[0] > 2e6 and coords[1] > 1e6)
@@ -50,18 +47,18 @@ def _normalize_projection(coords, use_lv95=USE_LV95):
         if is_lv95:
             return coords
         else:
-          xx, yy = pyproj.transform(lv03,lv95, eastings, northings)
+            xx = map(lambda x: x - 2e6, eastings)
+            yy = map(lambda x: x - 1e6, northings)
     else:
         if is_lv95:
-          xx, yy = pyproj.transform(lv95,lv03, eastings, northings)
+            xx = map(lambda x: x - 2e6, eastings)
+            yy = map(lambda x: x - 1e6, northings)
         else:
             return coords
     lst = zip(xx, yy)
-    res = [e for l in lst for e in l]
+    reproj_coords = [e for l in lst for e in l]
 
-    return res
-
-
+    return reproj_coords
 
 
 def _zeitreihen(d, api_url):
@@ -71,15 +68,11 @@ def _zeitreihen(d, api_url):
     timestamps = []
 
     http = Http(disable_ssl_certificate_validation=True)
-    sr = 2056 if USE_LV95 else 21781
+    sr = 2056 if USE_LV95_SERVICES else 21781
     d['sr'] = sr
     params = urllib.urlencode(d)
     url = 'http:' + api_url + '/rest/services/ech/MapServer/ch.swisstopo.zeitreihen/releases?%s' % params
-    log.debug("=====================")
-    log.debug(url)
-    log.debug(d)
 
-    log.debug("=====================")
     try:
         resp, content = http.request(url)
         if int(resp.status) == 200:
@@ -133,8 +126,6 @@ def _get_timestamps(spec, api_url):
                 display = page['display']
                 center = _normalize_projection(page['center'])
                 bbox = _normalize_projection(page['bbox'])
-                log.debug(center)
-                log.debug(bbox)
                 mapExtent = bbox
                 imageDisplay = _normalize_imageDisplay(display)
                 params = {
@@ -231,13 +222,13 @@ def worker(job):
     timestamp = None
     (idx, url, headers, timestamp, layers, tmp_spec, print_temp_dir, infofile, cancelfile, lock) = job
 
+    log.debug(json.dumps(tmp_spec, indent=2))
+
     for layer in layers:
         try:
             tmp_spec['layers'][layer]['params']['TIME'] = str(timestamp)
         except:
             continue
-
-    log.debug('spec: %s', json.dumps(tmp_spec, indent=4))
 
     # Before launching print request, check if process is canceled
     if os.path.isfile(cancelfile):
@@ -358,6 +349,8 @@ def create_and_merge(info):
             for lyr in lyrs:
                 try:
                     tmp_spec['layers'][lyr]['params']['TIME'] = str(ts)
+                    cleanup_baseurl = tmp_spec['layers'][lyr]['baseURL'].replace('{','%7B').replace('}', '%7D')
+                    tmp_spec['layers'][lyr]['baseURL'] = cleanup_baseurl
                 except KeyError:
                     pass
 
