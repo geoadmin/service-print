@@ -36,6 +36,7 @@ MAPFISH_MULTI_FILE_PREFIX = MAPFISH_FILE_PREFIX + '-multi'
 USE_MULTIPROCESS = True
 USE_LV95_SERVICES = False
 
+
 def _normalize_projection(coords, use_lv95=USE_LV95_SERVICES):
     '''Converts point and bbox to LV95, if needed, i.e. if source coords is
        LV03 and backend service supports LV95
@@ -250,8 +251,8 @@ def worker(job):
         except:
             log.debug('[Worker] Failed timestamp: %s', timestamp)
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            log.debug("*** Traceback:/n" + traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
-            log.debug("*** Exception:/n" + traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+            log.debug("*** Traceback:/n %s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
+            log.debug("*** Exception:/n %s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
 
             return (timestamp, None)
         _increment_info(lock, infofile)
@@ -336,6 +337,10 @@ def create_and_merge(info):
         log.debug('[print_create] Going multipages')
         log.debug('[print_create] Timestamps to process: %s', all_timestamps.keys())
 
+    for i, lyr in enumerate(spec['layers']):
+        cleanup_baseurl = spec['layers'][i]['baseURL'].replace('{', '%7B').replace('}', '%7D')
+        spec['layers'][i]['baseURL'] = cleanup_baseurl
+
     if len(all_timestamps) < 1:
         job = (0, url, headers, None, [], spec, print_temp_dir)
         jobs.append(job)
@@ -349,8 +354,6 @@ def create_and_merge(info):
             for lyr in lyrs:
                 try:
                     tmp_spec['layers'][lyr]['params']['TIME'] = str(ts)
-                    cleanup_baseurl = tmp_spec['layers'][lyr]['baseURL'].replace('{','%7B').replace('}', '%7D')
-                    tmp_spec['layers'][lyr]['baseURL'] = cleanup_baseurl
                 except KeyError:
                     pass
 
@@ -405,8 +408,8 @@ def create_and_merge(info):
                 del pool._pool[i]
             log.error('Error while generating the partial PDF: %s', e)
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            log.debug("*** Traceback:/n" + traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
-            log.debug("*** Exception:/n" + traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+            log.debug("*** Traceback:/n %s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
+            log.debug("*** Exception:/n %s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
             return 1
     else:
         pdfs = []
@@ -517,7 +520,7 @@ class PrintMulti(object):
             log.debug('JSON content could not be parsed')
             exc_type, exc_value, exc_traceback = sys.exc_info()
             log.debug("*** Traceback:/%s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
-            log.debug("*** Exception:/n%s" %  traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+            log.debug("*** Exception:/n%s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
             raise HTTPBadRequest('JSON content could not be parsed')
 
         print_temp_dir = self.request.registry.settings['print_temp_dir']
