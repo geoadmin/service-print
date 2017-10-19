@@ -27,12 +27,38 @@ from pyramid.response import Response
 
 import logging
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 NUMBER_POOL_PROCESSES = multiprocessing.cpu_count()
 MAPFISH_FILE_PREFIX = 'mapfish-print'
 MAPFISH_MULTI_FILE_PREFIX = MAPFISH_FILE_PREFIX + '-multi'
 USE_MULTIPROCESS = True
+USE_LV95_SERVICES = False
+
+def _normalize_projection(coords, use_lv95=USE_LV95_SERVICES):
+    '''Converts point and bbox to LV95, if needed, i.e. if source coords is
+       LV03 and backend service supports LV95
+    '''
+    eastings = coords[::2]
+    northings = coords[1::2]
+    is_lv95 = (coords[0] > 2e6 and coords[1] > 1e6)
+    if use_lv95:
+        if is_lv95:
+            return coords
+        else:
+            xx = map(lambda x: x - 2e6, eastings)
+            yy = map(lambda x: x - 1e6, northings)
+    else:
+        if is_lv95:
+            xx = map(lambda x: x - 2e6, eastings)
+            yy = map(lambda x: x - 1e6, northings)
+        else:
+            return coords
+    lst = zip(xx, yy)
+    reproj_coords = [e for l in lst for e in l]
+
+    return reproj_coords
 
 
 def _zeitreihen(d, api_url):
@@ -42,6 +68,8 @@ def _zeitreihen(d, api_url):
     timestamps = []
 
     http = Http(disable_ssl_certificate_validation=True)
+    sr = 2056 if USE_LV95_SERVICES else 21781
+    d['sr'] = sr
     params = urllib.urlencode(d)
     url = 'http:' + api_url + '/rest/services/ech/MapServer/ch.swisstopo.zeitreihen/releases?%s' % params
 
@@ -96,8 +124,8 @@ def _get_timestamps(spec, api_url):
             try:
                 page = spec['pages'][0]
                 display = page['display']
-                center = page['center']
-                bbox = page['bbox']
+                center = _normalize_projection(page['center'])
+                bbox = _normalize_projection(page['bbox'])
                 mapExtent = bbox
                 imageDisplay = _normalize_imageDisplay(display)
                 params = {
@@ -107,8 +135,7 @@ def _get_timestamps(spec, api_url):
                     'geometryType': 'esriGeometryPoint'
                 }
                 timestamps = _zeitreihen(params, api_url)
-
-                log.debug('[_get_timestamps] Zeitreichen %s', timestamps)
+                log.debug('[_get_timestamps] Zeitreihen %s', timestamps)
             except Exception as e:
                 log.debug(str(e))
                 timestamps = lyr['timestamps'] if 'timestamps' in lyr.keys() else None
@@ -195,13 +222,13 @@ def worker(job):
     timestamp = None
     (idx, url, headers, timestamp, layers, tmp_spec, print_temp_dir, infofile, cancelfile, lock) = job
 
+    log.debug(json.dumps(tmp_spec, indent=2))
+
     for layer in layers:
         try:
             tmp_spec['layers'][layer]['params']['TIME'] = str(timestamp)
         except:
             continue
-
-    log.debug('spec: %s', json.dumps(tmp_spec))
 
     # Before launching print request, check if process is canceled
     if os.path.isfile(cancelfile):
@@ -322,6 +349,8 @@ def create_and_merge(info):
             for lyr in lyrs:
                 try:
                     tmp_spec['layers'][lyr]['params']['TIME'] = str(ts)
+                    cleanup_baseurl = tmp_spec['layers'][lyr]['baseURL'].replace('{','%7B').replace('}', '%7D')
+                    tmp_spec['layers'][lyr]['baseURL'] = cleanup_baseurl
                 except KeyError:
                     pass
 
@@ -487,8 +516,8 @@ class PrintMulti(object):
         except:
             log.debug('JSON content could not be parsed')
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            log.debug("*** Traceback:/n" + traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
-            log.debug("*** Exception:/n" + traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+            log.debug("*** Traceback:/%s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
+            log.debug("*** Exception:/n%s" %  traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
             raise HTTPBadRequest('JSON content could not be parsed')
 
         print_temp_dir = self.request.registry.settings['print_temp_dir']
