@@ -312,7 +312,7 @@ requirements.txt:
 		${PIP_CMD} install -U pip wheel; \
 		${PIP_CMD} install setuptools==33.1.1;  \
 	fi
-	${PYTHON_CMD} setup.py develop
+	${PIP_CMD} install -e .
 
 
 fixrights:
