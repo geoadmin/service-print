@@ -309,10 +309,12 @@ requirements.txt:
 	@if [ ! -d $(INSTALL_DIRECTORY) ]; \
 	then \
 		virtualenv $(INSTALL_DIRECTORY); \
-		${PIP_CMD} install -U pip wheel; \
+		${PIP_CMD} install ${CURRENT_DIRECTORY}/pip-8.1.2.tar.gz; \
+		${PIP_CMD} install pyopenssl ndg-httpsclient pyasn1; \
+		${PIP_CMD} install -U pip wheel distribute; \
 		${PIP_CMD} install setuptools==33.1.1;  \
 	fi
-	${PYTHON_CMD} setup.py develop
+	${PIP_CMD} install -e .
 
 
 fixrights:
