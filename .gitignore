@@ -22,3 +22,8 @@ tomcat/WEB-INF/web.xml
 tomcat/temp_*
 *.egg-info
 print3/static/index.html
+docker-compose.yml
+rancher-compose.yml
+rc_dev
+rc_int
+rc_prod
