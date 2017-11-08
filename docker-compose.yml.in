@@ -1,0 +1,17 @@
+version: '2'
+services:
+  service-print-tomcat:
+% if rancher_deploy == 'false':
+    build: tomcat/
+% endif
+    image: swisstopo/service-print-tomcat:${image_tag}
+    env_file:
+          - ${rancher_label}.env
+    ports:
+      - "8009:8080"
+    volumes:
+      - /var/local/efs-applications-rw/print/${rancher_label}:/var/local/print
+    labels:
+      io.rancher.scheduler.affinity:host_label: application=print,staging=${rancher_label}
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.global: 'true'

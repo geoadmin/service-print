@@ -77,12 +77,18 @@ help:
 	@echo "- deletebranch       List deployed branches or delete a deployed branch (BRANCH_TO_DELETE=...)"
 	@echo "- printconfig        Set tomcat print env variables"
 	@echo "- printwar           Creates the .jar print file (only one per env per default)"
+	@echo "- dockerbuild        Builds a docker image using the current directory"
+	@echo "- dockerrun          Creates and runs all the containers (in the background)"
 	@echo "- deploydev          Deploys master to dev (SNAPSHOT=true to also create a snapshot)"
 	@echo "- deployint          Deploys a snapshot to integration (SNAPSHOT=201512021146)"
 	@echo "- deployprod         Deploys a snapshot to production (SNAPSHOT=201512021146)"
 	@echo "- cleancache         Remove print cache"
 	@echo "- clean              Remove generated files"
 	@echo "- cleanall           Remove all the build artefacts"
+	@echo "--------------------------------------------------------------------------"
+	@echo "|                       RANCHER DEPLOYMENT                               |"
+	@echo "--------------------------------------------------------------------------"
+	@echo "- rancherdeploy{dev|int|prod|tiles}          Deploys the images pushed in dockerhub"
 	@echo
 	@echo "Variables:"
 	@echo "APACHE_ENTRY_PATH:   ${APACHE_ENTRY_PATH}"
@@ -164,20 +170,17 @@ printconfig:
 .PHONY: printwar
 printwar: printconfig print/WEB-INF/web.xml.in
 	cd tomcat && \
+	rm -f service-print-$(APACHE_BASE_PATH).war && \
 	mkdir temp_$(VERSION) && \
 	echo "${GREEN}Updating print war...${RESET}" && \
 	cp -f ${BASEWAR} temp_$(VERSION)/service-print-$(APACHE_BASE_PATH).war && \
 	cp -fr ${PRINT_INPUT} temp_$(VERSION)/ && \
 	cd temp_$(VERSION) && \
 	jar uf service-print-$(APACHE_BASE_PATH).war ${PRINT_INPUT} && \
-	echo "${GREEN}Print war creation was successful.${RESET}" && \
-	rm -rf $(PRINT_OUTPUT) $(PRINT_OUTPUT_BASE) && \
-	cp -f service-print-$(APACHE_BASE_PATH).war $(PRINT_OUTPUT) && chmod 666 $(PRINT_OUTPUT) && cd .. && \
+	cp -r  service-print-$(APACHE_BASE_PATH).war .. && \
+	echo "${GREEN}Print war creation was successful.${RESET}" &&  cd .. && \
 	echo "${GREEN}Removing temp directory${RESET}" && \
-	rm -rf temp_$(VERSION) && \
-	echo "${GREEN}Restarting tomcat...${RESET}" && \
-	sudo /etc/init.d/tomcat-tomcat1 restart && \
-	echo "${GREEN}It may take a few seconds for $(PRINT_OUTPUT_BASE) directory to appear...${RESET}";
+	rm -rf temp_$(VERSION) 
 
 # Remove when ready to be merged
 .PHONY: deploydev
@@ -316,6 +319,45 @@ requirements.txt:
 	fi
 	${PIP_CMD} install -e .
 
+.PHONY: dockerbuild
+dockerbuild: composetemplateuser
+		docker-compose build
+
+.PHONY: composetemplateuser
+composetemplateuser:
+		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml 
+				source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
+
+.PHONY: dockerrun
+dockerrun: composetemplateuser
+		docker-compose up -d
+
+.PHONY: composetemplatedev
+composetemplatedev:
+		$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
+		$(call build_templates,dev,$(RANCHER_DEPLOY))
+
+.PHONY: rancherdeploydev
+rancherdeploydev: guard-RANCHER_ACCESS_KEY \
+                  guard-RANCHER_SECRET_KEY \
+                  guard-RANCHER_URL
+	export RANCHER_DEPLOY=true && make composetemplatedev
+	$(call start_service,$(RANCHER_ACCESS_KEY),$(RANCHER_SECRET_KEY),$(RANCHER_URL),dev)
+
+define build_templates
+		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
+			    envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
+endef
+
+define start_service
+	rancher --access-key $1 --secret-key $2 --url $3 up --stack service-proxywms-$4 --pull --force-upgrade --confirm-upgrade -d
+endef
+
+docker-compose.yml::
+	${MAKO_CMD} --var "rancher_deploy=$(RANCHER_DEPLOY)" \
+	            --var "image_tag=$(IMAGE_TAG)" \
+	            --var "rancher_label=$(RANCHER_LABEL)" \
+	            --var "print_env=$(PRINT_ENV)" docker-compose.yml.in > docker-compose.yml
 
 fixrights:
 	@echo "${GREEN}Fixing rights...${RESET}";
@@ -346,3 +388,9 @@ clean:
 cleanall: clean
 	rm -rf .venv
 	rm -rf print3.egg-info
+
+guard-%:
+		@ if test "${${*}}" = ""; then \
+				echo "Environment variable $* not set. Add it to your command."; \
+				exit 1; \
+		fi
