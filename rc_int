@@ -7,3 +7,4 @@ export PRINT_WAR=main
 export ROBOTS_FILE=robots.txt
 export SERVER_PORT=6543
 export WSGI_THREADS=15
+export TOMCAT_BASE_URL=http://vpc-lb-print-int.intra.bgdi.ch:8009
