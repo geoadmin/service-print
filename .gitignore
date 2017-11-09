@@ -27,3 +27,4 @@ rancher-compose.yml
 rc_dev
 rc_int
 rc_prod
+print3/wsgi.py

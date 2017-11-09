@@ -166,6 +166,7 @@ print/WEB-INF/web.xml: print/WEB-INF/web.xml.in
 	@echo "${GREEN}Creating print/WEB-INF/web.xml...${RESET}"
 	${MAKO_CMD} \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
+
 .PHONY: printconfig
 printconfig:
 	@echo '# File managed by Makefile service-print'  > /srv/tomcat/tomcat1/bin/setenv-local.sh
@@ -331,7 +332,7 @@ dockerbuild: composetemplateuser
 
 .PHONY: composetemplateuser
 composetemplateuser:
-		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml 
+		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && envsubst < print3/wsgi.py.in > print3/wsgi.py
 				source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
 
 .PHONY: dockerrun
@@ -389,6 +390,7 @@ clean:
 	rm -rf deploy/deploy-branch.cfg
 	rm -rf deploy/conf/00-branch.conf
 	rm -rf tomcat/temp_*
+	rm -f print3/wsgi.py
 
 .PHONY: cleanall
 cleanall: clean
