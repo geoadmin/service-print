@@ -1,5 +1,13 @@
 version: '2'
 services:
+  nginx:
+    start_on_create: true
+    health_check:
+      port: ${NGINX_PORT}
+      interval: 3000
+      request_line: GET /checker HTTP/1.1
+      unhealthy_threshold: 2
+      strategy: recreate
   service-print-tomcat:
     start_on_create: true
     health_check:
