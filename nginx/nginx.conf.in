@@ -1,0 +1,59 @@
+user nginx;
+
+# should be equal to the number of process on the host machine
+worker_processes 8;
+
+error_log /dev/stdout info;
+
+
+events {
+  worker_connections 10000;
+  accept_mutex on;
+}
+
+http {
+  default_type text/plain;
+  # if we use analytics we may want to turn that off
+  access_log off;
+  sendfile off;
+  # this removes the "host_header" related issue
+  underscores_in_headers on;
+
+  server {
+    listen ${NGINX_PORT};
+    server_name service-print.${PRINT_ENV}.bgdi.ch;
+    location /print/ {
+      # Do not cache anything
+      expires off;
+      
+      proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/pdf/;
+    }
+  }
+
+  server {
+    listen ${NGINX_PORT} default_server;
+    location /nginx-status {
+      # Turn on nginx stats
+      stub_status on;
+
+      # I do not need logs for stats
+      access_log   off;
+
+      # Allow access from localhost
+      allow 127.0.0.1;
+      # Security: Only allow access from vpc #
+      allow 10.220.0.0/21;
+      # Send rest of the world to /dev/null #
+      deny all;
+    }
+    location /checker {
+      access_log   off;
+      add_header Content-Type text/plain;
+      return 200 'OK';
+    }
+    location /backend_checker {
+      expires off;
+      proxy_pass http://localhost:${TOMCAT_PORT}/backend_checker;
+    }
+  }
+}
