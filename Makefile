@@ -325,7 +325,8 @@ dockerbuild: composetemplateuser
 
 .PHONY: composetemplateuser
 composetemplateuser:
-		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && envsubst < print3/wsgi.py.in > print3/wsgi.py
+		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && envsubst < print3/wsgi.py.in > print3/wsgi.py && \
+				envsubst < nginx/nginx.conf.in > nginx/nginx.conf
 				source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
 
 .PHONY: dockerrun
@@ -370,7 +371,7 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
 
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
-			    envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
+		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
 define start_service
@@ -380,6 +381,7 @@ endef
 docker-compose.yml::
 	${MAKO_CMD} --var "rancher_deploy=$(RANCHER_DEPLOY)" \
 	            --var "image_tag=$(IMAGE_TAG)" \
+							--var "nginx_port=$(NGINX_PORT)" \
 	            --var "rancher_label=$(RANCHER_LABEL)" \
 	            --var "print_env=$(PRINT_ENV)" docker-compose.yml.in > docker-compose.yml
 
@@ -408,6 +410,7 @@ clean:
 	rm -rf deploy/conf/00-branch.conf
 	rm -rf tomcat/temp_*
 	rm -f print3/wsgi.py
+	rm -f nginx/nginx.conf
 
 .PHONY: cleanall
 cleanall: clean
