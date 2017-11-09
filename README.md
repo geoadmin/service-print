@@ -20,70 +20,17 @@ or when you're using ssh key (see https://help.github.com/articles/generating-ss
 
     git clone git@github.com:geoadmin/print-service.git
 
-
-Create a developer specific build configuration:
-
-    touch rc_user_<username>
-
-Add the port number in the newly created user rc file. You should at least edit your dev port. For instance:
-
-    export SERVER_PORT=9000
-
-Every variables you export in rc_user_<username> will override the default ones in rc_dev and rc_user.
-
-Where "username" is your specific rc configuration. To create the specific build:
-
-    make user
-
-If you do this on mf1t, you need to make sure that a correct configuration exists under
-    
-    /var/www/vhosts/print-service/conf
-
-that points to your working directory. If all is well, you can reach your pages at:
-
-    http://print-service.dev.bgdi.ch/<username>/
+# Docker
 
 
-## Deploying to dev, int, prod and demo
+    curl localhost:8009/service-print-main/pdf/info.json
+    {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8009/service-print-main/pdf/print.pdf","createURL":"http://localhost:8009/service-print-main/pdf/create.json"}
 
-Do the following commands **inside your working directory**. Here's how a standard
-deploy process is done.
 
-`make deploydev SNAPSHOT=true`
 
-This updates the source in /var/www... to the latest master branch from github,
-creates a snapshot and runs nosetests against the test db. The snapshot directory
-will be shown when the script is done. *Note*: you can omit the `-s` parameter if
-you don't want to create a snapshot e.g. for intermediate releases on dev main.
 
-Once a snapshot has been created, you are able to deploy this snapshot to a
-desired target. For integration, do
-
-`make deployint SNAPSHOT=201512011411`
-
-This will run the full nose tests **from inside the 201512011411 snapshot directory** against the **integration db cluster**. Only if these tests are successfull, the snapshot is deployed to the integration cluster.
-
-`make deployprod SNAPSHOT=201512011411`
-
-This will do the corresponding thing for prod (tests will be run **against prod backends**)
-The same is valid for demo too:
-
-`make deploydemo SNAPSHOT=201512011411`
-
-You can disable the running of the nosetests against the target backends by adding
-`notests` parameter to the snapshot command. This is handy in an emergency (when
-deploying an old known-to-work snapshot) or when you have to re-deploy
-a snapshot that you know has passed the tests for the given backend.
-To disable the tests, use the following command:
-
-`make deployint SNAPSHOT=201512011411 NO_TESTS=notests`
-
-Use `notests` parameter with care, as it removes a level of tests.
-
-Per default the deploy command uses the deploy configuration of the snapshot directory.
-If you want to use the deploy configuration of directory from which you are executing this command, you can use:
-
-`make deployint SNAPSHOT=201512011411 DEPLOYCONFIG=from_current_directory`
+    curl -H "Host: service-print.dev.bgdi.ch"  localhost:80/print/info.json
+    {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8009/service-print-main/pdf/print.pdf","createURL":"http://localhost:8009/service-print-main/pdf/create.json"}3
 
 
 ## Python Code Styling
@@ -138,3 +85,7 @@ chmod +x .git/hooks/pre-commit
   ```
 
 Now commits will be aborted if styling is not respected
+
+
+
+
