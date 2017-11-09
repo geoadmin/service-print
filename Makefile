@@ -72,23 +72,16 @@ help:
 	@echo "- test               Launch the tests (no e2e tests)"
 	@echo "- lint               Run the linter"
 	@echo "- autolint           Run the autolinter"
-	@echo "- deploybranch       Deploy current branch to dev (must be pushed before hand)"
-	@echo "- deploybranchint    Deploy current branch to dev and int (must be pushed before hand)"
-	@echo "- deletebranch       List deployed branches or delete a deployed branch (BRANCH_TO_DELETE=...)"
 	@echo "- printconfig        Set tomcat print env variables"
 	@echo "- printwar           Creates the .jar print file (only one per env per default)"
 	@echo "- dockerbuild        Builds a docker image using the current directory"
 	@echo "- dockerrun          Creates and runs all the containers (in the background)"
-	@echo "- deploydev          Deploys master to dev (SNAPSHOT=true to also create a snapshot)"
-	@echo "- deployint          Deploys a snapshot to integration (SNAPSHOT=201512021146)"
-	@echo "- deployprod         Deploys a snapshot to production (SNAPSHOT=201512021146)"
-	@echo "- cleancache         Remove print cache"
 	@echo "- clean              Remove generated files"
 	@echo "- cleanall           Remove all the build artefacts"
 	@echo "--------------------------------------------------------------------------"
 	@echo "|                       RANCHER DEPLOYMENT                               |"
 	@echo "--------------------------------------------------------------------------"
-	@echo "- rancherdeploy{dev|int|prod|tiles}          Deploys the images pushed in dockerhub"
+	@echo "- rancherdeploy{dev|int|prod}          Deploys the images pushed in dockerhub"
 	@echo
 	@echo "Variables:"
 	@echo "APACHE_ENTRY_PATH:   ${APACHE_ENTRY_PATH}"
@@ -101,7 +94,7 @@ help:
 	@echo
 
 .PHONY: all
-all: setup  templates printconfig printwar fixrights
+all: setup  templates  fixrights
 
 setup: .venv
 
@@ -344,6 +337,16 @@ composetemplatedev:
 		$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
 		$(call build_templates,dev,$(RANCHER_DEPLOY))
 
+.PHONY: composetemplateint
+composetemplateint:
+		$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
+		$(call build_templates,int,$(RANCHER_DEPLOY))
+
+.PHONY: composetemplateprod
+composetemplateprod:
+		$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
+		$(call build_templates,prod,$(RANCHER_DEPLOY))
+
 .PHONY: rancherdeploydev
 rancherdeploydev: guard-RANCHER_ACCESS_KEY \
                   guard-RANCHER_SECRET_KEY \
@@ -351,13 +354,27 @@ rancherdeploydev: guard-RANCHER_ACCESS_KEY \
 	export RANCHER_DEPLOY=true && make composetemplatedev
 	$(call start_service,$(RANCHER_ACCESS_KEY),$(RANCHER_SECRET_KEY),$(RANCHER_URL),dev)
 
+.PHONY: rancherdeployint
+rancherdeployint: guard-RANCHER_ACCESS_KEY \
+                  guard-RANCHER_SECRET_KEY \
+                  guard-RANCHER_URL
+	export RANCHER_DEPLOY=true && make composetemplateint
+	$(call start_service,$(RANCHER_ACCESS_KEY),$(RANCHER_SECRET_KEY),$(RANCHER_URL),int)
+
+.PHONY: rancherdeployprod
+rancherdeployprod: guard-RANCHER_ACCESS_KEY \
+                  guard-RANCHER_SECRET_KEY \
+                  guard-RANCHER_URL
+	export RANCHER_DEPLOY=true && make composetemplateprod
+	$(call start_service,$(RANCHER_ACCESS_KEY),$(RANCHER_SECRET_KEY),$(RANCHER_URL),prod)
+
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
 			    envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
 define start_service
-	rancher --access-key $1 --secret-key $2 --url $3 up --stack service-proxywms-$4 --pull --force-upgrade --confirm-upgrade -d
+	rancher --access-key $1 --secret-key $2 --url $3 up --stack service-print-$4 --pull --force-upgrade --confirm-upgrade -d
 endef
 
 docker-compose.yml::
