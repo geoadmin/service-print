@@ -127,6 +127,10 @@ prod:
 serve:
 	PYTHONPATH=${PYTHONPATH} ${PSERVE_CMD} development.ini --reload
 
+.PHONY: gunicornserve
+gunicornserve:
+		source rc_user && ${PYTHON_CMD} print3/wsgi.py
+
 .PHONY: test
 test:
 	PYTHONPATH=${PYTHONPATH} ${NOSE_CMD} print3/tests/
@@ -169,14 +173,14 @@ printconfig:
 
 .PHONY: printwar
 printwar: printconfig print/WEB-INF/web.xml.in
+	echo "${GREEN}Updating print war...${RESET}" && \
 	cd tomcat && \
 	rm -f service-print-$(APACHE_BASE_PATH).war && \
 	mkdir temp_$(VERSION) && \
-	echo "${GREEN}Updating print war...${RESET}" && \
 	cp -f ${BASEWAR} temp_$(VERSION)/service-print-$(APACHE_BASE_PATH).war && \
 	cp -fr ${PRINT_INPUT} temp_$(VERSION)/ && \
 	cd temp_$(VERSION) && \
-	jar uf service-print-$(APACHE_BASE_PATH).war ${PRINT_INPUT} && \
+	jar cuf service-print-$(APACHE_BASE_PATH).war ${PRINT_INPUT} && \
 	cp -r  service-print-$(APACHE_BASE_PATH).war .. && \
 	echo "${GREEN}Print war creation was successful.${RESET}" &&  cd .. && \
 	echo "${GREEN}Removing temp directory${RESET}" && \
@@ -316,6 +320,8 @@ requirements.txt:
 		${PIP_CMD} install pyopenssl ndg-httpsclient pyasn1; \
 		${PIP_CMD} install -U pip wheel distribute; \
 		${PIP_CMD} install setuptools==33.1.1;  \
+		$(PIP_CMD) install -r requirements.txt; \
+		$(PIP_CMD) install -r dev-requirements.txt; \
 	fi
 	${PIP_CMD} install -e .
 

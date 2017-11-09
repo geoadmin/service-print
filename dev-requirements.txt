@@ -1,0 +1,9 @@
+autopep8
+coverage
+Mako
+mock==1.0.1
+nose
+poolmanager
+requests-mock
+tool_aws
+pyproj
