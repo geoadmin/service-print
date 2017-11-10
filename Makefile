@@ -277,13 +277,15 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
 
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
-		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && \ 
-		envsubst < print3/wsgi.py.in > print3/wsgi.py  && \ 
-		envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
+		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && envsubst < print3/wsgi.py.in > print3/wsgi.py  && envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
 define start_service
 	rancher --access-key $1 --secret-key $2 --url $3 up --stack service-print-$4 --pull --force-upgrade --confirm-upgrade -d
+endef
+
+define get_rancher_deploy_val
+		$(shell if [ '$1' == 'true'  ]; then echo 'true'; else echo 'false'; fi)
 endef
 
 docker-compose.yml::
@@ -311,12 +313,11 @@ clean:
 	rm -rf production.ini
 	rm -rf development.ini
 	rm -rf tomcat/WEB-INF/web.xml
-	rm -rf rc_branch
-	rm -rf deploy/deploy-branch.cfg
-	rm -rf deploy/conf/00-branch.conf
 	rm -rf tomcat/temp_*
 	rm -f print3/wsgi.py
 	rm -f nginx/nginx.conf
+	rm -f rancher-compose.yml
+	rm -f docker-compose.yml
 
 .PHONY: cleanall
 cleanall: clean
