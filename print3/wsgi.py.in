@@ -25,9 +25,9 @@ application = loadapp("config:" + configfile, name=None)
 
 
 if __name__ == '__main__':
-     PROXYWMS_PORT = str(os.environ.get('PROXYWMS_PORT', 9001))
+     WSGI_PORT = str(os.environ.get('WSGI_PORT', 9001))
      options = {
-         'bind': '%s:%s' % ('0.0.0.0', PROXYWMS_PORT),
+         'bind': '%s:%s' % ('0.0.0.0', WSGI_PORT),
          'worker_class': 'gevent',
          'workers': number_of_workers(),
      

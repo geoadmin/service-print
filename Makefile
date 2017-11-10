@@ -382,6 +382,7 @@ docker-compose.yml::
 	${MAKO_CMD} --var "rancher_deploy=$(RANCHER_DEPLOY)" \
 	            --var "image_tag=$(IMAGE_TAG)" \
 							--var "nginx_port=$(NGINX_PORT)" \
+							--var "wsgi_port=$(WSGI_PORT)" \
 	            --var "rancher_label=$(RANCHER_LABEL)" \
 	            --var "print_env=$(PRINT_ENV)" docker-compose.yml.in > docker-compose.yml
 
