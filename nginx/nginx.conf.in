@@ -35,6 +35,7 @@ http {
   # GET /print/-multi23444545.pdf.printout
   # static to /var/local/print
 
+  # proxying tomcat
   server {
     listen ${NGINX_PORT};
     server_name service-print.${PRINT_ENV}.bgdi.ch;
@@ -43,6 +44,44 @@ http {
       expires off;
       
       proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/pdf/;
+    }
+  }
+  # proxying wsgi
+  server {
+    listen ${NGINX_PORT};
+    server_name service-print.${PRINT_ENV}.bgdi.ch;
+    location  /multiprint {
+      # Do not cache anything
+      expires off;
+      
+      proxy_pass http://localhost:${WSGI_PORT};
+    }
+    location  /printprogress {
+      # Do not cache anything
+      expires off;
+      
+      proxy_pass http://localhost:${WSGI_PORT};
+    }
+    location  /printcancel {
+      # Do not cache anything
+      expires off;
+      
+      proxy_pass http://localhost:${WSGI_PORT};
+    }
+  }
+  # static pdf
+  server {
+    listen ${NGINX_PORT};
+    server_name service-print.${PRINT_ENV}.bgdi.ch;
+    root /var/local/print;
+
+    location ~  [0-9]+\.pdf\.printout$ {
+      # Do not cache anything
+      expires off;
+
+      rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3 last;
+      add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf";
+      
     }
   }
 
@@ -67,9 +106,9 @@ http {
       add_header Content-Type text/plain;
       return 200 'OK';
     }
-    location /backend_checker {
+    location /tomcat_checker {
       expires off;
-      proxy_pass http://localhost:${TOMCAT_PORT}/backend_checker;
+      proxy_pass http://localhost:${TOMCAT_PORT}/checker;
     }
   }
 }
