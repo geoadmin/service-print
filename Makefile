@@ -1,4 +1,5 @@
 SHELL = /bin/bash
+
 # Variables
 APACHE_BASE_PATH ?= main
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
@@ -99,7 +100,7 @@ all: setup  templates  fixrights
 
 setup: .venv
 
-templates: apache/wsgi.conf apache/tomcat-print.conf tomcat/WEB-INF/web.xml development.ini production.ini print3/static/index.html
+templates: tomcat/WEB-INF/web.xml development.ini production.ini print3/static/index.html
 
 .PHONY: user
 user:
@@ -140,27 +141,6 @@ autolint:
 	${AUTOPEP8_CMD} --in-place --aggressive --aggressive --verbose --ignore=${PEP8_IGNORE} $(PYTHON_FILES)
 
 
-.PHONY: deploybranch
-deploybranch:
-	@echo "${GREEN}Deploying branch $(GIT_BRANCH) to dev...${RESET}";
-	./scripts/deploybranch.sh
-
-.PHONY: deletebranch
-deletebranch:
-	./scripts/delete_branch.sh $(BRANCH_TO_DELETE)
-
-.PHONY: deploybranchint
-deploybranchint:
-	@echo "${GREEN}Deploying branch $(GIT_BRANCH) to dev and int...${RESET}";
-	./scripts/deploybranch.sh int
-
-print/WEB-INF/web.xml.in:
-	@echo "${GREEN}Template file print/WEB-INF/web.xml has changed${RESET}"
-print/WEB-INF/web.xml: print/WEB-INF/web.xml.in
-	@echo "${GREEN}Creating print/WEB-INF/web.xml...${RESET}"
-	${MAKO_CMD} \
-		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
-
 .PHONY: printconfig
 printconfig:
 	@echo '# File managed by Makefile service-print'  > /srv/tomcat/tomcat1/bin/setenv-local.sh
@@ -181,56 +161,7 @@ printwar: printconfig print/WEB-INF/web.xml.in
 	echo "${GREEN}Removing temp directory${RESET}" && \
 	rm -rf temp_$(VERSION) 
 
-# Remove when ready to be merged
-.PHONY: deploydev
-deploydev:
-	@if test "$(SNAPSHOT)" = "true"; \
-	then \
-		scripts/deploydev.sh -s; \
-	else \
-		scripts/deploydev.sh; \
-	fi
 
-.PHONY: deployint
-deployint:
-	scripts/deploysnapshot.sh $(SNAPSHOT) int $(NO_TESTS) $(DEPLOYCONFIG)
-
-.PHONY: deployprod
-deployprod:
-	scripts/deploysnapshot.sh $(SNAPSHOT) prod $(NO_TESTS) $(DEPLOYCONFIG)
-
-
-rc_branch.mako:
-	@echo "${GREEN}Branch has changed${RESET}";
-rc_branch: rc_branch.mako
-	@echo "${GREEN}Creating branch template...${RESET}"
-	${MAKO_CMD} \
-		--var "git_branch=$(GIT_BRANCH)" \
-		--var "deploy_target=$(DEPLOY_TARGET)" \
-		--var "branch_staging=$(BRANCH_STAGING)" $< > $@
-
-deploy/deploy-branch.cfg.in:
-	@echo "${GREEN]}Template file deploy/deploy-branch.cfg.in has changed${RESET}";
-deploy/deploy-branch.cfg: deploy/deploy-branch.cfg.in
-	@echo "${GREEN}Creating deploy/deploy-branch.cfg...${RESET}";
-	${MAKO_CMD} --var "git_branch=$(GIT_BRANCH)" $< > $@
-
-deploy/conf/00-branch.conf.in:
-	@echo "${GREEN}Templat file deploy/conf/00-branch.conf.in has changed${RESET}";
-deploy/conf/00-branch.conf: deploy/conf/00-branch.conf.in
-	@echo "${GREEN}Creating deploy/conf/00-branch.conf...${RESET}"
-	${MAKO_CMD} --var "git_branch=$(GIT_BRANCH)" $< > $@
-
-apache/tomcat-print.conf.in:
-	@echo "${GREEN}Template file apache/tomcat-print.conf.in has changed${RESET}";
-apache/tomcat-print.conf: apache/tomcat-print.conf.in
-	@echo "${GREEN}Creating apache/tomcat-print.conf...${RESET}";
-	${MAKO_CMD} \
-		--var "print_war=$(PRINT_WAR)" \
-		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
-		--var "apache_base_path=$(APACHE_BASE_PATH)" \
-		--var "tomcat_base_url=$(TOMCAT_BASE_URL)" \
-		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
 tomcat/WEB-INF/web.xml.in:
 	@echo "${GREEN}Template file tomcat/WEB-INF/web.xml has changed${RESET}"
@@ -372,7 +303,9 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
 
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
-		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
+		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && \ 
+		envsubst < print3/wsgi.py.in > print3/wsgi.py  && \ 
+		envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
 define start_service

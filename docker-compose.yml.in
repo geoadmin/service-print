@@ -13,13 +13,14 @@ services:
     ports:
     - "${nginx_port}:${nginx_port}"
     depends_on:
-    - service-print-tomcat
+    - tomcat
+    - wsgi
     labels:
       io.rancher.scheduler.affinity:host_label: application=print,staging=${rancher_label}
       io.rancher.container.pull_image: always
       io.rancher.scheduler.global: 'true'
 
-  service-print-tomcat:
+  tomcat:
 % if rancher_deploy == 'false':
     build: tomcat/
 % endif
@@ -34,7 +35,7 @@ services:
       io.rancher.scheduler.affinity:host_label: application=print,staging=${rancher_label}
       io.rancher.container.pull_image: always
       io.rancher.scheduler.global: 'true'
-  service-print-wsgi:
+  wsgi:
 % if rancher_deploy == 'false':
     build: .
 % endif
@@ -45,12 +46,12 @@ services:
       WSGI_PORT: ${wsgi_port}
     command :
     - python
-    - proxywms/wsgi.py
+    - print3/wsgi.py
     network_mode: "host"
     ports:
     - "${wsgi_port}:${wsgi_port}"
     depends_on:
-    - service-print-nginx
+    - tomcat
     labels:
       io.rancher.scheduler.affinity:host_label: application=print,staging=${rancher_label}
       io.rancher.container.pull_image: always
