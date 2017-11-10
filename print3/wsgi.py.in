@@ -3,9 +3,9 @@ import sys
 import os
 
 parent_dir = os.path.abspath(__file__ + "/../../")
-activate_this = os.path.join(parent_dir, ".venv/bin/activate_this.py")
+#activate_this = os.path.join(parent_dir, ".venv/bin/activate_this.py")
 
-execfile(activate_this, dict(__file__=activate_this))
+#execfile(activate_this, dict(__file__=activate_this))
 
 from paste.deploy import loadapp
 from standalone import StandaloneApplication, number_of_workers
