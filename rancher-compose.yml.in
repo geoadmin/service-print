@@ -5,14 +5,22 @@ services:
     health_check:
       port: ${NGINX_PORT}
       interval: 3000
-      request_line: GET /checker HTTP/1.1
+      request_line: GET /checker HTTP/1.0
       unhealthy_threshold: 2
       strategy: recreate
-  service-print-tomcat:
+  tomcat:
     start_on_create: true
     health_check:
       port: 8080
       interval: 10000
       request_line: GET /service-print-main/pdf/info.json HTTP/1.0
+      unhealthy_threshold: 2
+      strategy: recreate
+  wsgi:
+    start_on_create: true
+    health_check:
+      port: ${WSGI_PORT}
+      interval: 3000
+      request_line: GET /checker HTTP/1.0
       unhealthy_threshold: 2
       strategy: recreate

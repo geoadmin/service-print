@@ -108,7 +108,7 @@ http {
     }
     location /tomcat_checker {
       expires off;
-      proxy_pass http://localhost:${TOMCAT_PORT}/checker;
+      proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/checker;
     }
   }
 }

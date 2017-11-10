@@ -39,7 +39,7 @@ services:
 % if rancher_deploy == 'false':
     build: .
 % endif
-    image: swisstopo/service-print-wsgi:${image_tag}
+    image: swisstopo/service-print:${image_tag}
     env_file:
     - ${rancher_label}.env
     environment:
