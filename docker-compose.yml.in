@@ -34,3 +34,24 @@ services:
       io.rancher.scheduler.affinity:host_label: application=print,staging=${rancher_label}
       io.rancher.container.pull_image: always
       io.rancher.scheduler.global: 'true'
+  service-print-wsgi:
+% if rancher_deploy == 'false':
+    build: .
+% endif
+    image: swisstopo/service-print-wsgi:${image_tag}
+    env_file:
+    - ${rancher_label}.env
+    environment:
+      WSGI_PORT: ${wsgi_port}
+    command :
+    - python
+    - proxywms/wsgi.py
+    network_mode: "host"
+    ports:
+    - "${wsgiwms_port}:${wsgi_post}"
+    depends_on:
+    - service-print-nginx
+    labels:
+      io.rancher.scheduler.affinity:host_label: application=print,staging=${rancher_label}
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.global: 'true'
