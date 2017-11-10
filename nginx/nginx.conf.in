@@ -19,6 +19,22 @@ http {
   # this removes the "host_header" related issue
   underscores_in_headers on;
 
+
+  # Apache/Nginx                                   WSGI                            Tomcat
+  #
+  # GET  /print/info.json                                                        GET /service-print-main/pdf/info.json
+  # 
+  # POST /print/create.json                                                      POST /service-print-main/pdf/create.json
+  # 
+  # POST /multiprint/create.json             POST /multiprint/create.json
+  # 
+  # GET  /printprogress?id=232323            GET /printprogress?id=232323
+  # 
+  # GET  /printcancel                        GET /printcancel
+  # 
+  # GET /print/-multi23444545.pdf.printout
+  # static to /var/local/print
+
   server {
     listen ${NGINX_PORT};
     server_name service-print.${PRINT_ENV}.bgdi.ch;
