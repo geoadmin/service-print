@@ -48,7 +48,7 @@ services:
     - proxywms/wsgi.py
     network_mode: "host"
     ports:
-    - "${wsgiwms_port}:${wsgi_post}"
+    - "${wsgi_port}:${wsgi_port}"
     depends_on:
     - service-print-nginx
     labels:
