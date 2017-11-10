@@ -170,32 +170,6 @@ tomcat/WEB-INF/web.xml: tomcat/WEB-INF/web.xml.in
 	${MAKO_CMD} \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
-apache/application.wsgi.mako:
-	@echo "${GREEN}Template file apache/application.wsgi.mako has changed${RESET}";
-apache/application.wsgi: apache/application.wsgi.mako
-	@echo "${GREEN}Creating apache/application.wsgi...${RESET}";
-	${MAKO_CMD} \
-		--var "current_directory=$(CURRENT_DIRECTORY)" \
-		--var "apache_base_path=$(APACHE_BASE_PATH)" \
-		--var "modwsgi_config=$(MODWSGI_CONFIG)" $< > $@
-
-apache/wsgi.conf.in:
-	@echo "${GREEN}Template file apache/wsgi.conf.in has changed${RESET}";
-apache/wsgi.conf: apache/wsgi.conf.in apache/application.wsgi
-	@echo "${GREEN}Creating apache/wsgi.conf...${RESET}";
-	${MAKO_CMD} \
-		--var "app_version=$(APP_VERSION)" \
-		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
-		--var "apache_base_path=$(APACHE_BASE_PATH)" \
-		--var "robots_file=$(ROBOTS_FILE)" \
-		--var "branch_staging=$(BRANCH_STAGING)" \
-		--var "git_branch=$(GIT_BRANCH)" \
-		--var "current_directory=$(CURRENT_DIRECTORY)" \
-		--var "modwsgi_user=$(MODWSGI_USER)" \
-		--var "wsgi_threads=$(WSGI_THREADS)" \
-		--var "wsgi_app=$(WSGI_APP)" \
-		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
-
 development.ini.in:
 	@echo "${GREEN}Template file development.ini.in has changed${RESET}";
 development.ini: development.ini.in
@@ -336,10 +310,7 @@ cleancache:
 clean:
 	rm -rf production.ini
 	rm -rf development.ini
-	rm -rf apache/wsgi.conf
-	rm -rf apache/tomcat-print.conf
 	rm -rf tomcat/WEB-INF/web.xml
-	rm -rf apache/application.wsgi
 	rm -rf rc_branch
 	rm -rf deploy/deploy-branch.cfg
 	rm -rf deploy/conf/00-branch.conf
