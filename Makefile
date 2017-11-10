@@ -1,5 +1,6 @@
 SHELL = /bin/bash
 # Variables
+APACHE_BASE_PATH ?= main
 APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
 APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
 BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
@@ -17,7 +18,7 @@ MODWSGI_USER := www-data
 NO_TESTS ?= withtests
 PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_BASE_URL ?= ajp://localhost:8009
-PRINT_INPUT :=  *.html *.yaml *.png WEB-INF
+PRINT_INPUT :=  checker *.html *.yaml *.png WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
 PRINT_TEMP_DIR := /var/local/print
