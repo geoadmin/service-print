@@ -33,7 +33,8 @@ http {
   # GET  /printcancel                        GET /printcancel
   # 
   # GET /print/-multi23444545.pdf.printout
-  # static to /var/local/print
+  # GET /print/9032936254995330149.pdf.printout
+  # static to /var/local/print/mapfish-print9032936254995330149.pdf.printout
 
   # proxying tomcat
   server {
@@ -51,6 +52,15 @@ http {
       
       #proxy_pass http://localhost:${TOMCAT_PORT};
     }
+    # PDF download
+    location ~  [0-9]+\.pdf\.printout$ {
+      # Do not cache anything
+      expires off;
+
+      rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3 last;
+      add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf";
+    }
+
     location  /print/ {
       add_header 'Access-Control-Allow-Origin' '*' always;
       add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
@@ -90,14 +100,6 @@ http {
       proxy_pass http://localhost:${WSGI_PORT};
     }
 
-    location ~  [0-9]+\.pdf\.printout$ {
-      # Do not cache anything
-      expires off;
-
-      rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3 last;
-      add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf";
-      
-    }
 
     location /nginx-status {
       # Turn on nginx stats
