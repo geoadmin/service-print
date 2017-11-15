@@ -27,6 +27,7 @@ print_proxy_url = ${PRINT_PROXY_URL}
 #apache_base_path = ${apache_base_path}
 #apache_entry_path = ${apache_entry_path}
 print_temp_dir=${PRINT_TEMP_DIR}
+tomcat_port=${TOMCAT_PORT}
 
 
 ###

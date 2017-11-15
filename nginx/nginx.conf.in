@@ -101,6 +101,7 @@ http {
       # Send rest of the world to /dev/null #
       deny all;
     }
+    
     location /checker {
       access_log   off;
       add_header Content-Type text/plain;
@@ -109,6 +110,14 @@ http {
     location /tomcat_checker {
       expires off;
       proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/checker;
+    }
+    location /wsgi_checker {
+      expires off;
+      proxy_pass http://localhost:${WSGI_PORT}/checker;
+    }
+    location /backend_checker {
+      expires off;
+      proxy_pass http://localhost:${WSGI_PORT}/backend_checker;
     }
   }
 }
