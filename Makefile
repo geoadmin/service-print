@@ -294,6 +294,7 @@ docker-compose.yml::
 	            --var "image_tag=$(IMAGE_TAG)" \
 							--var "nginx_port=$(NGINX_PORT)" \
 							--var "wsgi_port=$(WSGI_PORT)" \
+							--var "tomcat_port=$(TOMCAT_PORT)" \
 	            --var "rancher_label=$(RANCHER_LABEL)" \
 	            --var "print_env=$(PRINT_ENV)" docker-compose.yml.in > docker-compose.yml
 

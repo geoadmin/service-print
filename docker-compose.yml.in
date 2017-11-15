@@ -27,8 +27,10 @@ services:
     image: swisstopo/service-print-tomcat:${image_tag}
     env_file:
           - ${rancher_label}.env
+    environment:
+      TOMCAT_PORT: ${tomcat_port}
     ports:
-      - "8009:8080"
+      - "${tomcat_port}:8080"
     volumes:
       - /var/local/efs-applications-rw/print/${rancher_label}:/var/local/print
     labels:
