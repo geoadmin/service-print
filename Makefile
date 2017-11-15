@@ -277,6 +277,7 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
 
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
+		envsubst < production.ini.in > production.ini && envsubst < development.ini.in >  development.ini && \
 		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && envsubst < print3/wsgi.py.in > print3/wsgi.py  && envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
