@@ -38,8 +38,24 @@ http {
   # proxying tomcat
   server {
     listen ${NGINX_PORT};
-    server_name service-print.${PRINT_ENV}.bgdi.ch;
-    location /print/ {
+    #server_name service-print.${PRINT_ENV}.bgdi.ch;
+
+    root /var/local/print;
+
+    location ~ /[0-9]+/print/ {
+      #rewrite ^/[0-9]+/print/(.*) /service-print-main/pdf/$1 break;
+      rewrite ^/[0-9]+/print/(.*) /print/$1;
+      #alias /print/;
+      # Do not cache anything
+      #expires off;
+      
+      #proxy_pass http://localhost:${TOMCAT_PORT};
+    }
+    location  /print/ {
+      add_header 'Access-Control-Allow-Origin' '*' always;
+      add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+      add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+
       # Do not cache anything
       expires off;
       
@@ -52,11 +68,9 @@ http {
       
       proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/;
     }
-  }
-  # proxying wsgi
-  server {
-    listen ${NGINX_PORT};
-    server_name service-print.${PRINT_ENV}.bgdi.ch;
+
+    # proxying wsgi
+
     location  /multiprint {
       # Do not cache anything
       expires off;
@@ -75,12 +89,6 @@ http {
       
       proxy_pass http://localhost:${WSGI_PORT};
     }
-  }
-  # static pdf
-  server {
-    listen ${NGINX_PORT};
-    server_name service-print.${PRINT_ENV}.bgdi.ch;
-    root /var/local/print;
 
     location ~  [0-9]+\.pdf\.printout$ {
       # Do not cache anything
@@ -90,10 +98,7 @@ http {
       add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf";
       
     }
-  }
 
-  server {
-    listen ${NGINX_PORT} default_server;
     location /nginx-status {
       # Turn on nginx stats
       stub_status on;
