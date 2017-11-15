@@ -96,7 +96,7 @@ help:
 	@echo
 
 .PHONY: all
-all: setup  templates  fixrights
+all: setup   fixrights
 
 setup: .venv
 
