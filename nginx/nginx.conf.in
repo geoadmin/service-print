@@ -45,6 +45,13 @@ http {
       
       proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/pdf/;
     }
+    # For migration
+    location /service-print-main/ {
+      # Do not cache anything
+      expires off;
+      
+      proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/;
+    }
   }
   # proxying wsgi
   server {
