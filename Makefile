@@ -147,7 +147,7 @@ printconfig:
 	@echo 'export JAVA_XMX="2G"'  >> /srv/tomcat/tomcat1/bin/setenv-local.sh
 
 .PHONY: printwar
-printwar: printconfig print/WEB-INF/web.xml.in
+printwar: tomcat/WEB-INF/web.xml
 	echo "${GREEN}Updating print war...${RESET}" && \
 	cd tomcat && \
 	rm -f service-print-$(APACHE_BASE_PATH).war && \
@@ -165,6 +165,7 @@ printwar: printconfig print/WEB-INF/web.xml.in
 
 tomcat/WEB-INF/web.xml.in:
 	@echo "${GREEN}Template file tomcat/WEB-INF/web.xml has changed${RESET}"
+
 tomcat/WEB-INF/web.xml: tomcat/WEB-INF/web.xml.in
 	@echo "${GREEN}Creating print/WEB-INF/web.xml...${RESET}"
 	${MAKO_CMD} \
