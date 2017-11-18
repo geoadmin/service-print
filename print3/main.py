@@ -32,7 +32,8 @@ WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
 LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
 PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')
 API_URL = os.environ.get('API_URL', 'https://api3.geo.admin.ch')
-PRINT_PROXY_URL = os.environ.get('PRINT_PROXY_URL', 'https://print.geo.admin.ch')
+TOMCAT_SERVER_URL = os.environ.get('TOMCAT_SERVER_URL', 'https://print.geo.admin.ch')
+PRINT_SERVER_URL = os.environ.get('PRINT_SERVER_URL', 'https://print.geo.admin.ch')
 
 logging.basicConfig(level=LOGLEVEL, stream=sys.stderr)
 log = logging.getLogger('print')
@@ -145,7 +146,7 @@ def print_create_post():
     with open(create_info_file(PRINT_TEMP_DIR, unique_filename), 'w+') as outfile:
         json.dump({'status': 'ongoing'}, outfile)
 
-    info = (spec, PRINT_TEMP_DIR, scheme, API_URL, PRINT_PROXY_URL, headers, unique_filename)
+    info = (spec, PRINT_TEMP_DIR, scheme, API_URL, TOMCAT_SERVER_URL, headers, unique_filename)
     p = multiprocessing.Process(target=create_and_merge, args=(info,))
     p.start()
     
@@ -559,7 +560,7 @@ def create_and_merge(info):
         log.error('Something went wrong while merging PDFs')
         return 3
 
-    pdf_download_url = scheme + ':' + print_url + '/print/-multi' + unique_filename + '.pdf.printout'
+    pdf_download_url = scheme + ':' + PRINT_SERVER_URL + '/print/-multi' + unique_filename + '.pdf.printout'
     with open(infofile, 'w+') as outfile:
         json.dump({'status': 'done', 'getURL': pdf_download_url}, outfile)
 
