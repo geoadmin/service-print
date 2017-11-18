@@ -232,7 +232,7 @@ dockerbuild: composetemplateuser
 
 .PHONY: composetemplateuser
 composetemplateuser:
-		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && envsubst < print3/wsgi.py.in > print3/wsgi.py && \
+		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && \
 				envsubst < nginx/nginx.conf.in > nginx/nginx.conf
 				source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
 
@@ -279,7 +279,7 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
 		envsubst < production.ini.in > production.ini && envsubst < development.ini.in >  development.ini && \
-		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && envsubst < print3/wsgi.py.in > print3/wsgi.py  && envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
+		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
 define start_service
@@ -313,11 +313,8 @@ cleancache:
 
 .PHONY: clean
 clean:
-	rm -rf production.ini
-	rm -rf development.ini
 	rm -rf tomcat/WEB-INF/web.xml
 	rm -rf tomcat/temp_*
-	rm -f print3/wsgi.py
 	rm -f nginx/nginx.conf
 	rm -f rancher-compose.yml
 	rm -f docker-compose.yml
