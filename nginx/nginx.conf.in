@@ -26,7 +26,7 @@ http {
   # 
   # POST /print/create.json                                                      POST /service-print-main/pdf/create.json
   # 
-  # POST /multiprint/create.json             POST /multiprint/create.json
+ # POST /printmulti/create.json             POST /printmulti/create.json
   # 
   # GET  /printprogress?id=232323            GET /printprogress?id=232323
   # 
@@ -81,26 +81,26 @@ http {
 
     # proxying wsgi
 
-    location  /printmulti {
+    location  /printmulti/ {
       add_header 'Access-Control-Allow-Origin' '*' always;
       add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
       add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
       # Do not cache anything
       expires off;
       
-      proxy_pass http://localhost:${WSGI_PORT}/printmulti;
+      proxy_pass http://localhost:${WSGI_PORT}/printmulti/;
     }
     location  /printprogress {
       # Do not cache anything
       expires off;
       
-      proxy_pass http://localhost:${WSGI_PORT};
+      proxy_pass http://localhost:${WSGI_PORT}/printprogress;
     }
     location  /printcancel {
       # Do not cache anything
       expires off;
       
-      proxy_pass http://localhost:${WSGI_PORT};
+      proxy_pass http://localhost:${WSGI_PORT}/printcancel;
     }
 
 
