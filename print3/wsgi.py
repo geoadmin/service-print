@@ -4,7 +4,7 @@ import os
 import multiprocessing
 from gunicorn.app.base import BaseApplication
 from gunicorn.six import iteritems
-from print3.main import application
+from print3.main import app as application
 
 
 def number_of_workers():

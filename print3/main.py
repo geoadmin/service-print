@@ -32,6 +32,7 @@ import requests
 import logging
 #log = logging.getLogger(__name__)
 #log.setLevel(logging.INFO)
+
 WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
 LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
 PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR','/var/local/print' )
@@ -47,14 +48,16 @@ MAPFISH_FILE_PREFIX = 'mapfish-print'
 MAPFISH_MULTI_FILE_PREFIX = MAPFISH_FILE_PREFIX + '-multi'
 USE_MULTIPROCESS = False
 USE_LV95_SERVICES = False
+VERIFY_SSL = False
+LOG_SPEC_FILES = False
 
 
-application = Flask(__name__)
+app = Flask(__name__)
 req_session = requests.Session()
 req_session.mount('http://', requests.adapters.HTTPAdapter(max_retries=0))
 req_session.mount('https://', requests.adapters.HTTPAdapter(max_retries=0))
 
-@application.route('/checker')
+@app.route('/checker')
 def checker():
         return 'OK'
 
@@ -63,7 +66,7 @@ def checker():
     of timestamps to print, one page per timestamp will be generated and
     merged.'''
     
-@application.route('/printcancel')
+@app.route('/printcancel')
 def print_cancel():
         
         fileid = request.args.get('id')
@@ -77,7 +80,7 @@ def print_cancel():
         return Response(status=200)
 
 # @requires_authorization()
-@application.route('/printprogress')
+@app.route('/printprogress')
 def print_progress():
 
         fileid = request.args.get('id')
@@ -97,11 +100,11 @@ def print_progress():
         return Response(json.dumps(data), mimetype='application/json')
 
 
-@application.route('/printmulti/create.json', methods=['OPTIONS'])
+@app.route('/printmulti/create.json', methods=['OPTIONS'])
 def print_create_option():
     return Response('OK', status=200, mimetype='text/plain') 
     
-@application.route('/printmulti/create.json', methods=['GET', 'POST'])
+@app.route('/printmulti/create.json', methods=['GET', 'POST'])
 def print_create_post():
     #jsonstring = urllib.unquote_plus(request.content)
     #spec = json.loads(jsonstring, encoding=self.request.charset)
@@ -112,15 +115,15 @@ def print_create_post():
     multiprocessing.active_children()
  
  
-    application.logger.info('info')
+    app.logger.info('info')
     try:
         spec = request.get_json()
 
     except:
         logging.debug('JSON content could not be parsed')
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        application.logger.debug("*** Traceback:/%s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
-        application.logger.debug("*** Exception:/n%s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+        app.logger.debug("*** Traceback:/%s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
+        app.logger.debug("*** Exception:/n%s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
         abort(400, 'JSON content could not be parsed')
     
     if spec is None:
@@ -128,10 +131,12 @@ def print_create_post():
        try:
            spec = json.loads(data) #, encoding=request.charset)
        except ValueError:
-            application.logger.debug(data)
+            app.logger.debug(data)
             abort(400, 'JSON content could not be parsed: {}'.format(data))
-       
-    application.logger.debug(json.dumps(spec, indent=2))
+            
+    if LOG_SPEC_FILES:
+        app.logger.debug(json.dumps(spec, indent=2))
+        
     # Remove older files on the system
     delete_old_files(PRINT_TEMP_DIR)
 
@@ -337,7 +342,7 @@ def worker(job):
     timestamp = None
     (idx, url, headers, timestamp, layers, tmp_spec, print_temp_dir, infofile, cancelfile, lock) = job
 
-    log.debug(json.dumps(tmp_spec, indent=2))
+    app.logger.debug(json.dumps(tmp_spec, indent=2))
 
     for layer in layers:
         try:
@@ -349,31 +354,43 @@ def worker(job):
     if os.path.isfile(cancelfile):
         return (timestamp, None)
 
-    h = {'Referer': headers.get('Referer')}
-    http = Http(disable_ssl_certificate_validation=True)
-    resp, content = http.request(url, method='POST',
-                                 body=json.dumps(tmp_spec), headers=h)
+    h = {'Referer': headers.get('Referer'), 'Content-Type': 'application/json'}
+    #http = Http(disable_ssl_certificate_validation=True)
+    #resp, content = http.request(url, method='POST',
+    #                             body=json.dumps(tmp_spec), headers=h)
+    
+    #url = "http://vpc-lb-print-dev.intra.bgdi.ch:8011/service-print-main/pdf/create.json?url=http%3A%2F%2Fvpc-lb-print-dev.intra.bgdi.ch%3A80"
+    r = requests.post(url,  data=json.dumps(tmp_spec), headers=h,  verify=VERIFY_SSL)
 
-    if int(resp.status) == 200:
+    #if int(resp.status) == 200:
+    if r.status_code == requests.codes.ok:
+        
         # GetURL '141028163227.pdf.printout', file 'mapfish-print141028163227.pdf.printout'
         # We only get the pdf name and rely on the fact that they are stored on Zadara
         try:
-            pdf_url = json.loads(content)['getURL']
-            log.debug('[Worker] pdf_url: %s', pdf_url)
+            #pdf_url = json.loads(content)['getURL']
+            pdf_url = r.json()['getURL']
+            app.logger.debug('[Worker] pdf_url: %s', pdf_url)
             filename = os.path.basename(urlsplit(pdf_url).path)
             localname = os.path.join(print_temp_dir, MAPFISH_FILE_PREFIX + filename)
         except:
-            log.debug('[Worker] Failed timestamp: %s', timestamp)
+            app.logger.debug('[Worker] Failed timestamp: %s', timestamp)
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            log.debug("*** Traceback:/n %s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
-            log.debug("*** Exception:/n %s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+            app.logger.debug("*** Traceback:/n %s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
+            app.logger.debug("*** Exception:/n %s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
 
             return (timestamp, None)
         _increment_info(lock, infofile)
         return (timestamp, localname)
     else:
-        log.debug('[Worker] Failed get/generate PDF for: %s. Error: %s', timestamp, resp.status)
-        log.debug('[Worker] %s', content)
+        app.logger.debug('[Worker] Failed get/generate PDF for: %s. Error: %s', timestamp, r.status_code)
+        app.logger.debug('[Worker] response: %s', r.text)
+        app.logger.debug('[Worker] spec: %s', tmp_spec)
+        app.logger.debug('[Worker] headers: %s', h)
+        app.logger.debug('[Worker] url: %s', url)
+        app.logger.debug('[Worker] print dir: %s', print_temp_dir)
+  
+        
         return (timestamp, None)
 
 
@@ -448,8 +465,8 @@ def create_and_merge(info):
 
     if _isMultiPage(spec):
         all_timestamps = _get_timestamps(spec, api_url)
-        log.debug('[print_create] Going multipages')
-        log.debug('[print_create] Timestamps to process: %s', all_timestamps.keys())
+        app.logger.debug('[print_create_post] Going multipages')
+        app.logger.debug('[print_create_post] Timestamps to process: %s', all_timestamps.keys())
 
     for i, lyr in enumerate(spec['layers']):
         cleanup_baseurl = spec['layers'][i]['baseURL'].replace('{', '%7B').replace('}', '%7D')
@@ -498,7 +515,7 @@ def create_and_merge(info):
                 del tmp_spec['legends']
                 tmp_spec['enableLegends'] = False
 
-            log.debug('[print_create] Processing timestamp: %s', ts)
+            app.logger.debug('[print_create] Processing timestamp: %s', ts)
 
             job = (idx, url, headers, ts, lyrs, tmp_spec, print_temp_dir, infofile, cancelfile, lock)
 
@@ -508,6 +525,7 @@ def create_and_merge(info):
         json.dump({'status': 'ongoing', 'done': 0, 'total': len(jobs)}, outfile)
 
     if USE_MULTIPROCESS:
+        app.logger.info("Going multiprocess")
         pool = multiprocessing.Pool(NUMBER_POOL_PROCESSES)
         pdfs = pool.map(worker, jobs)
         pool.close()
@@ -526,6 +544,7 @@ def create_and_merge(info):
             log.debug("*** Exception:/n %s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
             return 1
     else:
+        app.logger.info("Going single process")
         pdfs = []
         for j in jobs:
             pdfs.append(worker(j))
@@ -658,7 +677,18 @@ class PrintMulti(object):
 '''
 
 if __name__ == '__main__':
-    application.config['DEBUG'] = os.environ.get('DEBUG', False)
+    custom_log_format = """-------------------------------------------------------------------------
+        %(module)s [%(pathname)s:%(lineno)d]: %(message)s
+    -------------------------------------------------------------------------"""
+    app.config['DEBUG'] = os.environ.get('DEBUG', False)
     port = int(os.environ.get('WSGI_PORT'))
+    app.debug_log_format = custom_log_format
+   
+    fileHandler = logging.FileHandler("wsgi.log")
+    logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [%(pathname)s:%(lineno)d] %(message)s")
+    logFormatter = logging.Formatter( "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
+    fileHandler.setFormatter(logFormatter)
 
-    application.run(host='0.0.0.0', port=port)
+    
+    app.logger.addHandler(fileHandler)
+    app.run(host='0.0.0.0', port=port)
