@@ -148,6 +148,7 @@ def print_create_post():
     info = (spec, PRINT_TEMP_DIR, scheme, API_URL, PRINT_PROXY_URL, headers, unique_filename)
     p = multiprocessing.Process(target=create_and_merge, args=(info,))
     p.start()
+    create_and_merge(info)
     response = {'idToCheck': unique_filename}
 
     return Response(json.dumps(response), mimetype='application/json')
@@ -181,7 +182,9 @@ def _normalize_projection(coords, use_lv95=USE_LV95_SERVICES):
 def _zeitreihen(d, api_url):
     '''Returns the timestamps for a given scale and location for ch.swisstopo.zeitreihen
     '''
-
+    # api_url='//mf-chsdi3.dev.bgdi.ch'
+    app.logger.debug(d)
+    app.logger.debug(api_url)
     timestamps = []
 
     sr = 2056 if USE_LV95_SERVICES else 21781
@@ -190,10 +193,12 @@ def _zeitreihen(d, api_url):
     url = 'http:' + api_url + '/rest/services/ech/MapServer/ch.swisstopo.zeitreihen/releases?%s' % params
 
     try:
-        r = requests.get(url, verify=VERIFY_SSL)
+        r = requests.get(url)
         if r.status_code == requests.codes.ok:
-            timestamps = r.json()['results']
+            data = r.json()
+            timestamps = data['results']
     except:
+
         return timestamps
 
     return timestamps
@@ -451,7 +456,11 @@ def create_and_merge(info):
 
     if _isMultiPage(spec):
         all_timestamps = _get_timestamps(spec, api_url)
-        app.logger.debug('[print_create_post] Going multipages')
+
+        app.logger.info('[print_create_post] Going multipages')
+        if len(all_timestamps) < 1:
+            return 4
+
         app.logger.debug('[print_create_post] Timestamps to process: %s', all_timestamps.keys())
 
     for i, lyr in enumerate(spec['layers']):
