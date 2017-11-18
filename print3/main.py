@@ -42,7 +42,7 @@ log = logging.getLogger('print')
 NUMBER_POOL_PROCESSES = multiprocessing.cpu_count()
 MAPFISH_FILE_PREFIX = 'mapfish-print'
 MAPFISH_MULTI_FILE_PREFIX = MAPFISH_FILE_PREFIX + '-multi'
-USE_MULTIPROCESS = False
+USE_MULTIPROCESS = True
 USE_LV95_SERVICES = False
 VERIFY_SSL = False
 LOG_SPEC_FILES = False
@@ -73,7 +73,7 @@ def print_cancel():
         pass
 
     if not os.path.isfile(cancelfile):
-        raise abort(500, 'Could not create cancel file with id' % fileid)
+        abort(500, 'Could not create cancel file with id' % fileid)
 
     return Response(status=200)
 
@@ -86,8 +86,8 @@ def print_progress():
     pdffile = create_pdf_path(PRINT_TEMP_DIR, fileid)
 
     if not os.path.isfile(filename):
-        raise abort(400, '%s does not exists' % filename)
-
+        abort(400, '%s does not exists' % filename)
+    
     with open(filename, 'r') as data_file:
         data = json.load(data_file)
 
@@ -449,7 +449,7 @@ def create_and_merge(info):
     jobs = []
     all_timestamps = []
 
-    create_pdf_url = 'http:' + print_url + '/print/create.json'
+    create_pdf_url = scheme + ':' + print_url + '/print/create.json'
 
     url = create_pdf_url + '?url=' + urllib.quote_plus(create_pdf_url)
     infofile = create_info_file(print_temp_dir, unique_filename)
