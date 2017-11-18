@@ -148,7 +148,7 @@ def print_create_post():
     info = (spec, PRINT_TEMP_DIR, scheme, API_URL, PRINT_PROXY_URL, headers, unique_filename)
     p = multiprocessing.Process(target=create_and_merge, args=(info,))
     p.start()
-    create_and_merge(info)
+    
     response = {'idToCheck': unique_filename}
 
     return Response(json.dumps(response), mimetype='application/json')
