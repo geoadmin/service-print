@@ -1,4 +1,3 @@
-import os
 import multiprocessing
 from gunicorn.app.base import BaseApplication
 from gunicorn.six import iteritems
@@ -6,7 +5,6 @@ from gunicorn.six import iteritems
 
 def number_of_workers():
     return (multiprocessing.cpu_count() * 2) + 1
-
 
 
 class StandaloneApplication(BaseApplication):
@@ -24,4 +22,3 @@ class StandaloneApplication(BaseApplication):
 
     def load(self):
         return self.application
-
