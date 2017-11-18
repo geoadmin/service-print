@@ -15,7 +15,6 @@ import random
 from urlparse import urlparse, parse_qs, urlsplit, urlunparse
 from urllib import urlencode, quote_plus, unquote_plus
 
-from httplib2 import Http
 from collections import OrderedDict
 
 from PyPDF2 import PdfFileMerger
@@ -185,16 +184,15 @@ def _zeitreihen(d, api_url):
 
     timestamps = []
 
-    http = Http(disable_ssl_certificate_validation=True)
     sr = 2056 if USE_LV95_SERVICES else 21781
     d['sr'] = sr
     params = urllib.urlencode(d)
     url = 'http:' + api_url + '/rest/services/ech/MapServer/ch.swisstopo.zeitreihen/releases?%s' % params
 
     try:
-        resp, content = http.request(url)
-        if int(resp.status) == 200:
-            timestamps = json.loads(content)['results']
+        r = requests.get(url, verify=VERIFY_SSL)
+        if r.status_code == requests.codes.ok:
+            timestamps = r.json()['results']
     except:
         return timestamps
 
@@ -309,14 +307,12 @@ def _qrcodeurlunparse(url_tuple):
 def _shorten(url, api_url='http://api3.geo.admin.ch'):
     ''' Shorten a possibly long url '''
 
-    http = Http(disable_ssl_certificate_validation=True)
-
     shorten_url = api_url + '/shorten.json?url=%s' % quote_plus(url)
 
     try:
-        resp, content = http.request(shorten_url)
-        if int(resp.status) == 200:
-            shorturl = json.loads(content)['shorturl']
+        r = requests.get(shorten_url, verify=VERIFY_SSL)
+        if r.status_code == requests.codes.ok:
+            shorturl = r.json()['shorturl']
             return shorturl
     except:
         return url
