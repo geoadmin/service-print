@@ -17,7 +17,8 @@ GIT_COMMIT_DATE ?= $(shell git log -1  --date=iso --pretty=format:%cd)
 INSTALL_DIRECTORY := .venv
 MODWSGI_USER := www-data
 NO_TESTS ?= withtests
-PRINT_PROXY_URL ?= //service-print.dev.bgdi.ch
+PRINT_SERVER_URL ?= //service-print.dev.bgdi.ch
+TOMCAT_SERVER_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_BASE_URL ?= ajp://localhost:8009
 PRINT_INPUT :=  checker *.html *.yaml *.png WEB-INF
 PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
