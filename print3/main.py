@@ -20,22 +20,18 @@ from collections import OrderedDict
 
 from PyPDF2 import PdfFileMerger
 
-from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError
-from pyramid.response import Response
 
 from flask import Flask, abort, Response, request
 import requests
 
-# from print3.lib.decorators import requires_authorization
 
 import logging
-#log = logging.getLogger(__name__)
-#log.setLevel(logging.INFO)
+# log = logging.getLogger(__name__)
+# log.setLevel(logging.INFO)
 
 WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
 LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
-PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR','/var/local/print' )
+PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')
 API_URL = os.environ.get('API_URL', 'https://api3.geo.admin.ch')
 PRINT_PROXY_URL = os.environ.get('PRINT_PROXY_URL', 'https://print.geo.admin.ch')
 
@@ -57,64 +53,65 @@ req_session = requests.Session()
 req_session.mount('http://', requests.adapters.HTTPAdapter(max_retries=0))
 req_session.mount('https://', requests.adapters.HTTPAdapter(max_retries=0))
 
+
 @app.route('/checker')
 def checker():
-        return 'OK'
+    return 'OK'
 
 ''' Print proxy to the MapFish Print Server to deal with time series
     If at least a layer has an attribute 'timestamps' holding an array
     of timestamps to print, one page per timestamp will be generated and
     merged.'''
-    
+
+
 @app.route('/printcancel')
 def print_cancel():
-        
-        fileid = request.args.get('id')
-        cancelfile = create_cancel_file(PRINT_TEMP_DIR, fileid)
-        with open(cancelfile, 'a+'):
-            pass
 
-        if not os.path.isfile(cancelfile):
-            raise abort(500, 'Could not create cancel file with id' % fileid)
+    fileid = request.args.get('id')
+    cancelfile = create_cancel_file(PRINT_TEMP_DIR, fileid)
+    with open(cancelfile, 'a+'):
+        pass
 
-        return Response(status=200)
+    if not os.path.isfile(cancelfile):
+        raise abort(500, 'Could not create cancel file with id' % fileid)
 
-# @requires_authorization()
+    return Response(status=200)
+
+
 @app.route('/printprogress')
 def print_progress():
 
-        fileid = request.args.get('id')
-        filename = create_info_file(PRINT_TEMP_DIR, fileid)
-        pdffile = create_pdf_path(PRINT_TEMP_DIR, fileid)
+    fileid = request.args.get('id')
+    filename = create_info_file(PRINT_TEMP_DIR, fileid)
+    pdffile = create_pdf_path(PRINT_TEMP_DIR, fileid)
 
-        if not os.path.isfile(filename):
-            raise abort(400, '%s does not exists' % filename)
+    if not os.path.isfile(filename):
+        raise abort(400, '%s does not exists' % filename)
 
-        with open(filename, 'r') as data_file:
-            data = json.load(data_file)
+    with open(filename, 'r') as data_file:
+        data = json.load(data_file)
 
-        # When file is written, get current size
-        if os.path.isfile(pdffile):
-            data['written'] = os.path.getsize(pdffile)
+    # When file is written, get current size
+    if os.path.isfile(pdffile):
+        data['written'] = os.path.getsize(pdffile)
 
-        return Response(json.dumps(data), mimetype='application/json')
+    return Response(json.dumps(data), mimetype='application/json')
 
 
 @app.route('/printmulti/create.json', methods=['OPTIONS'])
 def print_create_option():
-    return Response('OK', status=200, mimetype='text/plain') 
-    
+    return Response('OK', status=200, mimetype='text/plain')
+
+
 @app.route('/printmulti/create.json', methods=['GET', 'POST'])
 def print_create_post():
-    #jsonstring = urllib.unquote_plus(request.content)
-    #spec = json.loads(jsonstring, encoding=self.request.charset)
+    # jsonstring = urllib.unquote_plus(request.content)
+    # spec = json.loads(jsonstring, encoding=self.request.charset)
 
-   
     # delete all child processes that have already terminated
     # but are <defunct>. This is a side_effect of the below function
     multiprocessing.active_children()
- 
- 
+
     app.logger.info('info')
     try:
         spec = request.get_json()
@@ -125,23 +122,23 @@ def print_create_post():
         app.logger.debug("*** Traceback:/%s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
         app.logger.debug("*** Exception:/n%s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
         abort(400, 'JSON content could not be parsed')
-    
+
     if spec is None:
-       data = request.stream.read()
-       try:
-           spec = json.loads(data) #, encoding=request.charset)
-       except ValueError:
+        data = request.stream.read()
+        try:
+            spec = json.loads(data)
+        except ValueError:
             app.logger.debug(data)
             abort(400, 'JSON content could not be parsed: {}'.format(data))
-            
+
     if LOG_SPEC_FILES:
         app.logger.debug(json.dumps(spec, indent=2))
-        
+
     # Remove older files on the system
     delete_old_files(PRINT_TEMP_DIR)
 
     scheme = request.headers.get('X-Forwarded-Proto',
-                                          request.scheme)
+                                 request.scheme)
     headers = dict(request.headers)
     headers.pop("Host", headers)
     unique_filename = datetime.datetime.now().strftime("%y%m%d%H%M%S") + str(random.randint(1000, 9999))
@@ -155,6 +152,7 @@ def print_create_post():
     response = {'idToCheck': unique_filename}
 
     return Response(json.dumps(response), mimetype='application/json')
+
 
 def _normalize_projection(coords, use_lv95=USE_LV95_SERVICES):
     '''Converts point and bbox to LV95, if needed, i.e. if source coords is
@@ -355,20 +353,13 @@ def worker(job):
         return (timestamp, None)
 
     h = {'Referer': headers.get('Referer'), 'Content-Type': 'application/json'}
-    #http = Http(disable_ssl_certificate_validation=True)
-    #resp, content = http.request(url, method='POST',
-    #                             body=json.dumps(tmp_spec), headers=h)
-    
-    #url = "http://vpc-lb-print-dev.intra.bgdi.ch:8011/service-print-main/pdf/create.json?url=http%3A%2F%2Fvpc-lb-print-dev.intra.bgdi.ch%3A80"
     r = requests.post(url,  data=json.dumps(tmp_spec), headers=h,  verify=VERIFY_SSL)
 
-    #if int(resp.status) == 200:
     if r.status_code == requests.codes.ok:
-        
+
         # GetURL '141028163227.pdf.printout', file 'mapfish-print141028163227.pdf.printout'
         # We only get the pdf name and rely on the fact that they are stored on Zadara
         try:
-            #pdf_url = json.loads(content)['getURL']
             pdf_url = r.json()['getURL']
             app.logger.debug('[Worker] pdf_url: %s', pdf_url)
             filename = os.path.basename(urlsplit(pdf_url).path)
@@ -389,8 +380,7 @@ def worker(job):
         app.logger.debug('[Worker] headers: %s', h)
         app.logger.debug('[Worker] url: %s', url)
         app.logger.debug('[Worker] print dir: %s', print_temp_dir)
-  
-        
+
         return (timestamp, None)
 
 
@@ -587,94 +577,6 @@ def delete_old_files(path):
             c = t.st_ctime
             if c < cutoff:
                 os.remove(fn)
-'''
-
-class PrintMulti(object):
-
-
-
-    def __init__(self, request):
-        self.request = request
-
-    # @requires_authorization()
-    @view_config(route_name='print_cancel', renderer='jsonp')
-    def print_cancel(self):
-        print_temp_dir = self.request.registry.settings['print_temp_dir']
-        fileid = self.request.params.get('id')
-        cancelfile = create_cancel_file(print_temp_dir, fileid)
-        with open(cancelfile, 'a+'):
-            pass
-
-        if not os.path.isfile(cancelfile):
-            raise HTTPInternalServerError('Could not create cancel file with given id')
-
-        return Response(status=200)
-
-    # @requires_authorization()
-    @view_config(route_name='print_progress', renderer='jsonp')
-    def print_progress(self):
-        print_temp_dir = self.request.registry.settings['print_temp_dir']
-        fileid = self.request.params.get('id')
-        filename = create_info_file(print_temp_dir, fileid)
-        pdffile = create_pdf_path(print_temp_dir, fileid)
-
-        if not os.path.isfile(filename):
-            raise HTTPBadRequest('%s does not exists' % filename)
-
-        with open(filename, 'r') as data_file:
-            data = json.load(data_file)
-
-        # When file is written, get current size
-        if os.path.isfile(pdffile):
-            data['written'] = os.path.getsize(pdffile)
-
-        return data
-
-    # @requires_authorization()
-    @view_config(route_name='print_create', renderer='jsonp')
-    def print_create(self):
-        if self.request.method == 'OPTIONS':
-            return Response(status=200)
-
-        # delete all child processes that have already terminated
-        # but are <defunct>. This is a side_effect of the below function
-        multiprocessing.active_children()
-
-        # IE is always URLEncoding the body
-        jsonstring = urllib.unquote_plus(self.request.body)
-
-        try:
-            spec = json.loads(jsonstring, encoding=self.request.charset)
-        except:
-            log.debug('JSON content could not be parsed')
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            log.debug("*** Traceback:/%s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
-            log.debug("*** Exception:/n%s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
-            raise HTTPBadRequest('JSON content could not be parsed')
-
-        print_temp_dir = self.request.registry.settings['print_temp_dir']
-
-        # Remove older files on the system
-        delete_old_files(print_temp_dir)
-
-        scheme = self.request.headers.get('X-Forwarded-Proto',
-                                          self.request.scheme)
-        api_url = self.request.registry.settings['api_url']
-        print_url = self.request.registry.settings['print_proxy_url']
-        headers = dict(self.request.headers)
-        headers.pop("Host", headers)
-        unique_filename = datetime.datetime.now().strftime("%y%m%d%H%M%S") + str(random.randint(1000, 9999))
-
-        with open(create_info_file(print_temp_dir, unique_filename), 'w+') as outfile:
-            json.dump({'status': 'ongoing'}, outfile)
-
-        info = (spec, print_temp_dir, scheme, api_url, print_url, headers, unique_filename)
-        p = multiprocessing.Process(target=create_and_merge, args=(info,))
-        p.start()
-        response = {'idToCheck': unique_filename}
-
-        return response
-'''
 
 if __name__ == '__main__':
     custom_log_format = """-------------------------------------------------------------------------
@@ -683,12 +585,11 @@ if __name__ == '__main__':
     app.config['DEBUG'] = os.environ.get('DEBUG', False)
     port = int(os.environ.get('WSGI_PORT'))
     app.debug_log_format = custom_log_format
-   
+
     fileHandler = logging.FileHandler("wsgi.log")
     logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [%(pathname)s:%(lineno)d] %(message)s")
-    logFormatter = logging.Formatter( "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
+    logFormatter = logging.Formatter("[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
     fileHandler.setFormatter(logFormatter)
 
-    
     app.logger.addHandler(fileHandler)
     app.run(host='0.0.0.0', port=port)
