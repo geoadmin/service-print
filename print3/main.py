@@ -23,19 +23,133 @@ from PyPDF2 import PdfFileMerger
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError
 from pyramid.response import Response
+
+from flask import Flask, abort, Response, request
+import requests
+
 # from print3.lib.decorators import requires_authorization
 
 import logging
-log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+#log = logging.getLogger(__name__)
+#log.setLevel(logging.INFO)
+WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
+LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
+PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR','/var/local/print' )
+API_URL = os.environ.get('API_URL', 'https://api3.geo.admin.ch')
+PRINT_PROXY_URL = os.environ.get('PRINT_PROXY_URL', 'https://print.geo.admin.ch')
+
+logging.basicConfig(level=LOGLEVEL, stream=sys.stderr)
+log = logging.getLogger('print')
 
 
 NUMBER_POOL_PROCESSES = multiprocessing.cpu_count()
 MAPFISH_FILE_PREFIX = 'mapfish-print'
 MAPFISH_MULTI_FILE_PREFIX = MAPFISH_FILE_PREFIX + '-multi'
-USE_MULTIPROCESS = True
+USE_MULTIPROCESS = False
 USE_LV95_SERVICES = False
 
+
+application = Flask(__name__)
+req_session = requests.Session()
+req_session.mount('http://', requests.adapters.HTTPAdapter(max_retries=0))
+req_session.mount('https://', requests.adapters.HTTPAdapter(max_retries=0))
+
+@application.route('/checker')
+def checker():
+        return 'OK'
+
+''' Print proxy to the MapFish Print Server to deal with time series
+    If at least a layer has an attribute 'timestamps' holding an array
+    of timestamps to print, one page per timestamp will be generated and
+    merged.'''
+    
+@application.route('/printcancel')
+def print_cancel():
+        
+        fileid = request.args.get('id')
+        cancelfile = create_cancel_file(PRINT_TEMP_DIR, fileid)
+        with open(cancelfile, 'a+'):
+            pass
+
+        if not os.path.isfile(cancelfile):
+            raise abort(500, 'Could not create cancel file with id' % fileid)
+
+        return Response(status=200)
+
+# @requires_authorization()
+@application.route('/printprogress')
+def print_progress():
+
+        fileid = request.args.get('id')
+        filename = create_info_file(PRINT_TEMP_DIR, fileid)
+        pdffile = create_pdf_path(PRINT_TEMP_DIR, fileid)
+
+        if not os.path.isfile(filename):
+            raise abort(400, '%s does not exists' % filename)
+
+        with open(filename, 'r') as data_file:
+            data = json.load(data_file)
+
+        # When file is written, get current size
+        if os.path.isfile(pdffile):
+            data['written'] = os.path.getsize(pdffile)
+
+        return Response(json.dumps(data), mimetype='application/json')
+
+
+@application.route('/printmulti/create.json', methods=['OPTIONS'])
+def print_create_option():
+    return Response('OK', status=200, mimetype='text/plain') 
+    
+@application.route('/printmulti/create.json', methods=['GET', 'POST'])
+def print_create_post():
+    #jsonstring = urllib.unquote_plus(request.content)
+    #spec = json.loads(jsonstring, encoding=self.request.charset)
+
+   
+    # delete all child processes that have already terminated
+    # but are <defunct>. This is a side_effect of the below function
+    multiprocessing.active_children()
+ 
+ 
+    application.logger.info('info')
+    try:
+        spec = request.get_json()
+
+    except:
+        logging.debug('JSON content could not be parsed')
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        application.logger.debug("*** Traceback:/%s" % traceback.print_tb(exc_traceback, limit=1, file=sys.stdout))
+        application.logger.debug("*** Exception:/n%s" % traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+        abort(400, 'JSON content could not be parsed')
+    
+    if spec is None:
+       data = request.stream.read()
+       try:
+           spec = json.loads(data) #, encoding=request.charset)
+       except ValueError:
+            application.logger.debug(data)
+            abort(400, 'JSON content could not be parsed: {}'.format(data))
+       
+    application.logger.debug(json.dumps(spec, indent=2))
+    # Remove older files on the system
+    delete_old_files(PRINT_TEMP_DIR)
+
+    scheme = request.headers.get('X-Forwarded-Proto',
+                                          request.scheme)
+    headers = dict(request.headers)
+    headers.pop("Host", headers)
+    unique_filename = datetime.datetime.now().strftime("%y%m%d%H%M%S") + str(random.randint(1000, 9999))
+
+    with open(create_info_file(PRINT_TEMP_DIR, unique_filename), 'w+') as outfile:
+        json.dump({'status': 'ongoing'}, outfile)
+
+    info = (spec, PRINT_TEMP_DIR, scheme, API_URL, PRINT_PROXY_URL, headers, unique_filename)
+    p = multiprocessing.Process(target=create_and_merge, args=(info,))
+    p.start()
+    response = {'idToCheck': unique_filename}
+
+    return Response(json.dumps(response), mimetype='application/json')
 
 def _normalize_projection(coords, use_lv95=USE_LV95_SERVICES):
     '''Converts point and bbox to LV95, if needed, i.e. if source coords is
@@ -454,15 +568,11 @@ def delete_old_files(path):
             c = t.st_ctime
             if c < cutoff:
                 os.remove(fn)
-
+'''
 
 class PrintMulti(object):
 
-    ''' Print proxy to the MapFish Print Server to deal with time series
 
-    If at least a layer has an attribute 'timestamps' holding an array
-    of timestamps to print, one page per timestamp will be generated and
-    merged.'''
 
     def __init__(self, request):
         self.request = request
@@ -545,3 +655,10 @@ class PrintMulti(object):
         response = {'idToCheck': unique_filename}
 
         return response
+'''
+
+if __name__ == '__main__':
+    application.config['DEBUG'] = os.environ.get('DEBUG', False)
+    port = int(os.environ.get('WSGI_PORT'))
+
+    application.run(host='0.0.0.0', port=port)
