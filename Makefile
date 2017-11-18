@@ -234,7 +234,7 @@ dockerbuild: composetemplateuser
 .PHONY: composetemplateuser
 composetemplateuser:
 		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && \
-				envsubst < nginx/nginx.conf.in > nginx/nginx.conf
+				envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
 				source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
 
 .PHONY: dockerrun
@@ -280,7 +280,8 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
 		envsubst < production.ini.in > production.ini && envsubst < development.ini.in >  development.ini && \
-		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
+		envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf && \
+		envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
 define start_service

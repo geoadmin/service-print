@@ -560,7 +560,8 @@ def create_and_merge(info):
         log.error('Something went wrong while merging PDFs')
         return 3
 
-    pdf_download_url = scheme + ':' + PRINT_SERVER_URL + '/print/-multi' + unique_filename + '.pdf.printout'
+    #pdf_download_url = scheme + ':' + PRINT_SERVER_URL + '/print/-multi' + unique_filename + '.pdf.printout'
+    pdf_download_url = scheme + ':' + PRINT_SERVER_URL + '/' + MAPFISH_MULTI_FILE_PREFIX + unique_filename + '.pdf.printout'
     with open(infofile, 'w+') as outfile:
         json.dump({'status': 'done', 'getURL': pdf_download_url}, outfile)
 

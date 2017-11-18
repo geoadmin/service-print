@@ -3,7 +3,7 @@ user nginx;
 # should be equal to the number of process on the host machine
 worker_processes 8;
 
-error_log /dev/stdout info;
+error_log /dev/stdout debug;
 
 
 events {
@@ -14,7 +14,7 @@ events {
 http {
   default_type text/plain;
   # if we use analytics we may want to turn that off
-  access_log off;
+   access_log /dev/stdout;
   sendfile off;
   # this removes the "host_header" related issue
   underscores_in_headers on;
@@ -52,12 +52,19 @@ http {
       
       #proxy_pass http://localhost:${TOMCAT_PORT};
     }
+
+    location ~  /mapfish-print-multi[0-9]+\.pdf\.printout$ {
+        expires off;
+        try_files $uri $uri/ =404;
+        add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf";
+
+    }
     # PDF download
-    location ~  [0-9]+\.pdf\.printout$ {
+    location ~  [0-9]+\.pdf\.printoutXXXX$ {
       # Do not cache anything
       expires off;
-
-      rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3 last;
+      
+      rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3;
       add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf";
     }
 
