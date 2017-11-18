@@ -32,7 +32,6 @@ if __name__ == '__main__':
     WSGI_PORT = str(os.environ.get('WSGI_PORT'))
     options = {
         'bind': '%s:%s' % ('0.0.0.0', WSGI_PORT),
-        'worker_class': 'gevent',
         'workers': number_of_workers(),
     }
     StandaloneApplication(application, options).run()
