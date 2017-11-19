@@ -30,6 +30,8 @@ USERNAME := $(shell whoami)
 USER_SOURCE ?= rc_user
 WSGI_APP := $(CURRENT_DIRECTORY)/apache/application.wsgi
 SERVER_PORT ?= 9000
+CURRENT_DIR := $(shell pwd)
+INSTALL_DIR := $(CURRENT_DIR)/.venv
 
 # Commands
 AUTOPEP8_CMD := $(INSTALL_DIRECTORY)/bin/autopep8
@@ -39,6 +41,7 @@ NOSE_CMD := $(INSTALL_DIRECTORY)/bin/nosetests
 PIP_CMD := $(INSTALL_DIRECTORY)/bin/pip
 PSERVE_CMD := $(INSTALL_DIRECTORY)/bin/pserve
 PYTHON_CMD := $(INSTALL_DIRECTORY)/bin/python
+COVERAGE_CMD := $(INSTALL_DIR)/bin/coverage
 
 # Linting rules
 PEP8_IGNORE := "E128,E221,E241,E251,E272,E501,E711,E731"
@@ -127,14 +130,16 @@ serve:
 gunicornserve:
 		source rc_user && ${PYTHON_CMD} print3/wsgi.py
 
-.PHONY: test
+.PHONY: test                                                                                                                                                                             
 test:
-	PYTHONPATH=${PYTHONPATH} ${NOSE_CMD} print3/tests/
+		source rc_user && ${COVERAGE_CMD} run --source=print3 --omit=print3/wsgi.py setup.py test
+		${COVERAGE_CMD} report -m
+
 
 .PHONY: lint
 lint:
 	@echo "${GREEN}Linting python files...${RESET}";
-	${FLAKE8_CMD} --ignore=${PEP8_IGNORE} $(PYTHON_FILES) && echo ${RED}
+	${FLAKE8_CMD}  $(PYTHON_FILES) && echo ${RED}
 
 .PHONY: autolint
 autolint:
@@ -211,9 +216,7 @@ print3/static/index.html: print3/static/index.html.in
 		--var "git_commit_date=$(GIT_COMMIT_DATE)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
-requirements.txt:
-	@echo "${GREEN}File requirements.txt has changed${RESET}";
-.venv: requirements.txt
+.venv:
 	@echo "${GREEN}Setting up virtual environement...${RESET}";
 	@if [ ! -d $(INSTALL_DIRECTORY) ]; \
 	then \
