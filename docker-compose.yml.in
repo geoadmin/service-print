@@ -31,7 +31,7 @@ services:
           - ${rancher_label}.env
     environment:
       TOMCAT_PORT: ${tomcat_port}
-      CATALINA_OPTS: -Xmx2g -Xms2g -XX:MaxPermSize=1024m
+      CATALINA_OPTS: -Xmx6g -Xms6g -XX:MaxPermSize=1024m
     ports:
       - "${tomcat_port}:8080"
     volumes:
