@@ -1,22 +1,12 @@
 SHELL = /bin/bash
 
 # Variables
-APACHE_BASE_PATH ?= main
-APACHE_ENTRY_PATH := $(shell if [ '$(APACHE_BASE_PATH)' = 'main' ]; then echo ''; else echo /$(APACHE_BASE_PATH); fi)
-APP_VERSION := $(shell python -c "print __import__('time').strftime('%s')")
-BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
-VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else python -c "print __import__('time').strftime('%s')"; fi)
-BRANCH_STAGING := $(shell if [ '$(DEPLOY_TARGET)' = 'dev' ]; then echo 'test'; else echo 'integration'; fi)
-BRANCH_TO_DELETE :=
-CURRENT_DIRECTORY := $(shell pwd)
-DEPLOYCONFIG ?=
-DEPLOY_TARGET ?=
 GIT_BRANCH := $(shell if [ -f '.venv/deployed-git-branch' ]; then cat .venv/deployed-git-branch 2> /dev/null; else git rev-parse --symbolic-full-name --abbrev-ref HEAD; fi)
 GIT_COMMIT_HASH ?= $(shell git rev-parse --verify HEAD)
 GIT_COMMIT_DATE ?= $(shell git log -1  --date=iso --pretty=format:%cd)
-INSTALL_DIRECTORY := .venv
-MODWSGI_USER := www-data
-NO_TESTS ?= withtests
+APACHE_BASE_PATH ?= main
+VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else python -c "print __import__('time').strftime('%s')"; fi)
+BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
 PRINT_SERVER_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_SERVER_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_BASE_URL ?= ajp://localhost:8009
@@ -29,7 +19,7 @@ TEMPLATE_FILES := $(shell find -type f -name "*.in" -print)
 USERNAME := $(shell whoami)
 USER_SOURCE ?= rc_user
 WSGI_APP := $(CURRENT_DIRECTORY)/apache/application.wsgi
-SERVER_PORT ?= 9000
+#SERVER_PORT ?= 9000
 CURRENT_DIR := $(shell pwd)
 INSTALL_DIR := $(CURRENT_DIR)/.venv
 
@@ -43,84 +33,64 @@ PSERVE_CMD := $(INSTALL_DIRECTORY)/bin/pserve
 PYTHON_CMD := $(INSTALL_DIRECTORY)/bin/python
 COVERAGE_CMD := $(INSTALL_DIR)/bin/coverage
 
-# Linting rules
-PEP8_IGNORE := "E128,E221,E241,E251,E272,E501,E711,E731"
-
-# E128: continuation line under-indented for visual indent
-# E221: multiple spaces before operator
-# E241: multiple spaces after ':'
-# E251: multiple spaces around keyword/parameter equals
-# E272: multiple spaces before keyword
-# E501: line length 79 per default
-# E711: comparison to None should be 'if cond is None:' (SQLAlchemy's filter syntax requires this ignore!)
-# E731: do not assign a lambda expression, use a def
-
 # Colors
 RESET := $(shell tput sgr0)
 RED := $(shell tput setaf 1)
 GREEN := $(shell tput setaf 2)
 
-# Versions
-# We need GDAL which is hard to install in a venv, modify PYTHONPATH to use the
-# system wide version.
-PYTHON_VERSION := $(shell python --version 2>&1 | cut -d ' ' -f 2 | cut -d '.' -f 1,2)
-PYTHONPATH ?= .venv/lib/python${PYTHON_VERSION}/site-packages:/usr/lib64/python${PYTHON_VERSION}/site-packages
-SERVER_ID := $(shell ${PYTHON_CMD}  -c 'import uuid; print uuid.uuid1()')
 
 .PHONY: help
 help:
 	@echo "Usage: make <target>"
 	@echo
 	@echo "Possible targets:"
-	@echo "- all                Build the app"
+	@echo "--------------------------------------------------------------------------"
+	@echo "|                          LOCAl DEVELOPMENT                             |"
+	@echo "--------------------------------------------------------------------------"
 	@echo "- user               Build the user specific version of the app"
 	@echo "- serve              Serve the application with pserve"
+	@echo "- gunicornserve      Serve the application with gunicorn and greenlets"
 	@echo "- test               Launch the tests (no e2e tests)"
 	@echo "- lint               Run the linter"
 	@echo "- autolint           Run the autolinter"
-	@echo "- printconfig        Set tomcat print env variables"
-	@echo "- printwar           Creates the .jar print file (only one per env per default)"
-	@echo "- dockerbuild        Builds a docker image using the current directory"
-	@echo "- dockerrun          Creates and runs all the containers (in the background)"
+	@echo "- printwar           Creates the .jar print file"
 	@echo "- clean              Remove generated files"
 	@echo "- cleanall           Remove all the build artefacts"
 	@echo "--------------------------------------------------------------------------"
+	@echo "|                         DOCKER DEVELOPMENT                             |"
+	@echo "--------------------------------------------------------------------------"
+	@echo "- dockerbuild        Builds a docker image using the current directory"
+	@echo "- dockerrun          Creates and runs all the containers (in the background)"
+	@echo "--------------------------------------------------------------------------"
 	@echo "|                       RANCHER DEPLOYMENT                               |"
 	@echo "--------------------------------------------------------------------------"
-	@echo "- rancherdeploy{dev|int|prod}          Deploys the images pushed in dockerhub"
+	@echo "- rancherdeploy{dev|int|prod}       Deploys the images pushed in dockerhub"
 	@echo
 	@echo "Variables:"
-	@echo "APACHE_ENTRY_PATH:   ${APACHE_ENTRY_PATH}"
+	@echo 
+	@echo "PRINT_ENV:           ${PRINT_ENV}"
+	@echo "RANCHER_LABEL:       ${RANCHER_LABEL}"
+	@echo "IMAGE_TAG:           ${IMAGE_TAG}"
 	@echo "API_URL:             ${API_URL}"
-	@echo "PRINT_PROXY_URL:     ${PRINT_PROXY_URL}"
-	@echo "BRANCH_STAGING:      ${BRANCH_STAGING}"
-	@echo "GIT_BRANCH:          ${GIT_BRANCH}"
-	@echo "TOMCAT_BASE_URL      ${TOMCAT_BASE_URL}"
-	@echo "SERVER_PORT:         ${SERVER_PORT}"
+	@echo "PRINT_SERVER_URL:    ${PRINT_SERVER_URL}"
+	@echo "PRINT_TEMP_DIR:      ${PRINT_TEMP_DIR}"
+	@echo "TOMCAT_SERVER_URL    ${TOMCAT_SERVER_URL}"
+	@echo "NGINX_PORT:          ${NGINX_PORT}"
+	@echo "WSGI_PORT:           ${WSGI_PORT}"
+	@echo "TOMCAT_PORT:         ${TOMCAT_PORT}"
 	@echo
 
+
 .PHONY: all
-all: setup   fixrights
+all: setup   fixrights templates
 
 setup: .venv
 
-templates: tomcat/WEB-INF/web.xml development.ini production.ini print3/static/index.html
+templates: tomcat/WEB-INF/web.xml print3/static/index.html
 
 .PHONY: user
 user:
 	source $(USER_SOURCE) && make all
-
-.PHONY: dev
-dev:
-	source rc_dev && make all
-
-.PHONY: int
-int:
-	source rc_int && make all
-
-.PHONY: prod
-prod:
-	source rc_prod && make all
 
 .PHONY: serve
 serve:
@@ -147,11 +117,6 @@ autolint:
 	${AUTOPEP8_CMD} --in-place --aggressive --aggressive --verbose --ignore=${PEP8_IGNORE} $(PYTHON_FILES)
 
 
-.PHONY: printconfig
-printconfig:
-	@echo '# File managed by Makefile service-print'  > /srv/tomcat/tomcat1/bin/setenv-local.sh
-	@echo 'export JAVA_XMX="2G"'  >> /srv/tomcat/tomcat1/bin/setenv-local.sh
-
 .PHONY: printwar
 printwar: tomcat/WEB-INF/web.xml
 	echo "${GREEN}Updating print war...${RESET}" && \
@@ -177,30 +142,6 @@ tomcat/WEB-INF/web.xml: tomcat/WEB-INF/web.xml.in
 	${MAKO_CMD} \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
-development.ini.in:
-	@echo "${GREEN}Template file development.ini.in has changed${RESET}";
-development.ini: development.ini.in
-	@echo "${GREEN}Creating development.ini....${RESET}";
-	${MAKO_CMD} \
-		--var "app_version=$(APP_VERSION)" \
-		--var "server_port=$(SERVER_PORT)" $< > $@
-
-production.ini.in:
-	@echo "${GREEN}Template file production.ini.in has changed${RESET}";
-production.ini: production.ini.in
-	@echo "${GREEN}Creating production.ini...${RESET}";
-	${MAKO_CMD} \
-		--var "app_version=$(APP_VERSION)" \
-		--var "server_id=$(SERVER_ID)" \
-		--var "server_port=$(SERVER_PORT)" \
-		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
-		--var "apache_base_path=$(APACHE_BASE_PATH)" \
-		--var "current_directory=$(CURRENT_DIRECTORY)" \
-		--var "api_url=$(API_URL)" \
-		--var "print_proxy_url=$(PRINT_PROXY_URL)" \
-		--var "host=$(HOST)" \
-		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
-
 print3/static/index.html.in:
 	@echo "${GREEN}Template file print3/static/index.html.in has changed${RESET}";
 
@@ -208,7 +149,6 @@ print3/static/index.html: print3/static/index.html.in
 	@echo "${GREEN}Creating print3/static/index.html..${RESET}";
 	${MAKO_CMD} \
 		--var "print_war=$(PRINT_WAR)" \
-		--var "apache_entry_path=$(APACHE_ENTRY_PATH)" \
 		--var "apache_base_path=$(APACHE_BASE_PATH)" \
 		--var "tomcat_base_url=$(TOMCAT_BASE_URL)" \
 		--var "git_branch=$(GIT_BRANCH)" \
@@ -297,12 +237,12 @@ endef
 
 docker-compose.yml::
 	${MAKO_CMD} --var "rancher_deploy=$(RANCHER_DEPLOY)" \
-	            --var "image_tag=$(IMAGE_TAG)" \
-							--var "nginx_port=$(NGINX_PORT)" \
-							--var "wsgi_port=$(WSGI_PORT)" \
-							--var "tomcat_port=$(TOMCAT_PORT)" \
-	            --var "rancher_label=$(RANCHER_LABEL)" \
-	            --var "print_env=$(PRINT_ENV)" docker-compose.yml.in > docker-compose.yml
+		--var "image_tag=$(IMAGE_TAG)" \
+		--var "nginx_port=$(NGINX_PORT)" \
+		--var "wsgi_port=$(WSGI_PORT)" \
+		--var "tomcat_port=$(TOMCAT_PORT)" \
+		--var "rancher_label=$(RANCHER_LABEL)" \
+		--var "print_env=$(PRINT_ENV)" docker-compose.yml.in > docker-compose.yml
 
 fixrights:
 	@echo "${GREEN}Fixing rights...${RESET}";
