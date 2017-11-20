@@ -1,5 +1,6 @@
 autopep8
 coverage
+flake8==2.6.2
 Mako
 mock==1.0.1
 nose
