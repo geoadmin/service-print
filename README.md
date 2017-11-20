@@ -138,25 +138,137 @@ or
    
 # Testing  
 
+
 ## Checker
 
+Look for the `Server` header!
 
+Nginx checker
+    curl -I localhost:8009/checker
+    HTTP/1.1 200 OK
+    Server: nginx/1.13.3
+    Date: Mon, 20 Nov 2017 10:02:36 GMT
+    Content-Type: text/plain
+    Content-Length: 2
+    Connection: keep-alive
+    Content-Type: text/plain
+
+Flask wsgi checker
+    
+    curl -I localhost:8010/checker
+    HTTP/1.1 200 OK
+    Server: gunicorn/19.7.1
+    Date: Mon, 20 Nov 2017 10:03:12 GMT
+    Connection: close
+    Content-Type: text/html; charset=utf-8
+    Content-Length: 2
+
+Tomcat checker
+    
+    curl -I localhost:8011/service-print-main/checker
+    HTTP/1.1 200 OK
+    Server: Apache-Coyote/1.1
+    Accept-Ranges: bytes
+    ETag: W/"3-1510759980000"
+    Last-Modified: Wed, 15 Nov 2017 15:33:00 GMT
+    Content-Length: 3
+    Date: Mon, 20 Nov 2017 10:04:06 GMT
+
+or
+    
+    curl -I localhost:8011/checker
+    HTTP/1.1 200 OK
+    Server: Apache-Coyote/1.1
+    Accept-Ranges: bytes
+    ETag: W/"3-1510768712000"
+    Last-Modified: Wed, 15 Nov 2017 17:58:32 GMT
+    Content-Length: 3
+    Date: Mon, 20 Nov 2017 10:14:59 GMT
+
+Nginx to tomcat checker
+    
+    curl -I localhost:8009/tomcat_checker
+    HTTP/1.1 200 OK
+    Server: nginx/1.13.3
+    Date: Mon, 20 Nov 2017 10:15:44 GMT
+    Content-Length: 3
+    Connection: keep-alive
+    Accept-Ranges: bytes
+    ETag: W/"3-1510759980000"
+    Last-Modified: Wed, 15 Nov 2017 15:33:00 GMT
+    
+Nginx to Flask/wsgi checker
+    
+    curl -I localhost:8009/wsgi_checker
+    HTTP/1.1 200 OK
+    Server: nginx/1.13.3
+    Date: Mon, 20 Nov 2017 10:16:06 GMT
+    Content-Type: text/html; charset=utf-8
+    Content-Length: 2
+
+Pass-through checker (nginx-->flask-->tomcat)
+    
+    curl -I  localhost:8009/backend_checker
+    HTTP/1.1 200 OK
+    Server: nginx/1.13.3
+    Date: Mon, 20 Nov 2017 10:16:40 GMT
+    Content-Type: text/html; charset=utf-8
+    Content-Length: 2
+    Connection: keep-alive
 
 
 ## Tomcat
 
+Request to `tomcat` directly, using `TOMCAT_PORT` (8011):
+
+
+
+
+    curl localhost:8011/service-print-main/pdf/info.json
+    {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8011/service-print-main/pdf/print.pdf","createURL":"http://localhost:8011/service-print-main/pdf/create.json"}
+
+Request throught nginx(proxy for above request, but using `NGINX_PORT`)
+
     curl localhost:8009/service-print-main/pdf/info.json
     {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8009/service-print-main/pdf/print.pdf","createURL":"http://localhost:8009/service-print-main/pdf/create.json"}
 
+Standard nginx request to tomcat:
+    
+    curl localhost:8009/print/info.json
+    {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8011/service-print-main/pdf/print.pdf","createURL":"http://localhost:8011/service-print-main/pdf/create.json"}
+
+# Rancher
 
 
+## Deploying to rancher (dev)
 
-    curl -H "Host: service-print.dev.bgdi.ch"  localhost:80/print/info.json
-    {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8009/service-print-main/pdf/print.pdf","createURL":"http://localhost:8009/service-print-main/pdf/create.json"}3
+Set `RANCHER_ACCESS_KEY`, `RANCHER_SECRET_KEY` and `RANCHER_URL` pointing to the rancher **dev** environment
+
+## Push you images to dockerhub
+
+    docker push swisstopo/service-print:staging
+    docker push swisstopo/service-print-nginx:staging 
+    docker push swisstopo/service-print-tomcat:staging 
+
+
+## Deploy your images
+
+Rancher dev is always using the images tagged `staging`
+
+    make rancherdeploydev
+
+## Testing
+
+    curl service-print.dev.bgdi.ch/print/info.json?url=http://service-print.dev.bgdi.ch
+{"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://service-print.dev.bgdi.ch/print.pdf","createURL":"http://service-print.dev.bgdi.ch/create.json"}
+
+The `createURL` must be `http://service-print.dev.bgdi.ch/create.json`
+
 
 ## Taging images and deploy to Docker Hub
 
-# Rancher
+Do not ever use images tagged with `staging` on rancher `int` and `prod` environment!
+
 
 ## Deploy to int
 
