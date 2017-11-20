@@ -225,7 +225,7 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
 # for nginx, we only replace variables that actually exist
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
-		envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
+		envsubst < nginx/nginx.conf.in > nginx/nginx.conf
 		envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
