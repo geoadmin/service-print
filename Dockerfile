@@ -8,7 +8,5 @@ RUN make cleanall && \
        && pip install -r dev-requirements.txt \
        && pip install .
 
-ENTRYPOINT ["/print3/docker-entrypoint.sh"]
-
-CMD ["python", "print3/wsgi.py]
+# CMD ["python", "print3/wsgi.py]
 

@@ -1,6 +1,10 @@
+# -*- coding: utf-8 -
+
+import os
 import multiprocessing
 from gunicorn.app.base import BaseApplication
 from gunicorn.six import iteritems
+from print3.main import app as application
 
 
 def number_of_workers():
@@ -22,3 +26,12 @@ class StandaloneApplication(BaseApplication):
 
     def load(self):
         return self.application
+
+
+if __name__ == '__main__':
+    WSGI_PORT = str(os.environ.get('WSGI_PORT'))
+    options = {
+        'bind': '%s:%s' % ('0.0.0.0', WSGI_PORT),
+        'workers': number_of_workers(),
+    }
+    StandaloneApplication(application, options).run()
