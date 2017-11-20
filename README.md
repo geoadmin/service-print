@@ -25,7 +25,7 @@ A r/w EFS for application, mounted in docker container on _/var/local/print_
   single ones, and then merge them into a single pdf document
 * **tomcat**, with a single application *service-print-main* responding on 8011
                                                                                                                                        
-                                                                                                                      
+```                                                                                                                      
   Nginx:8009               Flask (wsgi) :8010                Tomcat 8011                  EFS  
                                                                                                   
 +----------------+         +-------------+                                          +-----------+
@@ -54,31 +54,36 @@ A r/w EFS for application, mounted in docker container on _/var/local/print_
                                                                                     |           |
                                                                                     +-----------+
 
+```                                                                                                                      
                                                          
                                                                                             
 # Endpoint
 
- print.geo.admin.ch and service-print.(dev|int|prod).bgdi.ch
+## Hostnames
 
- ELB: //vpc-lb-print-(dev|int|prod).intra.bgdi.ch:8009
+    print.geo.admin.ch and service-print.(dev|int|prod).bgdi.ch
+
+## ELB
+ 
+     http://vpc-lb-print-(dev|int|prod).intra.bgdi.ch:8009
 
 
 # URI
 
-    Apache/Nginx                                Flask/WSGI                                  Tomcat
+    Apache/Nginx                            Flask/WSGI                               Tomcat
    
-    GET  /print/info.json                                                      GET /service-print-main/pdf/info.json
+    GET  /print/info.json                                               GET /service-print-main/pdf/info.json
     
-    POST /print/create.json                                                    POST /service-print-main/pdf/create.json
+    POST /print/create.json                                             POST /service-print-main/pdf/create.json
     
-    POST /printmulti/create.json           POST /printmulti/create.json
+    POST /printmulti/create.json       POST /printmulti/create.json
     
-    GET  /printprogress?id=232323          GET /printprogress?id=232323
+    GET  /printprogress?id=232323      GET /printprogress?id=232323
     
-    GET  /printcancel                      GET /printcancel                             EFS (/var/local/print
-                                                                                        
-    GET /print/-multi23444545.pdf.printout                                     mapfish-print-multi23444545.pdf.printout
-    GET /print/9032936254995330149.pdf.printout                                mapfish-print9032936254995330149.pdf.printout
+    GET  /printcancel                  GET /printcancel                          EFS (/var/local/print
+                                                                                     
+    GET /print/-multi23444545.pdf.printout                               mapfish-print-multi23444545.pdf.printout
+    GET /print/9032936254995330149.pdf.printout                          mapfish-print9032936254995330149.pdf.printout
 
 
 # Getting started
@@ -133,7 +138,7 @@ This build three docker images, labeled `staging`:
 
 or
 
-   docker-compose up
+    docker-compose up
    
    
 # Testing  
@@ -144,6 +149,7 @@ or
 Look for the `Server` header!
 
 Nginx checker
+
     curl -I localhost:8009/checker
     HTTP/1.1 200 OK
     Server: nginx/1.13.3
@@ -221,9 +227,6 @@ Pass-through checker (nginx-->flask-->tomcat)
 
 Request to `tomcat` directly, using `TOMCAT_PORT` (8011):
 
-
-
-
     curl localhost:8011/service-print-main/pdf/info.json
     {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8011/service-print-main/pdf/print.pdf","createURL":"http://localhost:8011/service-print-main/pdf/create.json"}
 
@@ -232,10 +235,20 @@ Request throught nginx(proxy for above request, but using `NGINX_PORT`)
     curl localhost:8009/service-print-main/pdf/info.json
     {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8009/service-print-main/pdf/print.pdf","createURL":"http://localhost:8009/service-print-main/pdf/create.json"}
 
+## Nginx
+
 Standard nginx request to tomcat:
     
     curl localhost:8009/print/info.json
     {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://localhost:8011/service-print-main/pdf/print.pdf","createURL":"http://localhost:8011/service-print-main/pdf/create.json"}
+
+
+## Real case
+
+You may use [mapfish print examples](https://github.com/procrastinatio/mapfish-print-examples) to post real `specs` files to the print server (some examples are outdated)
+
+# Debuging
+
 
 # Rancher
 
@@ -260,7 +273,7 @@ Rancher dev is always using the images tagged `staging`
 ## Testing
 
     curl service-print.dev.bgdi.ch/print/info.json?url=http://service-print.dev.bgdi.ch
-{"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://service-print.dev.bgdi.ch/print.pdf","createURL":"http://service-print.dev.bgdi.ch/create.json"}
+    {"scales":[{"name":"1:500","value":"500.0"},{"name":"1:1,000","value":"1000.0"},{"name":"1:2,500","value":"2500.0"},{"name":"1:5,000","value":"5000.0"},{"name":"1:10,000","value":"10000.0"},{"name":"1:20,000","value":"20000.0"},{"name":"1:25,000","value":"25000.0"},{"name":"1:50,000","value":"50000.0"},{"name":"1:100,000","value":"100000.0"},{"name":"1:200,000","value":"200000.0"},{"name":"1:300,000","value":"300000.0"},{"name":"1:500,000","value":"500000.0"},{"name":"1:1,000,000","value":"1000000.0"},{"name":"1:1,500,000","value":"1500000.0"},{"name":"1:2,500,000","value":"2500000.0"}],"dpis":[{"name":"150","value":"150"}],"outputFormats":[{"name":"pdf"}],"layouts":[{"name":"1 A4 landscape","map":{"width":802,"height":530},"rotation":true},{"name":"2 A4 portrait","map":{"width":550,"height":760},"rotation":true},{"name":"3 A3 landscape","map":{"width":1150,"height":777},"rotation":true},{"name":"4 A3 portrait","map":{"width":802,"height":1108},"rotation":true}],"printURL":"http://service-print.dev.bgdi.ch/print.pdf","createURL":"http://service-print.dev.bgdi.ch/create.json"}
 
 The `createURL` must be `http://service-print.dev.bgdi.ch/create.json`
 
@@ -272,6 +285,22 @@ Do not ever use images tagged with `staging` on rancher `int` and `prod` environ
 
 ## Deploy to int
 
+Tag the `staging` images with the last git commit short hash:
+
+    docker tag swisstopo/service-print:staging swisstopo/service-print:83ed21d    
+    docker tag swisstopo/service-print-nginx:staging swisstopo/service-print-nginx:83ed21d    
+    docker tag swisstopo/service-print-tomcat:staging swisstopo/service-print-tomcat:83ed21d    
+
+Push the newly tagged instances to dockerhub
+
+    docker push swisstopo/service-print:83ed21d    
+    docker push swisstopo/service-print-nginx:83ed21d    
+    docker push swisstopo/service-print-tomcat:83ed21d    
+
+Update the `IMAGE_TAG` in both `int.env` and `prod.env` (because you want to deploy theses images to prod)
 
 
+And deploy to rancher
+
+     make rancherdeployint
 
