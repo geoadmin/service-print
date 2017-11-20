@@ -150,9 +150,9 @@ print3/static/index.html.in:
 print3/static/index.html: print3/static/index.html.in
 	@echo "${GREEN}Creating print3/static/index.html..${RESET}";
 	${MAKO_CMD} \
-		--var "print_war=$(PRINT_WAR)" \
-		--var "apache_base_path=$(APACHE_BASE_PATH)" \
-		--var "tomcat_base_url=$(TOMCAT_BASE_URL)" \
+		--var "print_war=$(BASEWAR)" \
+		--var "tomcat_server_url=$(TOMCAT_SERVER_URL)" \
+		--var "tomcat_port=$(TOMCAT_PORT)" \
 		--var "git_branch=$(GIT_BRANCH)" \
 		--var "git_commit_hash=$(GIT_COMMIT_HASH)" \
 		--var "git_commit_date=$(GIT_COMMIT_DATE)" \
@@ -261,6 +261,7 @@ cleancache:
 .PHONY: clean
 clean:
 	rm -rf tomcat/WEB-INF/web.xml
+	rm -f print3/static/index.html
 	rm -rf tomcat/temp_*
 	rm -f nginx/nginx.conf
 	rm -f rancher-compose.yml
