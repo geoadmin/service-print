@@ -11,26 +11,23 @@ PRINT_SERVER_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_SERVER_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_BASE_URL ?= ajp://localhost:8009
 PRINT_INPUT :=  checker *.html *.yaml *.png WEB-INF
-PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
-PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
-PRINT_TEMP_DIR := /var/local/print
+#PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
+#PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
+PRINT_TEMP_DIR ?= /var/local/print
 PYTHON_FILES := $(shell find print3/* -path print/static -prune -o -type f -name "*.py" -print)
-TEMPLATE_FILES := $(shell find -type f -name "*.in" -print)
 USERNAME := $(shell whoami)
 USER_SOURCE ?= rc_user
-WSGI_APP := $(CURRENT_DIRECTORY)/apache/application.wsgi
-#SERVER_PORT ?= 9000
 CURRENT_DIR := $(shell pwd)
 INSTALL_DIR := $(CURRENT_DIR)/.venv
 
 # Commands
-AUTOPEP8_CMD := $(INSTALL_DIRECTORY)/bin/autopep8
-FLAKE8_CMD := $(INSTALL_DIRECTORY)/bin/flake8
-MAKO_CMD := $(INSTALL_DIRECTORY)/bin/mako-render
-NOSE_CMD := $(INSTALL_DIRECTORY)/bin/nosetests
-PIP_CMD := $(INSTALL_DIRECTORY)/bin/pip
-PSERVE_CMD := $(INSTALL_DIRECTORY)/bin/pserve
-PYTHON_CMD := $(INSTALL_DIRECTORY)/bin/python
+AUTOPEP8_CMD := $(INSTALL_DIR)/bin/autopep8
+FLAKE8_CMD := $(INSTALL_DIR)/bin/flake8
+MAKO_CMD := $(INSTALL_DIR)/bin/mako-render
+NOSE_CMD := $(INSTALL_DIR)/bin/nosetests
+PIP_CMD := $(INSTALL_DIR)/bin/pip
+PSERVE_CMD := $(INSTALL_DIR)/bin/pserve
+PYTHON_CMD := $(INSTALL_DIR)/bin/python
 COVERAGE_CMD := $(INSTALL_DIR)/bin/coverage
 
 # Colors
@@ -44,23 +41,26 @@ help:
 	@echo "Usage: make <target>"
 	@echo
 	@echo "Possible targets:"
+	@echo
 	@echo "--------------------------------------------------------------------------"
 	@echo "|                          LOCAl DEVELOPMENT                             |"
 	@echo "--------------------------------------------------------------------------"
 	@echo "- user               Build the user specific version of the app"
-	@echo "- serve              Serve the application with pserve"
-	@echo "- gunicornserve      Serve the application with gunicorn and greenlets"
+	@echo "- serve              Serve using Flask internal server"
+	@echo "- gunicornserve      Serve the application with gunicorn"
 	@echo "- test               Launch the tests (no e2e tests)"
 	@echo "- lint               Run the linter"
 	@echo "- autolint           Run the autolinter"
-	@echo "- printwar           Creates the .jar print file"
+	@echo "- printwar           Creates the .war print file"
 	@echo "- clean              Remove generated files"
 	@echo "- cleanall           Remove all the build artefacts"
+	@echo
 	@echo "--------------------------------------------------------------------------"
 	@echo "|                         DOCKER DEVELOPMENT                             |"
 	@echo "--------------------------------------------------------------------------"
 	@echo "- dockerbuild        Builds a docker image using the current directory"
 	@echo "- dockerrun          Creates and runs all the containers (in the background)"
+	@echo
 	@echo "--------------------------------------------------------------------------"
 	@echo "|                       RANCHER DEPLOYMENT                               |"
 	@echo "--------------------------------------------------------------------------"
@@ -78,6 +78,8 @@ help:
 	@echo "NGINX_PORT:          ${NGINX_PORT}"
 	@echo "WSGI_PORT:           ${WSGI_PORT}"
 	@echo "TOMCAT_PORT:         ${TOMCAT_PORT}"
+	@echo "BASEWAR:             ${BASEWAR}"
+	@echo "INSTALL_DIR:         ${INSTALL_DIR}"
 	@echo
 
 
@@ -94,7 +96,7 @@ user:
 
 .PHONY: serve
 serve:
-	PYTHONPATH=${PYTHONPATH} ${PSERVE_CMD} development.ini --reload
+	source rc_user && ${PYTHON_CMD} print3/main.py
 
 .PHONY: gunicornserve
 gunicornserve:
@@ -158,9 +160,9 @@ print3/static/index.html: print3/static/index.html.in
 
 .venv:
 	@echo "${GREEN}Setting up virtual environement...${RESET}";
-	@if [ ! -d $(INSTALL_DIRECTORY) ]; \
+	@if [ ! -d $(INSTALL_DIR) ]; \
 	then \
-		virtualenv $(INSTALL_DIRECTORY); \
+		virtualenv $(INSTALL_DIR); \
 		${PIP_CMD} install ${CURRENT_DIRECTORY}/pip-8.1.2.tar.gz; \
 		${PIP_CMD} install pyopenssl ndg-httpsclient pyasn1; \
 		${PIP_CMD} install -U pip wheel distribute; \
@@ -220,10 +222,10 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
 	export RANCHER_DEPLOY=true && make composetemplateprod
 	$(call start_service,$(RANCHER_ACCESS_KEY),$(RANCHER_SECRET_KEY),$(RANCHER_URL),prod)
 
+# for nginx, we only replace variables that actually exist
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
-		envsubst < production.ini.in > production.ini && envsubst < development.ini.in >  development.ini && \
-		envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf && \
+		envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
 		envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
 
