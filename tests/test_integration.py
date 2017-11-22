@@ -44,4 +44,6 @@ class TestServicePrintIntegration(unittest.TestCase):
 
         resp = self.app.get('/backend_checker')
         self.assertEqual(resp.status_code, 502)
+        
+
 
