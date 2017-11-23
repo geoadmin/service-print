@@ -28,7 +28,7 @@ services:
 % endif
     image: swisstopo/service-print-tomcat:${image_tag}
     env_file:
-          - ${rancher_label}.env
+    - ${rancher_label}.env
     environment:
       TOMCAT_PORT: ${tomcat_port}
       CATALINA_OPTS: -Xmx2g -Xms2g -XX:MaxPermSize=1024m
