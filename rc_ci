@@ -1,3 +1,0 @@
-source rc_dev
-export API_URL=//mf-chsdi3.ci.bgdi.ch
-export DEPLOY_TARGET=ci
