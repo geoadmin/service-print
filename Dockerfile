@@ -7,6 +7,3 @@ RUN make cleanall && \
        pip install -r requirements.txt \
        && pip install -r dev-requirements.txt \
        && pip install .
-
-# CMD ["python", "print3/wsgi.py]
-

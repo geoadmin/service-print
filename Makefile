@@ -67,7 +67,7 @@ help:
 	@echo "- rancherdeploy{dev|int|prod}       Deploys the images pushed in dockerhub"
 	@echo
 	@echo "Variables:"
-	@echo 
+	@echo
 	@echo "PRINT_ENV:           ${PRINT_ENV}"
 	@echo "RANCHER_LABEL:       ${RANCHER_LABEL}"
 	@echo "IMAGE_TAG:           ${IMAGE_TAG}"
@@ -84,7 +84,7 @@ help:
 
 
 .PHONY: all
-all: setup   fixrights templates
+all: setup templates
 
 setup: .venv
 
@@ -100,24 +100,22 @@ serve:
 
 .PHONY: gunicornserve
 gunicornserve:
-		source rc_user && ${PYTHON_CMD} print3/wsgi.py
+	source rc_user && ${PYTHON_CMD} print3/wsgi.py
 
-.PHONY: test                                                                                                                                                                             
+.PHONY: test
 test:
-		source rc_user && ${COVERAGE_CMD} run --source=print3 --omit=print3/wsgi.py setup.py test
-		${COVERAGE_CMD} report -m
-
+	source rc_user && ${COVERAGE_CMD} run --source=print3 --omit=print3/wsgi.py setup.py test
+	${COVERAGE_CMD} report -m
 
 .PHONY: lint
 lint:
 	@echo "${GREEN}Linting python files...${RESET}";
-	${FLAKE8_CMD}  $(PYTHON_FILES) && echo ${RED}
+	${FLAKE8_CMD} --ignore=E501 $(PYTHON_FILES) && echo ${RED}
 
 .PHONY: autolint
 autolint:
 	@echo "${GREEN}Auto correction of python files...${RESET}";
 	${AUTOPEP8_CMD} --in-place --aggressive --aggressive --verbose --ignore=${PEP8_IGNORE} $(PYTHON_FILES)
-
 
 .PHONY: printwar
 printwar: tomcat/WEB-INF/web.xml
@@ -132,9 +130,7 @@ printwar: tomcat/WEB-INF/web.xml
 	cp -r  service-print-$(APACHE_BASE_PATH).war .. && \
 	echo "${GREEN}Print war creation was successful.${RESET}" &&  cd .. && \
 	echo "${GREEN}Removing temp directory${RESET}" && \
-	rm -rf temp_$(VERSION) 
-
-
+	rm -rf temp_$(VERSION)
 
 tomcat/WEB-INF/web.xml.in:
 	@echo "${GREEN}Template file tomcat/WEB-INF/web.xml has changed${RESET}"
@@ -163,10 +159,8 @@ print3/static/index.html: print3/static/index.html.in
 	@if [ ! -d $(INSTALL_DIR) ]; \
 	then \
 		virtualenv $(INSTALL_DIR); \
-		${PIP_CMD} install ${CURRENT_DIRECTORY}/pip-8.1.2.tar.gz; \
 		${PIP_CMD} install pyopenssl ndg-httpsclient pyasn1; \
-		${PIP_CMD} install -U pip wheel distribute; \
-		${PIP_CMD} install setuptools==33.1.1;  \
+		${PIP_CMD} install -U pip setuptools; \
 		$(PIP_CMD) install -r requirements.txt; \
 		$(PIP_CMD) install -r dev-requirements.txt; \
 	fi
@@ -174,32 +168,32 @@ print3/static/index.html: print3/static/index.html.in
 
 .PHONY: dockerbuild
 dockerbuild: composetemplateuser
-		docker-compose build
+	docker-compose build
 
 .PHONY: composetemplateuser
 composetemplateuser:
-		source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && \
-				envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
-				source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
+	source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && \
+	envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
+	source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
 
 .PHONY: dockerrun
 dockerrun: composetemplateuser
-		docker-compose up -d
+	docker-compose up -d
 
 .PHONY: composetemplatedev
 composetemplatedev:
-		$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
-		$(call build_templates,dev,$(RANCHER_DEPLOY))
+	$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
+	$(call build_templates,dev,$(RANCHER_DEPLOY))
 
 .PHONY: composetemplateint
 composetemplateint:
-		$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
-		$(call build_templates,int,$(RANCHER_DEPLOY))
+	$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
+	$(call build_templates,int,$(RANCHER_DEPLOY))
 
 .PHONY: composetemplateprod
 composetemplateprod:
-		$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
-		$(call build_templates,prod,$(RANCHER_DEPLOY))
+	$(eval RANCHER_DEPLOY=$(call get_rancher_deploy_val,$(RANCHER_DEPLOY)))
+	$(call build_templates,prod,$(RANCHER_DEPLOY))
 
 .PHONY: rancherdeploydev
 rancherdeploydev: guard-RANCHER_ACCESS_KEY \
@@ -230,6 +224,7 @@ define build_templates
 endef
 
 define start_service
+	rancher --access-key $1 --secret-key $2 --url $3 rm --stop --type stack service-print-$4
 	rancher --access-key $1 --secret-key $2 --url $3 up --stack service-print-$4 --pull --force-upgrade --confirm-upgrade -d
 endef
 
@@ -245,12 +240,6 @@ docker-compose.yml::
 		--var "tomcat_port=$(TOMCAT_PORT)" \
 		--var "rancher_label=$(RANCHER_LABEL)" \
 		--var "print_env=$(PRINT_ENV)" docker-compose.yml.in > docker-compose.yml
-
-fixrights:
-	@echo "${GREEN}Fixing rights...${RESET}";
-	chgrp -f -R geodata . || :
-	chmod -f -R g+srwX . || :
-	chmod -f -R o+sr . || :
 
 .PHONY: cleancache
 cleancache:
