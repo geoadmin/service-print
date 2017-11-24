@@ -25,7 +25,7 @@ http {
   # 
   # POST /print/create.json                                                      POST /service-print-main/pdf/create.json
   # 
- # POST /printmulti/create.json             POST /printmulti/create.json
+  # POST /printmulti/create.json             POST /printmulti/create.json
   # 
   # GET  /printprogress?id=232323            GET /printprogress?id=232323
   # 
@@ -51,9 +51,8 @@ http {
         types {
           application/pdf        printout;
         }
-        expires off;
-
-        add_header Content-Type application/pdf always;
+        expires 1h;
+        add_header Cache-Control "public";
         add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf" always;
         break;
     }
@@ -63,15 +62,13 @@ http {
       types {
           application/pdf        printout;
       }
-      # Do not cache anything
-      expires off;
-
+      expires 1h;
+      add_header Cache-Control "public";
       add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf" always;
+      break;
     }
 
     location ~  ^/print/[0-9]+\.pdf\.printout$ {
-      # Do not cache anything
-      expires off;
       
       rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3;
     }
