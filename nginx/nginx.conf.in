@@ -12,9 +12,8 @@ events {
 }
 
 http {
-  default_type text/plain;
   # if we use analytics we may want to turn that off
-   access_log /dev/stdout;
+  access_log /dev/stdout;
   sendfile off;
   # this removes the "host_header" related issue
   underscores_in_headers on;
@@ -44,29 +43,39 @@ http {
     root /var/local/print;
 
     location ~ /[0-9]+/print/ {
-      #rewrite ^/[0-9]+/print/(.*) /service-print-main/pdf/$1 break;
       rewrite ^/[0-9]+/print/(.*) /print/$1;
-      #alias /print/;
-      # Do not cache anything
-      #expires off;
-      
-      #proxy_pass http://localhost:${TOMCAT_PORT};
     }
 
-    location ~  /mapfish-print-multi[0-9]+\.pdf\.printout$ {
-        expires off;
-        add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf";
-        #try_files $uri $uri/ =404;
-
-    }
     # PDF download
-    location ~  [0-9]+\.pdf\.printoutXXXX$ {
+    location ~  /mapfish-print-multi[0-9]+\.pdf\.printout$ {
+        types {
+          application/pdf        printout;
+        }
+        expires off;
+
+        add_header Content-Type application/pdf always;
+        add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf" always;
+        break;
+    }
+
+    location ~  ^/mapfish-print[0-9]+\.pdf\.printout$ {
+
+      types {
+          application/pdf        printout;
+      }
+      # Do not cache anything
+      expires off;
+
+      add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf" always;
+    }
+
+    location ~  ^/print/[0-9]+\.pdf\.printout$ {
       # Do not cache anything
       expires off;
       
       rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3;
-      add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf";
     }
+
 
     location  /print/ {
       add_header 'Access-Control-Allow-Origin' '*' always;
