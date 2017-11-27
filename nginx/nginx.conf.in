@@ -42,21 +42,29 @@ http {
 
     root /var/local/print;
 
+    # cached info.json
     location ~ /[0-9]+/print/ {
+
+       expires 24h;
+       add_header Cache-Control "public";
+
       rewrite ^/[0-9]+/print/(.*) /print/$1;
     }
 
-    # PDF download
+    # Multi-PDF download
     location ~  /mapfish-print-multi[0-9]+\.pdf\.printout$ {
+
         types {
           application/pdf        printout;
         }
+
         expires 1h;
         add_header Cache-Control "public";
         add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf" always;
         break;
     }
 
+    # Single page PDF download
     location ~  ^/mapfish-print[0-9]+\.pdf\.printout$ {
 
       types {
@@ -68,6 +76,7 @@ http {
       break;
     }
 
+    # Catch all pdf download
     location ~  ^/print/[0-9]+\.pdf\.printout$ {
       
       rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3;
@@ -84,6 +93,7 @@ http {
       
       proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/pdf/;
     }
+
     # For migration
     location /service-print-main/ {
       # Do not cache anything
@@ -92,8 +102,7 @@ http {
       proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/;
     }
 
-    # proxying wsgi
-
+    # Multipage print (WSGI proxy)
     location  /printmulti/ {
       add_header 'Access-Control-Allow-Origin' '*' always;
       add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
@@ -151,6 +160,7 @@ http {
       expires off;
       proxy_pass http://localhost:${WSGI_PORT}/checker;
     }
+    # Pass-through checker: nginx-->wsgi-->tomcat
     location /backend_checker {
       expires off;
       proxy_pass http://localhost:${WSGI_PORT}/backend_checker;
