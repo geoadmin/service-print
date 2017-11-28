@@ -436,13 +436,13 @@ layouts:
         - !columns
           condition: thirdPartyDataOwner
           absoluteY: 75
-          absoluteX: 25
+          absoluteX: 80
           width: 300
           items:
             - !text
               fontColor: red
               fontSize: 7
-              align: left
+              align: right
               text: |
                 ${thirdPartyDataOwner}
 
@@ -767,13 +767,13 @@ layouts:
         - !columns
           condition: thirdPartyDataOwner
           absoluteY: 60
-          absoluteX: 25
+          absoluteX: 670
           width: 300
           items:
             - !text
               fontColor: red
               fontSize: 7
-              align: left
+              align: right
               text: |
                 ${thirdPartyDataOwner}
 
@@ -1098,13 +1098,13 @@ layouts:
         - !columns
           condition: thirdPartyDataOwner
           absoluteY: 75
-          absoluteX: 67
+          absoluteX: 326
           width: 405
           items:
             - !text
               fontColor: red
               fontSize: 6
-              align: left
+              align: right
               text: |
                 ${thirdPartyDataOwner}
 
