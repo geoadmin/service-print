@@ -90,13 +90,13 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 70
-          absoluteX: 25
+          absoluteY: 60
+          absoluteX: 325
           width: 300
           items:
             - !text
               fontSize: 7
-              align: left
+              align: right
               text: |
                 ${dataOwner}
 
@@ -106,13 +106,13 @@ layouts:
         - !columns
           condition: thirdPartyDataOwner
           absoluteY: 60
-          absoluteX: 25
+          absoluteX: 325
           width: 300
           items:
             - !text
               fontColor: red
               fontSize: 7
-              align: left
+              align: right
               text: |
                 ${thirdPartyDataOwner}
 
@@ -420,13 +420,13 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 85
-          absoluteX: 30
+          absoluteY: 75
+          absoluteX: 80
           width: 300
           items:
             - !text
               fontSize: 7
-              align: left
+              align: right
               text: |
                 ${dataOwner}
 
@@ -436,13 +436,13 @@ layouts:
         - !columns
           condition: thirdPartyDataOwner
           absoluteY: 75
-          absoluteX: 25
+          absoluteX: 80
           width: 300
           items:
             - !text
               fontColor: red
               fontSize: 7
-              align: left
+              align: right
               text: |
                 ${thirdPartyDataOwner}
 
@@ -751,13 +751,13 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 70
-          absoluteX: 25
+          absoluteY: 60
+          absoluteX: 670
           width: 300
           items:
             - !text
               fontSize: 7
-              align: left
+              align: right
               text: |
                 ${dataOwner}
 
@@ -767,13 +767,13 @@ layouts:
         - !columns
           condition: thirdPartyDataOwner
           absoluteY: 60
-          absoluteX: 25
+          absoluteX: 670
           width: 300
           items:
             - !text
               fontColor: red
               fontSize: 7
-              align: left
+              align: right
               text: |
                 ${thirdPartyDataOwner}
 
@@ -1082,13 +1082,13 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 85
-          absoluteX: 30
+          absoluteY: 75
+          absoluteX: 326
           width: 405
           items:
             - !text
               fontSize: 6
-              align: left
+              align: right
               text: |
                 ${dataOwner}
 
@@ -1098,13 +1098,13 @@ layouts:
         - !columns
           condition: thirdPartyDataOwner
           absoluteY: 75
-          absoluteX: 67
+          absoluteX: 326
           width: 405
           items:
             - !text
               fontColor: red
               fontSize: 6
-              align: left
+              align: right
               text: |
                 ${thirdPartyDataOwner}
 
