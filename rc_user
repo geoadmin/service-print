@@ -1,2 +1,1 @@
-source rc_dev
 export $(cat dev.env)
