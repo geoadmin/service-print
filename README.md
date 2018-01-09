@@ -123,7 +123,10 @@ This generate a new  file *service-print-main.war* using the `BASEWAR` war file.
 
 ## Building
 
-   make composetemplatedev dockerbuild
+Build a new *staging* image for testing with:
+
+    make composetemplatedev dockerbuild
+
 
 This build three docker images, labeled `staging`:
 
