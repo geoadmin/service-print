@@ -362,9 +362,10 @@ def create_and_merge(info):
             all_timestamps.keys())
 
     for i, lyr in enumerate(spec['layers']):
-        cleanup_baseurl = spec['layers'][i][
-            'baseURL'].replace('{', '%7B').replace('}', '%7D')
-        spec['layers'][i]['baseURL'] = cleanup_baseurl
+        if 'baseUrl' in spec['layers'][i]:
+            cleanup_baseurl = spec['layers'][i][
+                'baseURL'].replace('{', '%7B').replace('}', '%7D')
+            spec['layers'][i]['baseURL'] = cleanup_baseurl
 
     if len(all_timestamps) < 1:
         job = (0, url, headers, None, [], spec, print_temp_dir)
