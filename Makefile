@@ -214,7 +214,7 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY \
                   guard-RANCHER_SECRET_KEY \
                   guard-RANCHER_URL
 	export RANCHER_DEPLOY=true && make composetemplateprod
-	$(call start_service,$(RANCHER_ACCESS_KEY),$(RANCHER_SECRET_KEY),$(RANCHER_URL),prod)
+	$(call start_service,$(RANCHER_ACCESS_KEY_PROD),$(RANCHER_SECRET_KEY_PROD),$(RANCHER_URL_PROD),prod)
 
 # for nginx, we only replace variables that actually exist
 define build_templates
