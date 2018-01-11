@@ -22,15 +22,15 @@ http {
   # Apache/Nginx                                   WSGI                            Tomcat
   #
   # GET  /print/info.json                                                        GET /service-print-main/pdf/info.json
-  # 
+  #
   # POST /print/create.json                                                      POST /service-print-main/pdf/create.json
-  # 
+  #
   # POST /printmulti/create.json             POST /printmulti/create.json
-  # 
+  #
   # GET  /printprogress?id=232323            GET /printprogress?id=232323
-  # 
+  #
   # GET  /printcancel                        GET /printcancel
-  # 
+  #
   # GET /print/-multi23444545.pdf.printout
   # GET /print/9032936254995330149.pdf.printout
   # static to /var/local/print/mapfish-print9032936254995330149.pdf.printout
@@ -69,7 +69,7 @@ http {
     }
 
     location ~  ^/print/[0-9]+\.pdf\.printout$ {
-      
+
       rewrite ^/print(proxy)?/(\-multi)?([0-9]+\.pdf\.printout)$ /mapfish-print$2$3;
     }
 
@@ -81,14 +81,14 @@ http {
 
       # Do not cache anything
       expires off;
-      
+
       proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/pdf/;
     }
     # For migration
     location /service-print-main/ {
       # Do not cache anything
       expires off;
-      
+
       proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/;
     }
 
@@ -100,7 +100,7 @@ http {
       add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
       # Do not cache anything
       expires off;
-      
+
       proxy_pass http://localhost:${WSGI_PORT}/printmulti/;
     }
     location  /printprogress {
@@ -109,7 +109,7 @@ http {
       add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
       # Do not cache anything
       expires off;
-      
+
       proxy_pass http://localhost:${WSGI_PORT}/printprogress;
     }
     location  /printcancel {
@@ -118,7 +118,7 @@ http {
       add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
       # Do not cache anything
       expires off;
-      
+
       proxy_pass http://localhost:${WSGI_PORT}/printcancel;
     }
 
@@ -137,7 +137,7 @@ http {
       # Send rest of the world to /dev/null #
       deny all;
     }
-    
+
     location /checker {
       access_log   off;
       add_header Content-Type text/plain;
