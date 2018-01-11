@@ -17,8 +17,8 @@ from urllib import urlencode
 from PyPDF2 import PdfFileMerger
 
 
-from flask import Flask, abort, Response, request
 import requests
+from flask import Flask, abort, Response, request, current_app
 from requests.exceptions import Timeout, ConnectionError, SSLError
 
 from print3.utils import (
@@ -37,25 +37,22 @@ from print3.config import MAPFISH_FILE_PREFIX, MAPFISH_MULTI_FILE_PREFIX, \
     USE_MULTIPROCESS, VERIFY_SSL, LOG_SPEC_FILES, REFERER_URL
 
 import logging
-# log = logging.getLogger(__name__)
-# log.setLevel(logging.INFO)
+
 
 WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
 LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
 PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')
 API_URL = os.environ.get('API_URL', 'https://api3.geo.admin.ch')
-TOMCAT_SERVER_URL = '//%s:%s' % (
+TOMCAT_SERVER_URL = '%s:%s' % (
     os.environ.get('TOMCAT_SERVER_URL'), os.environ.get('NGINX_PORT'))
 TOMCAT_LOCAL_SERVER_URL = '//localhost:%s' % os.environ.get('TOMCAT_PORT')
 PRINT_SERVER_URL = os.environ.get('PRINT_SERVER_URL')
-
-logging.basicConfig(level=LOGLEVEL, stream=sys.stderr)
-log = logging.getLogger(__name__)
-
 NUMBER_POOL_PROCESSES = multiprocessing.cpu_count()
 
 
 app = Flask(__name__)
+multi_logger = multiprocessing.log_to_stderr()
+multi_logger.setLevel(LOGLEVEL)
 
 
 @app.route('/checker')
@@ -140,20 +137,18 @@ def print_create_post():
     # but are <defunct>. This is a side_effect of the below function
     multiprocessing.active_children()
 
-    app.logger.info('info')
     try:
         spec = request.get_json()
-
     except:
-        logging.debug('JSON content could not be parsed')
+        app.logger.error('JSON content could not be parsed')
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        app.logger.debug(
+        app.logger.error(
             "*** Traceback:/%s" %
             traceback.print_tb(
                 exc_traceback,
                 limit=1,
                 file=sys.stdout))
-        app.logger.debug(
+        app.logger.error(
             "*** Exception:/n%s" %
             traceback.print_exception(
                 exc_type,
@@ -168,13 +163,14 @@ def print_create_post():
         try:
             spec = json.loads(data)
         except ValueError:
-            app.logger.debug(data)
+            app.logger.error(data)
             abort(400, 'JSON content could not be parsed: {}'.format(data))
 
     if LOG_SPEC_FILES:
         app.logger.debug(json.dumps(spec, indent=2))
 
     # Remove older files on the system
+    app.logger.info('Removing older files on system')
     delete_old_files(PRINT_TEMP_DIR)
 
     scheme = request.headers.get('X-Forwarded-Proto',
@@ -196,6 +192,7 @@ def print_create_post():
         TOMCAT_SERVER_URL,
         headers,
         unique_filename)
+    app.logger.info('Start the creation of the multiprint')
     p = multiprocessing.Process(target=create_and_merge, args=(info,))
     p.start()
 
@@ -211,7 +208,7 @@ def worker(job):
     (idx, url, headers, timestamp, layers, tmp_spec,
      print_temp_dir, infofile, cancelfile, lock) = job
 
-    app.logger.debug(json.dumps(tmp_spec, indent=2))
+    multi_logger.debug('Worker started to print an individual pdf')
 
     for layer in layers:
         try:
@@ -221,14 +218,21 @@ def worker(job):
 
     # Before launching print request, check if process is canceled
     if os.path.isfile(cancelfile):
+        multi_logger.info('Cancelling request')
+        multi_logger.info('Cancel file %s' % cancelfile)
         return (timestamp, None)
 
     h = {'Referer': headers.get('Referer'), 'Content-Type': 'application/json'}
-    r = requests.post(
-        url,
-        data=json.dumps(tmp_spec),
-        headers=h,
-        verify=VERIFY_SSL)
+    multi_logger.debug('Creating pdf %s' % url)
+    try:
+        r = requests.post(
+            url,
+            data=json.dumps(tmp_spec),
+            headers=h,
+            verify=VERIFY_SSL)
+    except Exception:
+        multi_logger.error('Failed to create for %s' % url)
+        return (timestamp, None)
 
     if r.status_code == requests.codes.ok:
 
@@ -238,20 +242,19 @@ def worker(job):
         # EFS!
         try:
             pdf_url = r.json()['getURL']
-            app.logger.debug('[Worker] pdf_url: %s', pdf_url)
+            multi_logger.debug('[Worker] pdf_url: %s', pdf_url)
             filename = os.path.basename(urlsplit(pdf_url).path)
             localname = os.path.join(
                 print_temp_dir, MAPFISH_FILE_PREFIX + filename)
-        except:
-            app.logger.debug('[Worker] Failed timestamp: %s', timestamp)
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            app.logger.debug(
+        except Exception as e:
+            multi_logger.error('[Worker] Failed timestamp: %s', timestamp)
+            multi_logger.error(
                 "*** Traceback:/n %s" %
                 traceback.print_tb(
                     exc_traceback,
                     limit=1,
                     file=sys.stdout))
-            app.logger.debug(
+            multi_logger.error(
                 "*** Exception:/n %s" %
                 traceback.print_exception(
                     exc_type,
@@ -264,15 +267,15 @@ def worker(job):
         _increment_info(lock, infofile)
         return (timestamp, localname)
     else:
-        app.logger.debug(
+        multi_logger.error(
             '[Worker] Failed get/generate PDF for: %s. Error: %s',
             timestamp,
             r.status_code)
-        app.logger.debug('[Worker] response: %s', r.text)
-        app.logger.debug('[Worker] spec: %s', tmp_spec)
-        app.logger.debug('[Worker] headers: %s', h)
-        app.logger.debug('[Worker] url: %s', url)
-        app.logger.debug('[Worker] print dir: %s', print_temp_dir)
+        multi_logger.error('[Worker] response: %s', r.text)
+        multi_logger.error('[Worker] spec: %s', tmp_spec)
+        multi_logger.error('[Worker] headers: %s', h)
+        multi_logger.error('[Worker] url: %s', url)
+        multi_logger.error('[Worker] print dir: %s', print_temp_dir)
 
         return (timestamp, None)
 
@@ -304,7 +307,7 @@ def create_and_merge(info):
             with open(infofile, 'w+') as outfile:
                 json.dump(info_json, outfile)
 
-        log.info('[_merge_pdfs] Starting merge')
+        current_app.logger.info('[_merge_pdfs] Starting merge')
         merger = PdfFileMerger()
         expected_file_size = 0
         for pdf in sorted(pdfs, key=lambda x: x[0]):
@@ -325,10 +328,10 @@ def create_and_merge(info):
             info_json['written'] = 0
             write_info()
             filename = create_pdf_path(print_temp_dir, unique_filename)
-            log.info('[_merge_pdfs] Writing file.')
+            current_app.logger.info('[_merge_pdfs] Writing file.')
             out = open(filename, 'wb')
             merger.write(out)
-            log.info('[_merge_pdfs] Merged PDF written to: %s', filename)
+            current_app.logger.info('[_merge_pdfs] Merged PDF written to: %s', filename)
         except:
             return False
 
@@ -350,11 +353,11 @@ def create_and_merge(info):
     if _isMultiPage(spec):
         all_timestamps = _get_timestamps(spec, api_url)
 
-        app.logger.info('[print_create_post] Going multipages')
+        current_app.logger.info('[print_create_post] Going multipages')
         if len(all_timestamps) < 1:
             return 4
 
-        app.logger.debug(
+        current_app.logger.debug(
             '[print_create_post] Timestamps to process: %s',
             all_timestamps.keys())
 
@@ -384,7 +387,7 @@ def create_and_merge(info):
                 qrcodeurl = spec['qrcodeurl']
                 tmp_spec['pages'][0]['timestamp'] = str(ts[0:4]) + "\n"
 
-                # Adapteds the qrcode url and shortlink to match the
+                # Adapts the qrcode url and shortlink to match the
                 # timestamp on every page of the PDF document
 
                 parsed_qurl = _qrcodeurlparse(qrcodeurl)
@@ -401,16 +404,16 @@ def create_and_merge(info):
 
                     tmp_spec['qrcodeurl'] = time_updated_qrcodeurl
                     tmp_spec['pages'][0]['shortLink'] = shortlink
-                    log.debug(
+                    current_app.logger.debug(
                         '[print_create] QRcodeURL: %s',
                         time_updated_qrcodeurl)
-                    log.debug('[print_create] shortLink: %s', shortlink)
+                    current_app.logger.debug('[print_create] shortLink: %s', shortlink)
 
             if 'legends' in tmp_spec.keys() and ts != last_timestamp:
                 del tmp_spec['legends']
                 tmp_spec['enableLegends'] = False
 
-            app.logger.debug('[print_create] Processing timestamp: %s', ts)
+            current_app.logger.debug('[print_create] Processing timestamp: %s', ts)
 
             job = (
                 idx,
@@ -431,7 +434,7 @@ def create_and_merge(info):
                    'total': len(jobs)}, outfile)
 
     if USE_MULTIPROCESS:
-        app.logger.info("Going multiprocess")
+        current_app.logger.info("Going multiprocess")
         pool = multiprocessing.Pool(NUMBER_POOL_PROCESSES)
         pdfs = pool.map(worker, jobs)
         pool.close()
@@ -444,25 +447,11 @@ def create_and_merge(info):
                 if p.exitcode is None:
                     p.terminate()
                 del pool._pool[i]
-            log.error('Error while generating the partial PDF: %s', e)
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            log.debug(
-                "*** Traceback:/n %s" %
-                traceback.print_tb(
-                    exc_traceback,
-                    limit=1,
-                    file=sys.stdout))
-            log.debug(
-                "*** Exception:/n %s" %
-                traceback.print_exception(
-                    exc_type,
-                    exc_value,
-                    exc_traceback,
-                    limit=2,
-                    file=sys.stdout))
+            current_app.logger.error('Error while generating the partial PDF: %s', e)
+            current_app.logger.error(e, exec_info=True)
             return 1
     else:
-        app.logger.info("Going single process")
+        current_app.logger.info("Going single process")
         pdfs = []
         for j in jobs:
             pdfs.append(worker(j))
@@ -473,13 +462,13 @@ def create_and_merge(info):
     if os.path.isfile(cancelfile):
         return 0
 
-    log.debug('pdfs %s', pdfs)
+    current_app.logger.debug('pdfs %s', pdfs)
     if len([i for i, v in enumerate(pdfs) if v[1] is None]) > 0:
-        log.error('One or more partial PDF is missing. Cannot merge PDF')
+        current_app.logger.error('One or more partial PDF is missing. Cannot merge PDF')
         return 2
 
     if _merge_pdfs(pdfs, infofile) is False:
-        log.error('Something went wrong while merging PDFs')
+        current_app.logger.error('Something went wrong while merging PDFs')
         return 3
 
     # Use the real filename to avoid rewrite on the http server
@@ -488,23 +477,12 @@ def create_and_merge(info):
     with open(infofile, 'w+') as outfile:
         json.dump({'status': 'done', 'getURL': pdf_download_url}, outfile)
 
-    log.info('[create_pdf] PDF ready to download: %s', pdf_download_url)
+    current_app.logger.info('[create_pdf] PDF ready to download: %s', pdf_download_url)
 
     return 0
 
 
 if __name__ == '__main__':
-    custom_log_format = """-------------------------------------------
-        %(module)s [%(pathname)s:%(lineno)d]: %(message)s
-    ------------------------------------------------------"""
     app.config['DEBUG'] = os.environ.get('DEBUG', False)
     port = int(os.environ.get('WSGI_PORT'))
-    app.debug_log_format = custom_log_format
-
-    fileHandler = logging.FileHandler("wsgi.log")
-    logFormatter = logging.Formatter(
-        "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
-    fileHandler.setFormatter(logFormatter)
-
-    app.logger.addHandler(fileHandler)
     app.run(host='0.0.0.0', port=port)
