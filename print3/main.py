@@ -44,16 +44,13 @@ WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
 LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
 PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')
 API_URL = os.environ.get('API_URL', 'https://api3.geo.admin.ch')
-TOMCAT_SERVER_URL = os.environ.get(
-    'TOMCAT_SERVER_URL',
-    'https://print.geo.admin.ch')
-PRINT_SERVER_URL = os.environ.get(
-    'PRINT_SERVER_URL',
-    'https://print.geo.admin.ch')
+TOMCAT_SERVER_URL = '//%s:%s' % (
+    os.environ.get('TOMCAT_SERVER_URL'), os.environ.get('NGINX_PORT'))
+TOMCAT_LOCAL_SERVER_URL = '//localhost:%s' % os.environ.get('TOMCAT_PORT')
+PRINT_SERVER_URL = os.environ.get('PRINT_SERVER_URL')
 
 logging.basicConfig(level=LOGLEVEL, stream=sys.stderr)
 log = logging.getLogger(__name__)
-
 
 NUMBER_POOL_PROCESSES = multiprocessing.cpu_count()
 
@@ -72,7 +69,7 @@ def checker():
 
 
 def get_tomcat_backend_info():
-    url = 'http:%s/%s' % (TOMCAT_SERVER_URL,
+    url = 'http:%s/%s' % (TOMCAT_LOCAL_SERVER_URL,
                           'service-print-main/pdf/info.json')
     r = req_session.get(url,
                         headers={'Referer': REFERER_URL},
