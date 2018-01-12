@@ -82,13 +82,11 @@ def backend_checker():
         content = get_tomcat_backend_info()
     except (Timeout, SSLError, ConnectionError):
         abort(502, 'Cannot connect to backend tomcat')
-    try:
-        json.loads(content)
+    if content.strip() == 'OK':
         return 'OK'
-    except Exception:
-        abort(
-            503,
-            'Incomprehensible answer. tomcat is probably not ready yet.')
+    abort(
+        503,
+        'Incomprehensible answer. tomcat is probably not ready yet.')
 
 
 @app.route('/printcancel')
