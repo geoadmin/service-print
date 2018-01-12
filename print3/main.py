@@ -69,7 +69,7 @@ def checker():
 
 def get_tomcat_backend_info():
     url = 'http:%s/%s' % (TOMCAT_LOCAL_SERVER_URL,
-                          'service-print-main/pdf/info.json')
+                          'service-print-main/checker')
     r = req_session.get(url,
                         headers={'Referer': REFERER_URL},
                         verify=False)
