@@ -22,7 +22,6 @@ from flask import Flask, abort, Response, request
 from requests.exceptions import Timeout, ConnectionError, SSLError
 
 from print3.utils import (
-    req_session,
     _get_timestamps,
     delete_old_files,
     _qrcodeurlparse,
@@ -69,7 +68,7 @@ def checker():
 def get_tomcat_backend_info():
     url = 'http:%s/%s' % (TOMCAT_LOCAL_SERVER_URL,
                           'service-print-main/checker')
-    r = req_session.get(url,
+    r = requests.get(url,
                         headers={'Referer': REFERER_URL},
                         verify=False)
     return r.content
