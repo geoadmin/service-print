@@ -190,84 +190,94 @@ def worker(job):
     ''' Print and dowload the indivialized PDFs'''
 
     timestamp = None
-    (idx, url, headers, timestamp, layers, tmp_spec,
-     print_temp_dir, infofile, cancelfile, lock) = job
 
-    multi_logger.debug('Worker started to print an individual pdf')
-
-    for layer in layers:
-        try:
-            tmp_spec['layers'][layer]['params']['TIME'] = str(timestamp)
-        except:
-            continue
-
-    # Before launching print request, check if process is canceled
-    if os.path.isfile(cancelfile):
-        multi_logger.debug('Cancelling request')
-        multi_logger.debug('Cancel file %s' % cancelfile)
-        return (timestamp, None)
-
-    h = {
-        'Referer': headers.get('Referer'),
-        'Content-Type': 'application/json',
-        'Host': PRINT_SERVER_HOST
-    }
-    multi_logger.debug('Creating pdf %s' % url)
     try:
-        r = requests.post(
-            url,
-            data=json.dumps(tmp_spec),
-            headers=h,
-            verify=VERIFY_SSL)
-    except Exception:
-        multi_logger.error('Failed to create for %s' % url)
+        (idx, url, headers, timestamp, layers, tmp_spec,
+         print_temp_dir, infofile, cancelfile, lock) = job
+    except ValueError:
         return (timestamp, None)
 
-    if r.status_code == requests.codes.ok:
+    try:
+        multi_logger.debug('Worker started to print an individual pdf')
 
-        # GetURL '141028163227.pdf.printout', pointing to
-        # file 'mapfish-print141028163227.pdf.printout'
-        # We only get the pdf name and rely on the fact that they are stored on
-        # EFS!
-        try:
-            pdf_url = r.json()['getURL']
-            multi_logger.debug('[Worker] pdf_url: %s', pdf_url)
-            filename = os.path.basename(urlsplit(pdf_url).path)
-            localname = os.path.join(
-                print_temp_dir, MAPFISH_FILE_PREFIX + filename)
-        except Exception:
-            multi_logger.error('[Worker] Failed timestamp: %s', timestamp)
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            multi_logger.error(
-                "*** Traceback:/n %s" %
-                traceback.print_tb(
-                    exc_traceback,
-                    limit=1,
-                    file=sys.stdout))
-            multi_logger.error(
-                "*** Exception:/n %s" %
-                traceback.print_exception(
-                    exc_type,
-                    exc_value,
-                    exc_traceback,
-                    limit=2,
-                    file=sys.stdout))
+        for layer in layers:
+            try:
+                tmp_spec['layers'][layer]['params']['TIME'] = str(timestamp)
+            except:
+                continue
 
+        # Before launching print request, check if process is canceled
+        if os.path.isfile(cancelfile):
+            multi_logger.debug('Cancelling request')
+            multi_logger.debug('Cancel file %s' % cancelfile)
             return (timestamp, None)
-        _increment_info(lock, infofile)
-        return (timestamp, localname)
-    else:
-        multi_logger.error(
-            '[Worker] Failed get/generate PDF for: %s. Error: %s',
-            timestamp,
-            r.status_code)
-        multi_logger.error('[Worker] response: %s', r.text)
-        multi_logger.error('[Worker] spec: %s', tmp_spec)
-        multi_logger.error('[Worker] headers: %s', h)
-        multi_logger.error('[Worker] url: %s', url)
-        multi_logger.error('[Worker] print dir: %s', print_temp_dir)
 
-        return (timestamp, None)
+        h = {
+            'Referer': headers.get('Referer'),
+            'Content-Type': 'application/json',
+            'Host': PRINT_SERVER_HOST
+        }
+        multi_logger.debug('Creating pdf %s' % url)
+        try:
+            r = requests.post(
+                url,
+                data=json.dumps(tmp_spec),
+                headers=h,
+                verify=VERIFY_SSL)
+        except Exception:
+            multi_logger.error('Failed to create for %s' % url)
+            return (timestamp, None)
+
+        if r.status_code == requests.codes.ok:
+
+            # GetURL '141028163227.pdf.printout', pointing to
+            # file 'mapfish-print141028163227.pdf.printout'
+            # We only get the pdf name and rely on the fact that they are stored on
+            # EFS!
+            try:
+                pdf_url = r.json()['getURL']
+                multi_logger.debug('[Worker] pdf_url: %s', pdf_url)
+                filename = os.path.basename(urlsplit(pdf_url).path)
+                localname = os.path.join(
+                    print_temp_dir, MAPFISH_FILE_PREFIX + filename)
+            except Exception:
+                multi_logger.error('[Worker] Failed timestamp: %s', timestamp)
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                multi_logger.error(
+                    "*** Traceback:/n %s" %
+                    traceback.print_tb(
+                        exc_traceback,
+                        limit=1,
+                        file=sys.stdout))
+                multi_logger.error(
+                    "*** Exception:/n %s" %
+                    traceback.print_exception(
+                        exc_type,
+                        exc_value,
+                        exc_traceback,
+                        limit=2,
+                        file=sys.stdout))
+
+                return (timestamp, None)
+            _increment_info(lock, infofile)
+            return (timestamp, localname)
+        else:
+            multi_logger.error(
+                '[Worker] Failed get/generate PDF for: %s. Error: %s',
+                timestamp,
+                r.status_code)
+            multi_logger.error('[Worker] response: %s', r.text)
+            multi_logger.error('[Worker] spec: %s', tmp_spec)
+            multi_logger.error('[Worker] headers: %s', h)
+            multi_logger.error('[Worker] url: %s', url)
+            multi_logger.error('[Worker] print dir: %s', print_temp_dir)
+    except Exception as e:
+        multi_logger.error('[Worker] Unknown exception: %s', e)
+        with open(infofile, 'w+') as outfile:
+            json.dump({'status': 'failed', 'done': 0,
+                   'total': 0}, outfile)
+
+    return (timestamp, None)
 
 
 # Function to be used on process to create all
