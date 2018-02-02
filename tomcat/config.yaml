@@ -26,8 +26,8 @@ ignoreCapabilities: true
 maxPrintTimeBeforeWarningInSeconds: 120
 printTimeoutMinutes: 5
 
-fonts:
-  - /usr/share/fonts/truetype/
+# fonts:
+#  - /usr/share/fonts/truetype/
 
 #---------------------------------------
 # A4 landscape:
@@ -93,25 +93,13 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 70
-          absoluteX: 325
-          width: 400
+          absoluteY: 23
+          absoluteX: 153
+          width: 675
           items:
             - !text
-              font: "Space Mono Bold"
-              fontSize: 8
-              align: left
-              fontColor: #FFFFFF
-              text: |
-                ${dataOwner}
-        - !columns
-          absoluteY: 70
-          absoluteX: 325
-          width: 400
-          items:
-            - !text
-              font: "Space Mono"
-              fontSize: 8
+              font: Helvetica
+              fontSize: 7
               align: left
               fontColor: black
               text: |
@@ -425,13 +413,14 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 75
-          absoluteX: 80
-          width: 300
+          absoluteY: 28
+          absoluteX: 153
+          width: 405
           items:
             - !text
+              font: Helvetica
               fontSize: 7
-              align: right
+              align: left
               backgroundColor: #FFFFFF
               text: |
                 ${dataOwner}
@@ -758,13 +747,13 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 60
-          absoluteX: 670
-          width: 300
+          absoluteY: 24
+          absoluteX: 153
+          width: 1023
           items:
             - !text
               fontSize: 7
-              align: right
+              align: left
               text: |
                 ${dataOwner}
 
@@ -1090,13 +1079,13 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 75
-          absoluteX: 326
-          width: 405
+          absoluteY: 40
+          absoluteX: 153
+          width: 675
           items:
             - !text
-              fontSize: 6
-              align: right
+              fontSize: 7
+              align: left
               text: |
                 ${dataOwner}
 
