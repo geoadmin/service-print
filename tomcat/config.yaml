@@ -26,6 +26,9 @@ ignoreCapabilities: true
 maxPrintTimeBeforeWarningInSeconds: 120
 printTimeoutMinutes: 5
 
+fonts:
+  - /usr/share/fonts/truetype/
+
 #---------------------------------------
 # A4 landscape:
 #---------------------------------------
@@ -90,31 +93,33 @@ layouts:
 # Copyright
 #---------------------------------------
         - !columns
-          absoluteY: 60
+          absoluteY: 70
           absoluteX: 325
-          width: 300
+          width: 400
           items:
             - !text
-              fontSize: 7
-              align: right
+              font: "Space Mono Bold"
+              fontSize: 8
+              align: left
+              fontColor: #FFFFFF
+              text: |
+                ${dataOwner}
+        - !columns
+          absoluteY: 70
+          absoluteX: 325
+          width: 400
+          items:
+            - !text
+              font: "Space Mono"
+              fontSize: 8
+              align: left
+              fontColor: black
               text: |
                 ${dataOwner}
 
 #---------------------------------------
 # Third party data copyright
 #---------------------------------------
-        - !columns
-          condition: thirdPartyDataOwner
-          absoluteY: 60
-          absoluteX: 325
-          width: 300
-          items:
-            - !text
-              fontColor: red
-              fontSize: 7
-              align: right
-              text: |
-                ${thirdPartyDataOwner}
 
 #---------------------------------------
 # Description
@@ -427,6 +432,7 @@ layouts:
             - !text
               fontSize: 7
               align: right
+              backgroundColor: #FFFFFF
               text: |
                 ${dataOwner}
 
@@ -443,6 +449,7 @@ layouts:
               fontColor: red
               fontSize: 7
               align: right
+              backgroundColor: #FFFFFF
               text: |
                 ${thirdPartyDataOwner}
 
@@ -774,6 +781,7 @@ layouts:
               fontColor: red
               fontSize: 7
               align: right
+              backgroundColor: #FFFFFF
               text: |
                 ${thirdPartyDataOwner}
 
@@ -1105,6 +1113,7 @@ layouts:
               fontColor: red
               fontSize: 6
               align: right
+              backgroundColor: #FFFFFF
               text: |
                 ${thirdPartyDataOwner}
 
