@@ -462,9 +462,17 @@ def create_and_merge(info):
         return 0
 
     logger.debug('pdfs %s', pdfs)
-    if len([i for i, v in enumerate(pdfs) if v[1] is None]) > 0:
-        logger.error('One or more partial PDF is missing. Cannot merge PDF')
-        return 2
+    # Retry logic (only once)
+    for i, v in enumerate(pdfs):
+        if v[1] is None:
+            job = jobs[i]
+            pdf = worker(job)
+            if pdf[1] is not None:
+                pdfs[i] = pdf
+            else:
+                logger.error('Retry of partial PDF also failed. Cannot merge PDF')
+                logger.error('spec: {}'.format(job))
+                return 2
 
     if _merge_pdfs(pdfs, infofile) is False:
         logger.error('Something went wrong while merging PDFs')
