@@ -17,7 +17,7 @@ hosts:
 #
 scales: [2500000, 1500000, 1000000, 500000, 300000, 200000, 100000, 50000, 25000, 20000, 10000, 5000, 2500, 1000, 500]
 
-globalParallelFetches: 32
+globalParallelFetches: 64
 perHostParallelFetches: 32
 connectionTimeout: 30000
 socketTimeout: 60000
@@ -98,7 +98,6 @@ layouts:
           width: 675
           items:
             - !text
-              font: Helvetica
               fontSize: 7
               align: left
               fontColor: black
@@ -299,7 +298,7 @@ layouts:
               align: center
               text: |
                 Echelle 1: ${format %,d scale}
-                Imprimé le ${now dd.MM.yyyy HH:mm}
+                Imprimé le ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langen
@@ -307,7 +306,7 @@ layouts:
               align: center
               text: |
                 Scale 1: ${format %,d scale}
-                Printed on ${now dd.MM.yyyy HH:mm}
+                Printed on ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langrm
@@ -315,7 +314,7 @@ layouts:
               align: center
               text: |
                 Scala 1: ${format %,d scale}
-                Stampà il(s) ${now dd.MM.yyyy HH:mm}
+                Stampà il(s) ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langit
@@ -323,7 +322,7 @@ layouts:
               align: center
               text: |
                 Scala 1: ${format %,d scale}
-                Stampato il ${now dd.MM.yyyy HH:mm}
+                Stampato il ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
     lastPage:
       landscape: true
@@ -418,7 +417,6 @@ layouts:
           width: 405
           items:
             - !text
-              font: Helvetica
               fontSize: 7
               align: left
               backgroundColor: #FFFFFF
@@ -624,7 +622,7 @@ layouts:
               align: center
               text: |
                 Massstab 1: ${format %,d scale}
-                Gedruckt am ${now dd.MM.yyyy HH:mm}
+                Gedruckt am ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langfr
@@ -632,7 +630,7 @@ layouts:
               align: center
               text: |
                 Echelle 1: ${format %,d scale}
-                Imprimé le ${now dd.MM.yyyy HH:mm}
+                Imprimé le ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langen
@@ -640,7 +638,7 @@ layouts:
               align: center
               text: |
                 Scale 1: ${format %,d scale}
-                Printed on ${now dd.MM.yyyy HH:mm}
+                Printed on ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langrm
@@ -648,7 +646,7 @@ layouts:
               align: center
               text: |
                 Scala 1: ${format %,d scale}
-                Stampà il(s) ${now dd.MM.yyyy HH:mm}
+                Stampà il(s) ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langit
@@ -656,7 +654,7 @@ layouts:
               align: center
               text: |
                 Scala 1: ${format %,d scale}
-                Stampato il ${now dd.MM.yyyy HH:mm}
+                Stampato il ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
     lastPage:
       landscape: false
@@ -957,7 +955,7 @@ layouts:
               align: center
               text: |
                 Massstab 1: ${format %,d scale}
-                Gedruckt am ${now dd.MM.yyyy HH:mm}
+                Gedruckt am ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langfr
@@ -965,7 +963,7 @@ layouts:
               align: center
               text: |
                 Echelle 1: ${format %,d scale}
-                Imprimé le ${now dd.MM.yyyy HH:mm}
+                Imprimé le ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langen
@@ -973,7 +971,7 @@ layouts:
               align: center
               text: |
                 Scale 1: ${format %,d scale}
-                Printed on ${now dd.MM.yyyy HH:mm}
+                Printed on ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langrm
@@ -981,7 +979,7 @@ layouts:
               align: center
               text: |
                 Scala 1: ${format %,d scale}
-                Stampà il(s) ${now dd.MM.yyyy HH:mm}
+                Stampà il(s) ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langit
@@ -989,7 +987,7 @@ layouts:
               align: center
               text: |
                 Scala 1: ${format %,d scale}
-                Stampato il ${now dd.MM.yyyy HH:mm}
+                Stampato il ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
     lastPage:
       landscape: true
@@ -1288,7 +1286,7 @@ layouts:
               align: center
               text: |
                 Massstab 1: ${format %,d scale}
-                Gedruckt am ${now dd.MM.yyyy HH:mm}
+                Gedruckt am ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langfr
@@ -1296,7 +1294,7 @@ layouts:
               align: center
               text: |
                 Echelle 1: ${format %,d scale}
-                Imprimé le ${now dd.MM.yyyy HH:mm}
+                Imprimé le ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langen
@@ -1304,7 +1302,7 @@ layouts:
               align: center
               text: |
                 Scale 1: ${format %,d scale}
-                Printed on ${now dd.MM.yyyy HH:mm}
+                Printed on ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langrm
@@ -1312,7 +1310,7 @@ layouts:
               align: center
               text: |
                 Scala 1: ${format %,d scale}
-                Stampà il(s) ${now dd.MM.yyyy HH:mm}
+                Stampà il(s) ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
             - !text
               condition: langit
@@ -1320,7 +1318,7 @@ layouts:
               align: center
               text: |
                 Scala 1: ${format %,d scale}
-                Stampato il ${now dd.MM.yyyy HH:mm}
+                Stampato il ${now dd.MM.yyyy HH:mm z}
                 ${shortLink}
     lastPage:
       landscape: false
