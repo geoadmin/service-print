@@ -31,9 +31,9 @@ PYTHON_CMD := $(INSTALL_DIR)/bin/python
 COVERAGE_CMD := $(INSTALL_DIR)/bin/coverage
 
 # Colors
-RESET := $(shell tput sgr0)
-RED := $(shell tput setaf 1)
-GREEN := $(shell tput setaf 2)
+RESET := $(shell tput sgr0 || '')
+RED := $(shell tput setaf 1 || '')
+GREEN := $(shell tput setaf 2 || '')
 
 
 .PHONY: help
@@ -154,24 +154,27 @@ print3/static/index.html: print3/static/index.html.in
 		--var "git_commit_date=$(GIT_COMMIT_DATE)" \
 		--var "print_temp_dir=$(PRINT_TEMP_DIR)" $< > $@
 
+setup: .venv/requirements.timestamp .venv/dev-requirements.timestamp
+		${PIP_CMD} install -e .;
+
+.venv/dev-requirements.timestamp: .venv  dev-requirements.txt
+		${PIP_CMD} install -r dev-requirements.txt
+				touch $@
+
+.venv/requirements.timestamp: .venv  requirements.txt
+		${PIP_CMD} install -r requirements.txt
+				touch $@
+
 .venv:
-	@echo "${GREEN}Setting up virtual environement...${RESET}";
-	@if [ ! -d $(INSTALL_DIR) ]; \
-	then \
-		virtualenv $(INSTALL_DIR); \
-		${PIP_CMD} install pyopenssl ndg-httpsclient pyasn1; \
-		${PIP_CMD} install -U pip setuptools; \
-		$(PIP_CMD) install -r requirements.txt; \
-		$(PIP_CMD) install -r dev-requirements.txt; \
-	fi
-	${PIP_CMD} install -e .
+		@echo "${GREEN}Setting up virtual environement...${RESET}";
+		virtualenv $(INSTALL_DIR) && ${PIP_CMD} install pyopenssl ndg-httpsclient pyasn1 && ${PIP_CMD} install --upgrade pip setuptools
 
 .PHONY: dockerbuild
 dockerbuild: composetemplateuser
 	docker-compose build
 
 .PHONY: composetemplateuser
-composetemplateuser:
+composetemplateuser: .venv/dev-requirements.timestamp
 	source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && \
 	envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
 	source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
@@ -250,17 +253,18 @@ cleancache:
 
 .PHONY: clean
 clean:
-	rm -rf tomcat/WEB-INF/web.xml
-	rm -f print3/static/index.html
-	rm -rf tomcat/temp_*
-	rm -f nginx/nginx.conf
-	rm -f rancher-compose.yml
-	rm -f docker-compose.yml
+		rm -f tomcat/WEB-INF/web.xml
+		rm -f print3/static/index.html
+		rm -rf tomcat/temp_*
+		rm -f nginx/nginx.conf
+		rm -f rancher-compose.yml
+		rm -f docker-compose.yml
+		rm -f .venv/requirements.timestamp
+		rm -f .venv/dev-requirements.timestamp
 
 .PHONY: cleanall
 cleanall: clean
-	rm -rf .venv
-	rm -rf print3.egg-info
+	rm -rf ${INSTALL_DIR}
 
 guard-%:
 		@ if test "${${*}}" = ""; then \

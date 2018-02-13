@@ -1,5 +1,13 @@
+nginx
+rc_user
 .git
 .gitignore
 .gitmodules
 Dockerfile
+README.md
 .venv
+*.yml
+*.yml.in
+*.env
+*.env.in
+Jenkinsfile
