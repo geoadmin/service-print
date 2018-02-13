@@ -45,7 +45,7 @@ node(label: "jenkins-slave") {
 
       '''
     }
-    if (deployGitBranch == 'mom_jenkinsfile') {
+    if (deployGitBranch == 'master') {
        stage("Publish") {
          sh 'echo Publishing images to Dockerhub'
          withCredentials(
@@ -61,7 +61,7 @@ node(label: "jenkins-slave") {
          }
        }
     }
-    if (deployGitBranch == 'mom_jenkinsfile') {
+    if (deployGitBranch == 'master') {
        stage("Deploy") {
          sh 'echo Deploying to dev'
          sh 'make rancherdeploydev'
