@@ -3,7 +3,6 @@
 final IMAGE_BASE_NAME = 'swisstopo/service-print'
 final IMAGE_BASE_NAME_NGINX = 'swisstopo/service-print-nginx'
 final IMAGE_BASE_NAME_TOMCAT = 'swisstopo/service-print-tomcat'
-final IMAGE_TAG = 'staging'
 
 node(label: "jenkins-slave") {
   final deployGitBranch = env.BRANCH_NAME
