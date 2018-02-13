@@ -40,6 +40,7 @@ node(label: "jenkins-slave") {
         sh 'echo Skipping publishing to dev'
       }
     }
+  }
   catch (e) {
     throw e
   }
