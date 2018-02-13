@@ -176,7 +176,7 @@ dockerbuild: composetemplateuser
 .PHONY: composetemplateuser
 composetemplateuser: .venv/dev-requirements.timestamp
 	source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && \
-	envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
+	envsubst "$(printf '${%s} ' $(/bin/bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
 	source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
 
 .PHONY: dockerrun
