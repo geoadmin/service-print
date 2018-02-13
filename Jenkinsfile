@@ -6,17 +6,29 @@ final IMAGE_BASE_NAME_TOMCAT = 'swisstopo/service-print-tomcat'
 final IMAGE_TAG = 'staging'
 
 node(label: "jenkins-slave") {
+  final deployGitBranch = env.BRANCH_NAME
+  env.COMPOSE_PROJECT_NAME = "${env.JOB_NAME}-${env.BUILD_ID}"
+  def IMAGE_TAG = "staging"
+  env.IMAGE_TAG = IMAGE_TAG
+
   try {
     stage("Checkout") {
       sh 'echo Checking out code from github'
-      checkout scm
+      final scmVars = checkout scm
+      sh 'docker --version'
+      sh 'docker-compose --version'
+      if (deployGitBranch == 'master') {
+        IMAGE_TAG = 'staging'
+      } else {
+        IMAGE_TAG = scmVars.GIT_COMMIT
+      }
+      sh "echo Setting IMAGE_TAG to ${IMAGE_TAG}"
+      env.IMAGE_TAG = "${IMAGE_TAG}"
     }
     stage("Build") {
-      sh '''
-        echo Starting the build...
-        make cleanall all dockerbuild
-        echo Build successfull
-      '''
+      sh 'echo Starting the build...'
+      sh 'echo "export IMAGE_TAG=${IMAGE_TAG}" >> rc_user'
+      sh 'make dockerbuild'
     }
     stage("Run") {
       sh '''
