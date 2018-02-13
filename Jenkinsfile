@@ -45,12 +45,29 @@ node(label: "jenkins-slave") {
 
       '''
     }
-    stage("Publish") {
-      if (deployGitBranch == 'master') {
-        sh 'echo Publishing images to dev'
-      } else {
-        sh 'echo Skipping publishing to dev'
-      }
+    if (deployGitBranch == 'mom_jenkinsfile') {
+       stage("Publish") {
+         sh 'echo Publishing images to Dockerhub'
+         withCredentials(
+           [[$class: 'UsernamePasswordMultiBinding',
+             credentialsId: 'iwibot-admin-user-dockerhub',
+             usernameVariable: 'USERNAME',
+             passwordVariable: 'PASSWORD']]
+         ){
+           sh 'docker login -u "$USERNAME" -p "$PASSWORD"'
+           docker.image("${IMAGE_BASE_NAME}:${IMAGE_TAG}").push()
+           docker.image("${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG}").push()
+           docker.image("${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}").push()
+         }
+       }
+     }
+     if (deployGitBranch == 'mom_jenkinsfile') {
+       stage("Deploy") {
+         sh 'echo Deploying to dev'
+         sh 'make rancherdeploydev'
+         sh 'echo Deployed to dev'
+       }
+     }
     }
   }
   catch (e) {
