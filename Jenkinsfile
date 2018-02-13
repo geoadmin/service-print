@@ -3,6 +3,7 @@
 final IMAGE_BASE_NAME = 'swisstopo/service-print'
 final IMAGE_BASE_NAME_NGINX = 'swisstopo/service-print-nginx'
 final IMAGE_BASE_NAME_TOMCAT = 'swisstopo/service-print-tomcat'
+final DOCKER_REGISTRY_URL  = 'https://registry.hub.docker.com'
 
 node(label: "jenkins-slave") {
   final deployGitBranch = env.BRANCH_NAME
@@ -56,14 +57,13 @@ node(label: "jenkins-slave") {
     throw e
   }
   finally {
-    sh 'docker-compose down & sleep 5'
-    sh 'docker ps --all | grep swisstopo/service-print-tomcat | awk \'{print($1)}\' | xargs --no-run-if-empty docker rm --force'
-    sh 'docker ps --all | grep "python print3" | awk \'{print($1)}\' | xargs --no-run-if-empty docker rm --force'
-    sh 'docker ps --all | grep swisstopo/service-print-nginx | awk \'{print($1)}\' | xargs --no-run-if-empty docker rm --force'
-    sh 'docker image rm swisstopo/service-print-tomcat:staging'
-    sh 'docker image rm swisstopo/service-print:staging'
-    sh 'docker image rm swisstopo/service-print-nginx:staging'
+    sh 'docker-compose down -v || echo Skipping'
+    sh "docker rmi ${IMAGE_BASE_NAME}:${IMAGE_TAG} || echo Skipping"
+    sh "docker rmi ${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG} || echo Skipping"
+    sh "docker rmi ${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}  || echo Skipping"
     sh 'git clean -dx --force'
+    sh 'docker ps'
+    sh 'docker ps --all --filter status=exited'
     sh 'echo All dockers have been purged'
   }
 }
