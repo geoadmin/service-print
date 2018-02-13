@@ -29,7 +29,7 @@ node(label: "jenkins-slave") {
     stage("Build") {
       sh 'echo Starting the build...'
       sh 'echo "export IMAGE_TAG=${IMAGE_TAG}" >> rc_user'
-      sh 'make dockerbuild'
+      sh 'GIT_BRANCH=$GIT_BRANCH GIT_COMMIT_HASH=$GIT_COMMIT GIT_COMMIT_DATE=1970-01-01  make dockerbuild'
     }
     stage("Run") {
       sh '''
