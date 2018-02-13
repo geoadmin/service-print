@@ -60,14 +60,13 @@ node(label: "jenkins-slave") {
            docker.image("${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}").push()
          }
        }
-     }
-     if (deployGitBranch == 'mom_jenkinsfile') {
+    }
+    if (deployGitBranch == 'mom_jenkinsfile') {
        stage("Deploy") {
          sh 'echo Deploying to dev'
          sh 'make rancherdeploydev'
          sh 'echo Deployed to dev'
        }
-     }
     }
   }
   catch (e) {
