@@ -21,7 +21,6 @@ services:
       io.rancher.scheduler.affinity:host_label: application=print,staging=${rancher_label}
       io.rancher.container.pull_image: always
       io.rancher.scheduler.global: 'true'
-
   tomcat:
 % if rancher_deploy == 'false':
     build: tomcat/
