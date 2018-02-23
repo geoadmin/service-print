@@ -81,14 +81,16 @@ node(label: "jenkins-slave") {
   }
   finally {
     withEnv(["IMAGE_TAG=${IMAGE_TAG}", "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}"]) {
-      sh 'docker-compose down -v || echo Skipping'
-      sh "docker rmi ${IMAGE_BASE_NAME}:${IMAGE_TAG} || echo Skipping"
-      sh "docker rmi ${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG} || echo Skipping"
-      sh "docker rmi ${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}  || echo Skipping"
-      sh 'git clean -dx --force'
-      sh 'docker ps'
-      sh 'docker ps --all --filter status=exited'
-      sh 'echo All dockers have been purged'
+      stage("Clean") {
+        sh 'docker-compose down -v || echo Skipping'
+        sh "docker rmi ${IMAGE_BASE_NAME}:${IMAGE_TAG} || echo Skipping"
+        sh "docker rmi ${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG} || echo Skipping"
+        sh "docker rmi ${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}  || echo Skipping"
+        sh 'git clean -dx --force'
+        sh 'docker ps'
+        sh 'docker ps --all --filter status=exited'
+        sh 'echo All dockers have been purged'
+      }
     }
   }
 }
