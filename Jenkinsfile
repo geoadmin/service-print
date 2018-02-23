@@ -38,7 +38,7 @@ node(label: "jenkins-slave") {
         sh '''
           echo Starting linting...
           DOCKER_CONTAINER_ID="$(docker ps | grep "${COMPOSE_PROJECT_NAME}_wsgi" | awk '{ print $1 }')"
-          docker exec -i "$DOCKER_CONTAINER_ID" flake8 -v $(find tests/* print3/* -path print/static -prune -o -type f -name "*.py" -print)
+          docker exec -i "$DOCKER_CONTAINER_ID" flake8 --ignore=E501 -v $(find tests/* print3/* -path print/static -prune -o -type f -name "*.py" -print)
           echo All tests are successful
         '''
       }
