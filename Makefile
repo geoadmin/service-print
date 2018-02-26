@@ -7,7 +7,7 @@ GIT_COMMIT_DATE ?= $(shell git log -1  --date=iso --pretty=format:%cd)
 APACHE_BASE_PATH ?= main
 VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else python -c "print __import__('time').strftime('%s')"; fi)
 BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
-PRINT_SERVER_URL ?= //service-print.dev.bgdi.ch
+PRINT_SERVER_HOST ?= service-print.dev.bgdi.ch
 TOMCAT_SERVER_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_BASE_URL ?= ajp://localhost:8009
 PRINT_INPUT :=  checker *.html *.yaml *.png WEB-INF
@@ -72,7 +72,7 @@ help:
 	@echo "RANCHER_LABEL:       ${RANCHER_LABEL}"
 	@echo "IMAGE_TAG:           ${IMAGE_TAG}"
 	@echo "API_URL:             ${API_URL}"
-	@echo "PRINT_SERVER_URL:    ${PRINT_SERVER_URL}"
+	@echo "PRINT_SERVER_HOST:   ${PRINT_SERVER_HOST}"
 	@echo "PRINT_TEMP_DIR:      ${PRINT_TEMP_DIR}"
 	@echo "TOMCAT_SERVER_URL    ${TOMCAT_SERVER_URL}"
 	@echo "NGINX_PORT:          ${NGINX_PORT}"
