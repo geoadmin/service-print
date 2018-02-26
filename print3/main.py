@@ -45,7 +45,7 @@ PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')
 API_URL = os.environ.get('API_URL', 'https://api3.geo.admin.ch')
 TOMCAT_SERVER_URL = '%s' % os.environ.get('TOMCAT_SERVER_URL')
 TOMCAT_LOCAL_SERVER_URL = '//localhost:%s' % os.environ.get('TOMCAT_PORT')
-PRINT_SERVER_URL = os.environ.get('PRINT_SERVER_URL')
+PRINT_SERVER_HOST = os.environ.get('PRINT_SERVER_HOST')
 NUMBER_POOL_PROCESSES = multiprocessing.cpu_count()
 
 
@@ -207,7 +207,11 @@ def worker(job):
         multi_logger.debug('Cancel file %s' % cancelfile)
         return (timestamp, None)
 
-    h = {'Referer': headers.get('Referer'), 'Content-Type': 'application/json'}
+    h = {
+        'Referer': headers.get('Referer'),
+        'Content-Type': 'application/json',
+        'Host': PRINT_SERVER_HOST
+    }
     multi_logger.debug('Creating pdf %s' % url)
     try:
         r = requests.post(
@@ -458,7 +462,7 @@ def create_and_merge(info):
         return 3
 
     # Use the real filename to avoid rewrite on the http server
-    pdf_download_url = scheme + ':' + PRINT_SERVER_URL + '/' + \
+    pdf_download_url = scheme + '://' + PRINT_SERVER_HOST + '/' + \
         MAPFISH_MULTI_FILE_PREFIX + unique_filename + '.pdf.printout'
     with open(infofile, 'w+') as outfile:
         json.dump({'status': 'done', 'getURL': pdf_download_url}, outfile)
