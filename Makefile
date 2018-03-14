@@ -126,7 +126,7 @@ printwar: tomcat/WEB-INF/web.xml
 	cp -f ${BASEWAR} temp_$(VERSION)/service-print-$(APACHE_BASE_PATH).war && \
 	cp -fr ${PRINT_INPUT} temp_$(VERSION)/ && \
 	cd temp_$(VERSION) && \
-	jar cuf service-print-$(APACHE_BASE_PATH).war ${PRINT_INPUT} && \
+	fastjar cuf service-print-$(APACHE_BASE_PATH).war ${PRINT_INPUT} && \
 	cp -r  service-print-$(APACHE_BASE_PATH).war .. && \
 	echo "${GREEN}Print war creation was successful.${RESET}" &&  cd .. && \
 	echo "${GREEN}Removing temp directory${RESET}" && \
@@ -176,7 +176,7 @@ dockerbuild: composetemplateuser
 .PHONY: composetemplateuser
 composetemplateuser: .venv/dev-requirements.timestamp
 	source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && \
-	envsubst "$(printf '${%s} ' $(bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
+	envsubst "$(printf '${%s} ' $(/bin/bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
 	source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
 
 .PHONY: dockerrun
