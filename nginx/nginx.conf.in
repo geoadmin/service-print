@@ -14,9 +14,10 @@ events {
 http {
   # if we use analytics we may want to turn that off
   # log_format postdata $request_body;
-  log_format postdata '$remote_addr - $remote_user [$time_local] '
-    '"$request" $status $body_bytes_sent '
-    '"$http_referer" "$http_user_agent" "$request_body"';
+  # use include because impossible to escape correctly
+  
+  include log_format.conf;
+
   access_log /dev/stdout combined;
   sendfile off;
 
