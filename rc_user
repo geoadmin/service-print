@@ -1,1 +1,4 @@
 export $(cat dev.env)
+export NGINX_LOG_LEVEL=warn
+export NGINX_WORKERS=1
+export CATALINA_OPTS=512m
