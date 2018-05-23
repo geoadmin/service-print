@@ -54,24 +54,24 @@ http {
     }
 
     # PDF download
-    location ~  /mapfish-print-multi[0-9]+\.pdf\.printout$ {
+    location ~  /mapfish-print-multi(\d+)\.pdf\.printout$ {
         types {
           application/pdf        printout;
         }
         expires 1h;
         add_header Cache-Control "public";
-        add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf" always;
+        add_header Content-Disposition "attachment; filename=mapgeoadminch_$1.pdf" always;
         break;
     }
 
-    location ~  ^/mapfish-print[0-9]+\.pdf\.printout$ {
+    location ~  ^/mapfish-print(\d+)\.pdf\.printout$ {
 
       types {
           application/pdf        printout;
       }
       expires 1h;
       add_header Cache-Control "public";
-      add_header Content-Disposition "attachment; filename=map.geo.admin.ch.pdf" always;
+      add_header Content-Disposition "attachment; filename=mapgeoadminch_$1.pdf" always;
       break;
     }
 
