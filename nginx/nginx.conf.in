@@ -60,7 +60,7 @@ http {
         }
         expires 1h;
         add_header Cache-Control "public";
-        add_header Content-Disposition "attachment; filename=mapgeoadminch_$1.pdf" always;
+        add_header Content-Disposition "attachment; filename=map.geo.admin.ch_$1.pdf" always;
         break;
     }
 
@@ -71,7 +71,7 @@ http {
       }
       expires 1h;
       add_header Cache-Control "public";
-      add_header Content-Disposition "attachment; filename=mapgeoadminch_$1.pdf" always;
+      add_header Content-Disposition "attachment; filename=map.geo.admin.ch_$1.pdf" always;
       break;
     }
 
