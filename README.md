@@ -85,6 +85,44 @@ A r/w EFS for application, mounted in docker container on _/var/local/print_
     GET /print/-multi23444545.pdf.printout                               mapfish-print-multi23444545.pdf.printout
     GET /print/9032936254995330149.pdf.printout                          mapfish-print9032936254995330149.pdf.printout
 
+# Compiling mapfish-print.jar
+
+Use Java 7 (won't compile with older or newer version)
+
+    java -version
+    java version "1.7.0_181"
+    OpenJDK Runtime Environment (IcedTea 2.6.14) (7u181-2.6.14-1~deb8u1)
+    OpenJDK 64-Bit Server VM (build 24.181-b01, mixed mode)
+
+
+Use custom branch `2.1.x_geoadmin3` and disable tests (as tests geodata are long gone):
+
+    2.1.x_geoadmin3* 130 ± ./gradlew  build -x test -x check
+    :compileJava UP-TO-DATE
+    :processResources UP-TO-DATE
+    :classes UP-TO-DATE
+    :imageMagickWar
+    :jar
+    :javadoc UP-TO-DATE
+    :libJavadocJar UP-TO-DATE
+    :libSourcesJar UP-TO-DATE
+    :standalone
+    :standaloneJavadocJar UP-TO-DATE
+    :standaloneSourcesJar UP-TO-DATE
+    :war
+    :assemble
+    :build
+    :e2e-tests:compileJava UP-TO-DATE
+    :e2e-tests:processResources UP-TO-DATE
+    :e2e-tests:classes UP-TO-DATE
+    :e2e-tests:jar UP-TO-DATE
+    :e2e-tests:assemble UP-TO-DATE
+    :e2e-tests:build
+    
+    BUILD SUCCESSFUL
+    
+    Total time: 23.3 secs
+
 
 # Getting started
 
