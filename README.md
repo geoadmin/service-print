@@ -342,3 +342,49 @@ And deploy to rancher
 
      make rancherdeployint
 
+
+# Testing
+
+    curl -v --max-time 60 --silent --header "Content-Type: application/json; charset=UTF-8" \
+      --header "Referer: https://map.geo.admin.ch" \
+      --header "User-Agent: Zorba is debugging the print server" \ 
+      --header "Host: print.geo.admin.ch" --data @specs/lv95_simple.json \
+      -X POST "https://print.geo.admin.ch/print/create.json?url=https%3A%2F%2Fprint.geo.admin.ch%2Fprint"
+
+Response 
+
+    *   Trying 54.72.183.195...
+    * Connected to print.geo.admin.ch (54.72.183.195) port 443 (#0)
+    [snip...]
+    < HTTP/1.1 100 Continue
+    * We are completely uploaded and fine
+    < HTTP/1.1 200 OK
+    < Accept-Ranges: bytes
+    < Access-Control-Allow-Headers: Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With
+    < Access-Control-Allow-Methods: GET, POST, OPTIONS
+    < Access-Control-Allow-Origin: *
+    < Age: 0
+    < Content-Type: application/json;charset=utf-8
+    < Date: Tue, 03 Jul 2018 08:11:32 GMT
+    < Server: nginx/1.13.3
+    < Via: 1.1 varnish-v4
+    < X-Cache: MISS
+    < X-Varnish: 66879729
+    < Content-Length: 78
+    < Connection: keep-alive
+    <
+    * Connection #0 to host print.geo.admin.ch left intact
+    {"getURL":"https://print.geo.admin.ch/print/8727187409122563429.pdf.printout"}
+
+Get the PDF
+
+    curl -LO https://print.geo.admin.ch/print/8727187409122563429.pdf.printout
+
+Check it 
+
+    file 8727187409122563429.pdf.printout
+    8727187409122563429.pdf.printout: PDF document, version 1.5
+
+Et voilà
+
+![Simple PDF](7748734572216011422.pdf.png)
