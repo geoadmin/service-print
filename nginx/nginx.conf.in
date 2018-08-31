@@ -1,4 +1,4 @@
-user nginx;
+user www-data;
 
 # should be equal to the number of process on the host machine
 worker_processes 8;
@@ -12,8 +12,22 @@ events {
 }
 
 http {
+  include       mime.types;
+  default_type  application/octet-stream;
   # if we use analytics we may want to turn that off
-  access_log /dev/stdout;
+  #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+  #                  '$status $body_bytes_sent "$http_referer" '
+  #                  '"$http_user_agent" "$http_x_forwarded_for"';
+  #access_log  logs/access.log  main;
+
+
+  log_format bodylog '$remote_addr - $remote_user [$time_local] '
+      '"$request" $status $body_bytes_sent '
+      '"$http_referer" "$http_user_agent" $request_time '
+      '\n\n"$req_headers" \n"$req_body" \n>"$resp_body"';
+  
+  access_log /dev/stdout bodylog;
+  # access_log  /var/log/host.access.log  bodylog;
   sendfile off;
 
   # this removes the "host_header" related issue
@@ -48,6 +62,41 @@ http {
     #server_name service-print.${PRINT_ENV}.bgdi.ch;
 
     root /var/local/print;
+
+   lua_need_request_body on;
+
+   set $resp_body "";
+   set $req_body "";
+   set $req_headers "";
+
+   client_body_buffer_size 16k;
+
+   rewrite_by_lua_block {
+       local req_headers = "Headers: ";
+       ngx.var.req_body = ngx.req.get_body_data();
+       local h, err = ngx.req.get_headers()
+       for k, v in pairs(h) do
+           req_headers = req_headers .. k .. ": " .. v .. "\n";
+       end
+
+       ngx.var.req_headers = req_headers;
+   }
+
+   body_filter_by_lua '
+       local resp_body = string.sub(ngx.arg[1], 1, 1000)
+       ngx.ctx.buffered = (ngx.ctx.buffered or "") .. resp_body
+       if ngx.arg[2] then
+         ngx.var.resp_body = ngx.ctx.buffered
+       end
+   ';
+
+   location /example {
+        default_type 'text/plain';
+
+        content_by_lua_block {
+            ngx.say('Hello, Sammy!')
+        }
+    }
 
     location ~ /[0-9]+/print/ {
       rewrite ^/[0-9]+/print/(.*) /print/$1;

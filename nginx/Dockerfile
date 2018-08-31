@@ -1,6 +1,7 @@
-FROM nginx:1.13.3
+FROM openresty/openresty:1.13.6.2-0-stretch-fat
 RUN apt-get update && apt-get install -y gettext bash
-RUN rm /etc/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+# RUN luarocks install luajson
+#RUN rm /etc/nginx/conf.d/default.conf
 COPY . /.
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
