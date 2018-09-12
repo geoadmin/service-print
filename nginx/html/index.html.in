@@ -9,17 +9,22 @@ git_commit_date=${git_commit_date}
 
 <h2>Print proxy</h2>
 <ul>
+    <li><a href="/checker">checker</a></li>
+    <li><a href="/backend_checker">pass-thru checker</a></li>
     <li><a href="print/info.json">info.json (GET)</li>
-    <li><a href="print/create.json">create.json (POST)</li>
-    <li><a href="printmulti/create.json">create.json (multi, POST)</li>
+    <li>print/create.json (POST)</li>
+    <li>printmulti/create.json (multi, POST)</li>
     <li>Download e.g. print/8003637753507859297.pdf.printout</li>
     <li>Print status e.g. printprogress?id=1607190928054296</li>
     <li>Print cancel e.g. printcancel</li>
 </ul>
 
+<h2>WSG backend</h2>
+<ul>
+    <li><a href="/wsgi_checker">checker</a></li>
+</ul>
 <h2>Tomcat backend</h2>
 <ul>
-    <li><a href="http:${tomcat_server_url}:${tomcat_port}/checker">checker</a></li>
-    <li><a href="http:${tomcat_server_url}:${tomcat_port}/service-print-main/pdf/info.json">info.json</a></li>
+    <li><a href="/tomcat_checker">tomcat checker</a></li>
+    <li><a href="/service-print-main/pdf/info.json">info.json</a></li>
 </ul>
-

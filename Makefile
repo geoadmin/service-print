@@ -88,7 +88,7 @@ all: setup templates
 
 setup: .venv
 
-templates: tomcat/WEB-INF/web.xml print3/static/index.html
+templates: tomcat/WEB-INF/web.xml nginx/html/index.html
 
 .PHONY: user
 user:
@@ -143,7 +143,7 @@ tomcat/WEB-INF/web.xml: tomcat/WEB-INF/web.xml.in
 print3/static/index.html.in:
 	@echo "${GREEN}Template file print3/static/index.html.in has changed${RESET}";
 
-print3/static/index.html: print3/static/index.html.in
+nginx/html/index.html: nginx/html/index.html.in
 	@echo "${GREEN}Creating print3/static/index.html..${RESET}";
 	${MAKO_CMD} \
 		--var "print_war=$(BASEWAR)" \
@@ -222,6 +222,7 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY_PROD \
 # for nginx, we only replace variables that actually exist
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
+		make nginx/html/index.html && \
 		envsubst < nginx/nginx.conf.in > nginx/nginx.conf && \
 		envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
 endef
@@ -254,7 +255,7 @@ cleancache:
 .PHONY: clean
 clean:
 		rm -f tomcat/WEB-INF/web.xml
-		rm -f print3/static/index.html
+		rm -f nginx/html/index.html
 		rm -rf tomcat/temp_*
 		rm -f nginx/nginx.conf
 		rm -f rancher-compose.yml

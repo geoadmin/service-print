@@ -24,7 +24,7 @@ http {
   log_format bodylog '$remote_addr - $remote_user [$time_local] '
       '"$request" $status $body_bytes_sent '
       '"$http_referer" "$http_user_agent" $request_time '
-      '\n\n"$req_headers" \n"$req_body" \n>"$resp_body"';
+      '\n\n"$request_method" "$req_headers" \n"$req_body" \n>"$resp_body"';
   
   access_log /dev/stdout bodylog;
   # access_log  /var/log/host.access.log  bodylog;
@@ -82,21 +82,14 @@ http {
        ngx.var.req_headers = req_headers;
    }
 
+   # Limit body size to 2'000'000
    body_filter_by_lua '
-       local resp_body = string.sub(ngx.arg[1], 1, 1000)
+       local resp_body = string.sub(ngx.arg[1], 1, 2000000)
        ngx.ctx.buffered = (ngx.ctx.buffered or "") .. resp_body
        if ngx.arg[2] then
          ngx.var.resp_body = ngx.ctx.buffered
        end
    ';
-
-   location /example {
-        default_type 'text/plain';
-
-        content_by_lua_block {
-            ngx.say('Hello, Sammy!')
-        }
-    }
 
     location ~ /[0-9]+/print/ {
       rewrite ^/[0-9]+/print/(.*) /print/$1;
@@ -104,6 +97,8 @@ http {
 
     # PDF download
     location ~  /mapfish-print-multi(\d+)\.pdf\.printout$ {
+        root /var/local/print;
+
         types {
           application/pdf        printout;
         }
@@ -114,6 +109,8 @@ http {
     }
 
     location ~  ^/mapfish-print(\d+)\.pdf\.printout$ {
+        root /var/local/print;
+
 
       types {
           application/pdf        printout;
@@ -210,6 +207,11 @@ http {
     location /backend_checker {
       expires off;
       proxy_pass http://localhost:${WSGI_PORT}/backend_checker;
+    }
+    location / {
+       expires off;
+       root /html;
+       try_files $uri $uri/ =404;
     }
   }
 }
