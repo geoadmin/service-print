@@ -10,7 +10,7 @@ PyPDF2==1.23
 PyYAML==3.10
 regex==2014.02.19
 six==1.10.0
-Flask==0.12.1
+Flask==0.12.3
 gevent==1.2.2
 gunicorn==19.7.1
 requests==2.20.0
