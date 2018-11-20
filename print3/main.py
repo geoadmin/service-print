@@ -12,6 +12,7 @@ import multiprocessing
 import random
 from urlparse import urlsplit
 from urllib import urlencode
+from retrying import retry
 
 
 from PyPDF2 import PdfFileMerger
@@ -69,8 +70,8 @@ def get_tomcat_backend_info():
     url = 'http:%s/%s' % (TOMCAT_LOCAL_SERVER_URL,
                           'service-print-main/checker')
     r = requests.get(url,
-                        headers={'Referer': REFERER_URL},
-                        verify=False)
+                     headers={'Referer': REFERER_URL},
+                     verify=False)
     return r.content
 
 
@@ -101,6 +102,28 @@ def print_cancel():
     return Response(status=200)
 
 
+@retry(
+    wait_exponential_multiplier=200,
+    wait_exponential_max=1000,
+    stop_max_delay=3000)
+def _read_json(filename):
+    data = None
+    try:
+        with open(filename, 'r') as data_file:
+            raw_data = data_file.read()
+            data = json.loads(raw_data)
+    except IOError:
+        raise Exception('Cannot read file {}'.format(filename))
+    except ValueError:
+        raise Exception(
+            'Cannot decode file: {} with content: {}'.format(
+                filename, raw_data))
+    except:
+        raise Exception('Unexpected error while reading {}'.format(filename))
+
+    return data
+
+
 @app.route('/printprogress')
 def print_progress():
 
@@ -111,8 +134,9 @@ def print_progress():
     if not os.path.isfile(filename):
         abort(400, '%s does not exists' % filename)
 
-    with open(filename, 'r') as data_file:
-        data = json.load(data_file)
+    data = _read_json(filename)
+    if data is None:
+        abort(500, 'Cannot read/decode {}'.format(filename))
 
     # When file is written, get current size
     if os.path.isfile(pdffile):
@@ -274,7 +298,7 @@ def worker(job):
         multi_logger.error('[Worker] Unknown exception: %s', e)
         with open(infofile, 'w+') as outfile:
             json.dump({'status': 'failed', 'done': 0,
-                   'total': 0}, outfile)
+                       'total': 0}, outfile)
 
     return (timestamp, None)
 
@@ -470,7 +494,8 @@ def create_and_merge(info):
             if pdf[1] is not None:
                 pdfs[i] = pdf
             else:
-                logger.error('Retry of partial PDF also failed. Cannot merge PDF')
+                logger.error(
+                    'Retry of partial PDF also failed. Cannot merge PDF')
                 logger.error('spec: {}'.format(job))
                 return 2
 
