@@ -8,6 +8,7 @@ import urllib
 import json
 import copy
 import datetime
+import time
 import multiprocessing
 import random
 from urlparse import urlsplit
@@ -105,13 +106,16 @@ def print_cancel():
 @retry(
     wait_exponential_multiplier=200,
     wait_exponential_max=1000,
-    stop_max_delay=3000)
-def _read_json(filename):
+    stop_max_delay=5000)
+def _retry_read(filename, is_json=False):
     data = None
     try:
         with open(filename, 'r') as data_file:
             raw_data = data_file.read()
-            data = json.loads(raw_data)
+            if is_json:
+                data = json.loads(raw_data)
+            else:
+                data = raw_data
     except IOError:
         raise Exception('Cannot read file {}'.format(filename))
     except ValueError:
@@ -122,6 +126,10 @@ def _read_json(filename):
         raise Exception('Unexpected error while reading {}'.format(filename))
 
     return data
+
+
+def _read_json(filename):
+    return _retry_read(filename, is_json=True)
 
 
 @app.route('/printprogress')
@@ -136,6 +144,8 @@ def print_progress():
 
     data = _read_json(filename)
     if data is None:
+        logger.error(
+            'Error while reading/decoding printprogress file {}'.format(filename))
         abort(500, 'Cannot read/decode {}'.format(filename))
 
     # When file is written, get current size
@@ -321,8 +331,10 @@ def create_and_merge(info):
         '''Merge individual pdfs into a big one'''
         '''We assume this happens in one process'''
 
-        with open(infofile, 'r') as data_file:
-            info_json = json.load(data_file)
+        info_json = _read_json(infofile)
+        if info_json is None:
+            logger.error('Cannot read/decode json file {}'.format(info_json))
+            abort(500, 'Cannot read/decode {}'.format(info_json))
 
         info_json['merged'] = 0
 
@@ -330,7 +342,7 @@ def create_and_merge(info):
             with open(infofile, 'w+') as outfile:
                 json.dump(info_json, outfile)
 
-        logger.debug('[_merge_pdfs] Starting merge')
+        logger.debug('[_merge_pdfs] Starting merge {} PDFs'.format(len(pdfs)))
         merger = PdfFileMerger()
         expected_file_size = 0
         for pdf in sorted(pdfs, key=lambda x: x[0]):
@@ -339,11 +351,16 @@ def create_and_merge(info):
             if localname is not None:
                 try:
                     path = open(localname, 'rb')
-                    expected_file_size += os.path.getsize(localname)
+                    single_file_size = os.path.getsize(localname)
+                    expected_file_size += single_file_size
                     merger.append(fileobj=path)
                     info_json['merged'] += 1
                     write_info()
-                except:
+                except Exception as e:
+                    logger.error(
+                        'Failed to append file {} [ {} kB] to merger PDF'.format(
+                            localname, single_file_size / 1024.))
+                    logger.error(e, exc_info=True)
                     return None
 
         try:
@@ -351,11 +368,22 @@ def create_and_merge(info):
             info_json['written'] = 0
             write_info()
             filename = create_pdf_path(print_temp_dir, unique_filename)
-            logger.debug('[_merge_pdfs] Writing file.')
+            logger.debug(
+                '[_merge_pdfs] Starting writing merged PDF [ {} kB ] file {}'.format(
+                    single_file_size / 1024., filename))
+            start_time = time.time()
             out = open(filename, 'wb')
             merger.write(out)
-            logger.debug('[_merge_pdfs] Merged PDF written to: %s', filename)
-        except:
+            stop_time = time.time()
+            time_used = (stop_time - start_time) * 1000.0
+            logger.info(
+                '[_merge_pdfs] Merged PDF written to: %s in {} ms'.format(
+                    filename, time_used))
+        except Exception as e:
+            logger.error(
+                'Error while merging file {}\n{}e'.format(
+                    filename, e))
+            logger.error(e, exc_info=True)
             return False
 
         finally:
@@ -490,9 +518,13 @@ def create_and_merge(info):
     for i, v in enumerate(pdfs):
         if v[1] is None:
             job = jobs[i]
+            logger.warn("Retrying a failed PDF. Timestamp={}".format(job[3]))
             pdf = worker(job)
             if pdf[1] is not None:
                 pdfs[i] = pdf
+                logger.info(
+                    "Retryied failed PDF with timestamp={} is OK".format(
+                        job[3]))
             else:
                 logger.error(
                     'Retry of partial PDF also failed. Cannot merge PDF')
@@ -509,7 +541,7 @@ def create_and_merge(info):
     with open(infofile, 'w+') as outfile:
         json.dump({'status': 'done', 'getURL': pdf_download_url}, outfile)
 
-    logger.debug('[create_pdf] PDF ready to download: %s', pdf_download_url)
+    logger.info('[create_pdf] PDF ready to download: %s', pdf_download_url)
 
     return 0
 
