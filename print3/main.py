@@ -102,6 +102,17 @@ def print_cancel():
 
     return Response(status=200)
 
+# TODO we should inform user of problem
+
+
+def print_failed(fileid):
+    filename = create_info_file(PRINT_TEMP_DIR, fileid)
+    pdffile = create_pdf_path(PRINT_TEMP_DIR, fileid)
+
+    for fname in (filename, pdffile):
+        if os.path.isfile(fname):
+            os.remove(fname)
+
 
 @retry(
     wait_exponential_multiplier=200,
@@ -226,12 +237,15 @@ def worker(job):
 
     try:
         (idx, url, headers, timestamp, layers, tmp_spec,
-         print_temp_dir, infofile, cancelfile, lock) = job
+         print_temp_dir, infofile, cancelfile, lock, jobid) = job
     except ValueError:
+        multi_logger.error('[Worker] Cannot get job specification')
         return (timestamp, None)
 
     try:
-        multi_logger.debug('Worker started to print an individual pdf')
+        multi_logger.debug(
+            '[worker {}]. Starting to print individual pdf (timestamp={})'.format(
+                jobid, timestamp, infofile))
 
         for layer in layers:
             try:
@@ -241,8 +255,9 @@ def worker(job):
 
         # Before launching print request, check if process is canceled
         if os.path.isfile(cancelfile):
-            multi_logger.debug('Cancelling request')
-            multi_logger.debug('Cancel file %s' % cancelfile)
+            multi_logger.debug(
+                '[worker {}] Canceling request with file {}'.format(
+                    jobid, cancelfile))
             return (timestamp, None)
 
         h = {
@@ -250,7 +265,9 @@ def worker(job):
             'Content-Type': 'application/json',
             'Host': PRINT_SERVER_HOST
         }
-        multi_logger.debug('Creating pdf %s' % url)
+        multi_logger.debug(
+            '[worker {}] Sending create.json request to {}'.format(
+                jobid, url))
         try:
             r = requests.post(
                 url,
@@ -258,7 +275,9 @@ def worker(job):
                 headers=h,
                 verify=VERIFY_SSL)
         except Exception:
-            multi_logger.error('Failed to create for %s' % url)
+            multi_logger.error(
+                '[worker {}]. Request for {} did fail for unknown reason'.format(
+                    jobid, url))
             return (timestamp, None)
 
         if r.status_code == requests.codes.ok:
@@ -269,12 +288,18 @@ def worker(job):
             # EFS!
             try:
                 pdf_url = r.json()['getURL']
-                multi_logger.debug('[Worker] pdf_url: %s', pdf_url)
+                multi_logger.debug(
+                    '[Worker] Response from tomcat has pdf_url: %s', pdf_url)
                 filename = os.path.basename(urlsplit(pdf_url).path)
                 localname = os.path.join(
                     print_temp_dir, MAPFISH_FILE_PREFIX + filename)
+                multi_logger.info(
+                    "[worker {}] Partial PDF for Timestamp={} succesfully written to file {}".format(
+                        jobid, timestamp, localname))
             except Exception:
-                multi_logger.error('[Worker] Failed timestamp: %s', timestamp)
+                multi_logger.error(
+                    '[Worker {}] Failed timestamp: {}'.format(
+                        jobid, timestamp))
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 multi_logger.error(
                     "*** Traceback:/n %s" %
@@ -296,16 +321,17 @@ def worker(job):
             return (timestamp, localname)
         else:
             multi_logger.error(
-                '[Worker] Failed get/generate PDF for: %s. Error: %s',
-                timestamp,
-                r.status_code)
+                '[Worker {}] Failed get/generate PDF for: {}. Error: {}'.format(
+                    jobid, timestamp, r.status_code))
             multi_logger.error('[Worker] response: %s', r.text)
             multi_logger.error('[Worker] spec: %s', tmp_spec)
             multi_logger.error('[Worker] headers: %s', h)
             multi_logger.error('[Worker] url: %s', url)
             multi_logger.error('[Worker] print dir: %s', print_temp_dir)
     except Exception as e:
-        multi_logger.error('[Worker] Unknown exception: %s', e)
+        multi_logger.error(
+            '[Worker {}] Unknown exception: {}'.format(
+                jobid, str(e)))
         with open(infofile, 'w+') as outfile:
             json.dump({'status': 'failed', 'done': 0,
                        'total': 0}, outfile)
@@ -327,9 +353,15 @@ def create_and_merge(info):
             isMultiPage = spec['movie']
         return isMultiPage
 
-    def _merge_pdfs(pdfs, infofile):
+    # TODO failed info_filename = create_info_file(PRINT_TEMP_DIR,
+    # unique_filename)
+
+    def _merge_pdfs(pdfs, infofile, ignore_missing=True):
         '''Merge individual pdfs into a big one'''
         '''We assume this happens in one process'''
+
+        merged_pdf_filename = create_pdf_path(print_temp_dir, unique_filename)
+        jobid = unique_filename
 
         info_json = _read_json(infofile)
         if info_json is None:
@@ -342,7 +374,9 @@ def create_and_merge(info):
             with open(infofile, 'w+') as outfile:
                 json.dump(info_json, outfile)
 
-        logger.debug('[_merge_pdfs] Starting merge {} PDFs'.format(len(pdfs)))
+        logger.info(
+            '[_merge_pdfs {}] Starting merge {} PDFs'.format(
+                jobid, len(pdfs)))
         merger = PdfFileMerger()
         expected_file_size = 0
         for pdf in sorted(pdfs, key=lambda x: x[0]):
@@ -358,31 +392,32 @@ def create_and_merge(info):
                     write_info()
                 except Exception as e:
                     logger.error(
-                        'Failed to append file {} [ {} kB] to merger PDF'.format(
-                            localname, single_file_size / 1024.))
+                        '[_merge_pdfs {}] Failed to append file {} [ {} kB] to merger PDF'.format(
+                            jobid, localname, single_file_size / 1024.))
                     logger.error(e, exc_info=True)
-                    return None
+                    # Try to merge pdf even if some file are missing
+                    if ignore_missing is False:
+                        return False
 
         try:
             info_json['filesize'] = expected_file_size
             info_json['written'] = 0
             write_info()
-            filename = create_pdf_path(print_temp_dir, unique_filename)
             logger.debug(
-                '[_merge_pdfs] Starting writing merged PDF [ {} kB ] file {}'.format(
-                    single_file_size / 1024., filename))
+                '[_merge_pdfs {}] Starting writing merged PDF [ {} kB ] file {}'.format(
+                    jobid, single_file_size / 1024., merged_pdf_filename))
             start_time = time.time()
-            out = open(filename, 'wb')
+            out = open(merged_pdf_filename, 'wb')
             merger.write(out)
             stop_time = time.time()
             time_used = (stop_time - start_time) * 1000.0
             logger.info(
-                '[_merge_pdfs] Merged PDF written to: %s in {} ms'.format(
-                    filename, time_used))
+                '[_merge_pdfs {}] Merged PDF written to: {} in {} ms'.format(
+                    jobid, merged_pdf_filename, time_used))
         except Exception as e:
             logger.error(
-                'Error while merging file {}\n{}e'.format(
-                    filename, e))
+                '[_merge_pdfs {}] Error while writing merged PDF file {}\n{}e'.format(
+                    jobid, merged_pdf_filename, e))
             logger.error(e, exc_info=True)
             return False
 
@@ -393,6 +428,7 @@ def create_and_merge(info):
         return True
 
     jobs = []
+    jobid = unique_filename
     all_timestamps = []
 
     create_pdf_url = scheme + ':' + print_url + '/print/create.json'
@@ -403,14 +439,19 @@ def create_and_merge(info):
 
     if _isMultiPage(spec):
         all_timestamps = _get_timestamps(spec, api_url)
+        all_timestamps_keys = map(int, all_timestamps.keys())
 
-        logger.debug('[print_create_post] Going multipages')
+        logger.debug(
+            '[print_create_post] Going to print {} pages'.format(
+                len(all_timestamps_keys)))
         if len(all_timestamps) < 1:
             return 4
 
-        logger.debug(
-            '[print_create_post] Timestamps to process: %s',
-            all_timestamps.keys())
+        logger.info(
+            '[Job {}] {} timestamps to process: {}'.format(
+                jobid,
+                len(all_timestamps_keys),
+                all_timestamps_keys))
 
     for i, lyr in enumerate(spec['layers']):
         if 'baseUrl' in spec['layers'][i]:
@@ -419,7 +460,7 @@ def create_and_merge(info):
             spec['layers'][i]['baseURL'] = cleanup_baseurl
 
     if len(all_timestamps) < 1:
-        job = (0, url, headers, None, [], spec, print_temp_dir)
+        job = (0, url, headers, None, [], spec, print_temp_dir, jobid)
         jobs.append(job)
     else:
         last_timestamp = all_timestamps.keys()[-1]
@@ -464,7 +505,8 @@ def create_and_merge(info):
                 del tmp_spec['legends']
                 tmp_spec['enableLegends'] = False
 
-            logger.debug('[print_create] Processing timestamp: %s', ts)
+            logger.debug(
+                '[print_create] Succesfully processed spec for timestamp: %s', ts)
 
             job = (
                 idx,
@@ -476,7 +518,8 @@ def create_and_merge(info):
                 print_temp_dir,
                 infofile,
                 cancelfile,
-                lock)
+                lock,
+                jobid)
 
             jobs.append(job)
 
@@ -485,7 +528,7 @@ def create_and_merge(info):
                    'total': len(jobs)}, outfile)
 
     if USE_MULTIPROCESS:
-        logger.debug('Going multiprocess')
+        logger.info('Going multiprocess')
         pool = multiprocessing.Pool(NUMBER_POOL_PROCESSES)
         pdfs = pool.map(worker, jobs)
         pool.close()
@@ -498,11 +541,13 @@ def create_and_merge(info):
                 if p.exitcode is None:
                     p.terminate()
                 del pool._pool[i]
-            logger.error('Error while generating the partial PDF: %s', e)
+            logger.error(
+                '[Job {}] Error while generating the partial PDF: {}'.format(
+                    jobid, e))
             logger.error(e, exec_info=True)
             return 1
     else:
-        logger.debug('Going single process')
+        logger.info('Going single process')
         pdfs = []
         for j in jobs:
             pdfs.append(worker(j))
@@ -518,21 +563,32 @@ def create_and_merge(info):
     for i, v in enumerate(pdfs):
         if v[1] is None:
             job = jobs[i]
-            logger.warn("Retrying a failed PDF. Timestamp={}".format(job[3]))
+            retry_timestamp = job[3] if len(job) > 3 else 'unknown'
+            logger.warn(
+                "Job {}. Retrying a failed PDF. Timestamp={}".format(
+                    jobid, retry_timestamp))
             pdf = worker(job)
             if pdf[1] is not None:
                 pdfs[i] = pdf
                 logger.info(
-                    "Retryied failed PDF with timestamp={} is OK".format(
-                        job[3]))
+                    "Job {}. Retryied failed PDF with timestamp={} is OK".format(
+                        jobid, retry_timestamp))
             else:
-                logger.error(
-                    'Retry of partial PDF also failed. Cannot merge PDF')
-                logger.error('spec: {}'.format(job))
+                logger.fatal(
+                    'Job [. ]Retry of partial PDF timestamp {} also failed'.format(
+                        jobid, retry_timestamp))
+                logger.fatal('====== spec =====\n{}\n======='.format(job))
                 return 2
 
+    # Check if any missing PDFs
+    missing_pdfs = (filter(lambda x: x is None, zip(*pdfs)[1]))
+    if len(missing_pdfs) > 0:
+        logger.error("Number of missing PDF: {}".format(missing_pdfs))
+
     if _merge_pdfs(pdfs, infofile) is False:
-        logger.error('Something went wrong while merging PDFs')
+        logger.fatal(
+            'Job {}. Something went wrong while merging PDFs'.format(jobid))
+        print_failed(jobid)
         return 3
 
     # Use the real filename to avoid rewrite on the http server
