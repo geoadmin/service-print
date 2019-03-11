@@ -187,8 +187,8 @@ dockertag: guard-IMAGE_TAG
 dockerpush: guard-IMAGE_TAG
 	  @echo Will push the following images;\
 		docker images | grep $(IMAGE_TAG);\
-		docker push swisstopo/service-print:$(IMAGE_TAG);\
-		docker push swisstopo/service-print:$(IMAGE_TAG);\
+		docker push swisstopo/service-print-tomcat:$(IMAGE_TAG);\
+		docker push swisstopo/service-print-nginx:$(IMAGE_TAG);\
 		docker push swisstopo/service-print:$(IMAGE_TAG);
 
 .PHONY: composetemplateuser
