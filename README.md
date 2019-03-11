@@ -295,14 +295,14 @@ You may use [mapfish print examples](https://github.com/procrastinatio/mapfish-p
 
 Set `RANCHER_ACCESS_KEY`, `RANCHER_SECRET_KEY` and `RANCHER_URL` pointing to the rancher **dev** environment
 
+
 ## Push you images to dockerhub
 
     docker push swisstopo/service-print:staging
     docker push swisstopo/service-print-nginx:staging 
     docker push swisstopo/service-print-tomcat:staging 
 
-
-## Deploy your images
+## Deploy your images to rancher
 
 Rancher dev is always using the images tagged `staging`
 
@@ -323,17 +323,30 @@ Do not ever use images tagged with `staging` on rancher `int` and `prod` environ
 
 ## Deploy to int
 
+## Tag you image
+   
 Tag the `staging` images with the last git commit short hash:
 
     docker tag swisstopo/service-print:staging swisstopo/service-print:83ed21d    
     docker tag swisstopo/service-print-nginx:staging swisstopo/service-print-nginx:83ed21d    
     docker tag swisstopo/service-print-tomcat:staging swisstopo/service-print-tomcat:83ed21d    
 
+or with
+
+   export IMAGE_TAG=r181212_abcded
+   make dockertag
+
+## Push to dockerhub
+
 Push the newly tagged instances to dockerhub
 
     docker push swisstopo/service-print:83ed21d    
     docker push swisstopo/service-print-nginx:83ed21d    
     docker push swisstopo/service-print-tomcat:83ed21d    
+
+or with
+
+    make dockerpush
 
 Update the `IMAGE_TAG` in both `int.env` and `prod.env` (because you want to deploy theses images to prod)
 

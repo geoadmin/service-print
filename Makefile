@@ -60,6 +60,8 @@ help:
 	@echo "--------------------------------------------------------------------------"
 	@echo "- dockerbuild        Builds a docker image using the current directory"
 	@echo "- dockerrun          Creates and runs all the containers (in the background)"
+	@echo "- dockertag          Tag the images 'staging' with $(IMAGE_TAG)"
+	@echo "- dockerpush         Push the images $(IMAGE_TAG) to dockerhub"
 	@echo
 	@echo "--------------------------------------------------------------------------"
 	@echo "|                       RANCHER DEPLOYMENT                               |"
@@ -172,6 +174,22 @@ setup: .venv/requirements.timestamp .venv/dev-requirements.timestamp
 .PHONY: dockerbuild
 dockerbuild: composetemplateuser
 	docker-compose build
+
+.PHONY: dockertag
+dockertag: guard-IMAGE_TAG
+		 @if [ "${IMAGE_TAG}" != "staging"  ]; then\
+				docker tag swisstopo/service-print:staging swisstopo/service-print:$(IMAGE_TAG); \
+				docker tag swisstopo/service-print-tomcat:staging swisstopo/service-print-tomcat:$(IMAGE_TAG); \
+				docker tag swisstopo/service-print-nginx:staging swisstopo/service-print-nginx:$(IMAGE_TAG); \
+		fi
+
+.PHONY: dockerpush
+dockerpush: guard-IMAGE_TAG
+	  @echo Will push the following images;\
+		docker images | grep $(IMAGE_TAG);\
+		docker push swisstopo/service-print-tomcat:$(IMAGE_TAG);\
+		docker push swisstopo/service-print-nginx:$(IMAGE_TAG);\
+		docker push swisstopo/service-print:$(IMAGE_TAG);
 
 .PHONY: composetemplateuser
 composetemplateuser: .venv/dev-requirements.timestamp
