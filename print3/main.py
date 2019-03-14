@@ -11,12 +11,10 @@ import datetime
 import time
 import multiprocessing
 import random
-from urlparse import urlsplit
-from urllib import urlencode
+import subprocess
+from urllib.parse import urlsplit
+from urllib.parse import urlencode
 from retrying import retry
-
-
-from PyPDF2 import PdfFileMerger
 
 
 import requests
@@ -377,17 +375,15 @@ def create_and_merge(info):
         logger.info(
             '[_merge_pdfs {}] Starting merge {} PDFs'.format(
                 jobid, len(pdfs)))
-        merger = PdfFileMerger()
         expected_file_size = 0
+        pdf_to_merge = []
         for pdf in sorted(pdfs, key=lambda x: x[0]):
-
             ts, localname = pdf
             if localname is not None:
                 try:
-                    path = open(localname, 'rb')
                     single_file_size = os.path.getsize(localname)
                     expected_file_size += single_file_size
-                    merger.append(fileobj=path)
+                    pdf_to_merger.append(localname)
                     info_json['merged'] += 1
                     write_info()
                 except Exception as e:
@@ -407,23 +403,27 @@ def create_and_merge(info):
                 '[_merge_pdfs {}] Starting writing merged PDF [ {} kB ] file {}'.format(
                     jobid, single_file_size / 1024., merged_pdf_filename))
             start_time = time.time()
-            out = open(merged_pdf_filename, 'wb')
-            merger.write(out)
+            command = ["pdfunit"] + pdf_to_merge + [merged_pdf_filename, ]
+            subprocess.check_call(command)
+
             stop_time = time.time()
             time_used = (stop_time - start_time) * 1000.0
             logger.info(
                 '[_merge_pdfs {}] Merged PDF written to: {} in {} ms'.format(
                     jobid, merged_pdf_filename, time_used))
-        except Exception as e:
+        except subprocess.CalledProcessError as e:
             logger.error(
-                '[_merge_pdfs {}] Error while writing merged PDF file {}\n{}e'.format(
-                    jobid, merged_pdf_filename, e))
+                '[_merge_pdfs {}] Error while merging PDF file {} ({})\n{}e'.format(
+                    jobid, merged_pdf_filename, expected_file_size, e))
             logger.error(e, exc_info=True)
             return False
 
-        finally:
-            out.close()
-            merger.close()
+        except Exception as e:
+            logger.error(
+                '[_merge_pdfs {}] Unknown error while merging PDF file {} ({})\n{}e'.format(
+                    jobid, merged_pdf_filename, expected_file_size, e))
+            logger.error(e, exc_info=True)
+            return False
 
         return True
 
@@ -433,13 +433,13 @@ def create_and_merge(info):
 
     create_pdf_url = scheme + ':' + print_url + '/print/create.json'
 
-    url = create_pdf_url + '?url=' + urllib.quote_plus(create_pdf_url)
+    url = create_pdf_url + '?url=' + urllib.parse.quote(create_pdf_url)
     infofile = create_info_file(print_temp_dir, unique_filename)
     cancelfile = create_cancel_file(print_temp_dir, unique_filename)
 
     if _isMultiPage(spec):
         all_timestamps = _get_timestamps(spec, api_url)
-        all_timestamps_keys = map(int, all_timestamps.keys())
+        all_timestamps_keys = list(map(int, all_timestamps.keys()))
 
         logger.debug(
             '[print_create_post] Going to print {} pages'.format(
@@ -463,7 +463,7 @@ def create_and_merge(info):
         job = (0, url, headers, None, [], spec, print_temp_dir, jobid)
         jobs.append(job)
     else:
-        last_timestamp = all_timestamps.keys()[-1]
+        last_timestamp = list(all_timestamps.keys())[-1]
 
         for idx, ts in enumerate(all_timestamps):
             lyrs = all_timestamps[ts]
@@ -581,7 +581,7 @@ def create_and_merge(info):
                 return 2
 
     # Check if any missing PDFs
-    missing_pdfs = (filter(lambda x: x is None, zip(*pdfs)[1]))
+    missing_pdfs = list(filter(lambda x: x is None, list(zip(*pdfs))[1]))
     if len(missing_pdfs) > 0:
         logger.error("Number of missing PDF: {}".format(missing_pdfs))
 

@@ -4,8 +4,9 @@ import re
 import urllib
 import requests
 from collections import OrderedDict
-from urlparse import urlparse, parse_qs, urlunparse
-from urllib import urlencode, quote_plus, unquote_plus
+from urllib.parse import urlparse, parse_qs, urlunparse
+from urllib.parse import urlencode, quote, unquote
+
 import json
 
 from print3.config import (
@@ -128,7 +129,7 @@ def _zeitreihen(d, api_url):
 
     sr = 2056 if USE_LV95_SERVICES else 21781
     d['sr'] = sr
-    params = urllib.urlencode(d)
+    params = urlencode(d)
     path_tpl = '/rest/services/ech/MapServer/' + \
         'ch.swisstopo.zeitreihen/releases?%s'
     url = 'http:' + api_url + path_tpl % params
@@ -198,14 +199,14 @@ def _get_timestamps(spec, api_url):
 def _qrcodeurlparse(raw_url):
     ''' Parse an qrcodegenerator ready link '''
 
-    pattern = re.compile(ur'(https?:\/\/.*)\?url=(.*)')
+    pattern = re.compile(r'(https?:\/\/.*)\?url=(.*)')
 
     m = re.search(pattern, raw_url)
 
     try:
         (qrcode_service_url, qs) = m.groups()
 
-        rawurl_to_shorten = unquote_plus(qs)
+        rawurl_to_shorten = unquote(qs)
         scheme, netloc, path, params, query, fragment = urlparse(
             rawurl_to_shorten)
         map_url = urlunparse((scheme, netloc, path, None, None, None))
@@ -222,15 +223,16 @@ def _qrcodeurlparse(raw_url):
 def _qrcodeurlunparse(url_tuple):
     (qrcode_service_url, map_url, params) = url_tuple
 
+    log.debug(params)
     try:
         str_params = dict(
-            map(lambda x: (x[0], unicode(x[1]).encode('utf-8')), params.items()))
-    except UnicodeDecodeError:
+            map(lambda x: (x[0], x[1]).encode('utf-8')), params.items())
+    except (TypeError, UnicodeDecodeError):
         str_params = params
-    quoted_map_url = quote_plus(
+    quoted_map_url = quote(
         map_url +
         "?url=" +
-        unquote_plus(
+        unquote(
             urlencode(str_params)))
 
     return qrcode_service_url + "?url=" + quoted_map_url
@@ -239,7 +241,7 @@ def _qrcodeurlunparse(url_tuple):
 def _shorten(url, api_url='http://api3.geo.admin.ch'):
     ''' Shorten a possibly long url '''
 
-    shorten_url = api_url + '/shorten.json?url=%s' % quote_plus(url)
+    shorten_url = api_url + '/shorten.json?url=%s' % quote(url)
 
     try:
         r = requests.get(shorten_url, verify=VERIFY_SSL)
