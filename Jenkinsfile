@@ -40,7 +40,7 @@ node(label: "jenkins-slave") {
     stage("Test") {
       sh '''
         echo Starting the tests...
-        DOCKER_CONTAINER_ID="$(docker ps | grep "python print3" | awk '{ print $1  }')"
+        DOCKER_CONTAINER_ID="$(docker ps | grep "python3 print3" | awk '{ print $1  }')"
         docker exec -i "$DOCKER_CONTAINER_ID" coverage run --source=print3 --omit=print3/wsgi.py setup.py test
         echo All tests are successful
 
