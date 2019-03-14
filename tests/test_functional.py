@@ -73,12 +73,10 @@ class TestServicePrintFunctional(unittest.TestCase):
         self.assertEqual(params, url_tuple[2])
 
     def test_qrcodeurlunparse(self):
-
         (qrcode_service_url, map_url, params) = url_tuple
-
         result_url = _qrcodeurlunparse(url_tuple)
 
-        self.assertEqual(result_url, 'https://mf-chsdi3.dev.bgdi.ch/qrcodegenerator?url=https%3A%2F%2Fmf-geoadmin3.dev.bgdi.ch%2F%3Furl%3Dlang%3Dfr%26layers_visibility%3Dtrue%2Cfalse%2Cfalse%2Cfalse%26bgLayer%3DvoidLayer%26E%3D2499845.99%26layers%3Dch.swisstopo.zeitreihen%2Cch.bfs.gebaeude_wohnungs_register%2Cch.bav.haltestellen-oev%2Cch.swisstopo.swisstlm3d-wanderwege%26zoom%3D5%26N%3D1117341.56%26topic%3Dech%26layers_timestamp%3D18641231%2C%2C%2C')
+        self.assertEqual(result_url, 'https://mf-chsdi3.dev.bgdi.ch/qrcodegenerator?url=https%3A//mf-geoadmin3.dev.bgdi.ch/%3Furl%3Dlang%3Dfr%26layers_visibility%3Dtrue%2Cfalse%2Cfalse%2Cfalse%26bgLayer%3DvoidLayer%26E%3D2499845.99%26layers%3Dch.swisstopo.zeitreihen%2Cch.bfs.gebaeude_wohnungs_register%2Cch.bav.haltestellen-oev%2Cch.swisstopo.swisstlm3d-wanderwege%26zoom%3D5%26N%3D1117341.56%26topic%3Dech%26layers_timestamp%3D18641231%2C%2C%2C')
 
     def test_increment_info(self):
 
