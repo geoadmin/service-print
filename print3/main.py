@@ -383,7 +383,7 @@ def create_and_merge(info):
                 try:
                     single_file_size = os.path.getsize(localname)
                     expected_file_size += single_file_size
-                    pdf_to_merger.append(localname)
+                    pdf_to_merge.append(localname)
                     info_json['merged'] += 1
                     write_info()
                 except Exception as e:
@@ -403,7 +403,7 @@ def create_and_merge(info):
                 '[_merge_pdfs {}] Starting writing merged PDF [ {} kB ] file {}'.format(
                     jobid, single_file_size / 1024., merged_pdf_filename))
             start_time = time.time()
-            command = ["pdfunit"] + pdf_to_merge + [merged_pdf_filename, ]
+            command = ["/usr/bin/pdfunite"] + pdf_to_merge + [merged_pdf_filename, ]
             subprocess.check_call(command)
 
             stop_time = time.time()
