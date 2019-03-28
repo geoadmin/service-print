@@ -169,7 +169,7 @@ setup: .venv/requirements.timestamp .venv/dev-requirements.timestamp
 
 .venv:
 		@echo "${GREEN}Setting up virtual environement...${RESET}";
-		virtualenv $(INSTALL_DIR) && ${PIP_CMD} install pyopenssl ndg-httpsclient pyasn1 && ${PIP_CMD} install --upgrade pip setuptools
+		python3 -m venv  $(INSTALL_DIR) &&  ${PIP_CMD} install --upgrade pip setuptools
 
 .PHONY: dockerbuild
 dockerbuild: composetemplateuser

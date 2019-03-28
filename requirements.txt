@@ -1,11 +1,9 @@
 decorator==3.4.0
 geojson==2.4.1
 polib==1.0.3
-pyproj==1.9.5.1
-PyPDF2==1.26
-PyYAML==3.13
+pyproj==1.9.6
+PyYAML==5.1
 regex==2019.03.09
-six==1.12.0
 Flask==1.0.2
 gevent==1.4.0
 gunicorn==19.9.0

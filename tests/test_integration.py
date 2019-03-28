@@ -18,7 +18,7 @@ class TestServicePrintIntegration(unittest.TestCase):
     def test_checker(self):
         resp = self.app.get('/checker')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data, 'OK')
+        self.assertEqual(resp.data, b'OK')
 
     def test_backend_checker(self):
         def get_tomcat_backend_info_patch():
@@ -31,7 +31,7 @@ class TestServicePrintIntegration(unittest.TestCase):
 
         resp = self.app.get('/backend_checker')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data, 'OK')
+        self.assertEqual(resp.data, b'OK')
 
     def test_backend_checker_down(self):
         def get_tomcat_backend_info_patch():

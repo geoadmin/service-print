@@ -49,7 +49,7 @@ services:
     environment:
       WSGI_PORT: ${wsgi_port}
     command :
-    - python
+    - python3
     - print3/wsgi.py
     network_mode: "host"
     ports:
