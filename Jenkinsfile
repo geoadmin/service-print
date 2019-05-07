@@ -12,6 +12,7 @@ node(label: "jenkins-slave") {
   env.IMAGE_TAG = IMAGE_TAG
 
   try {
+    withEnv(["JENKINS_DOCKERHUB_USER=${JENKINS_DOCKERHUB_USER}", "JENKINS_DOCKERHUB_PASSWORD=${JENKINS_DOCKERHUB_PASSWORD}"]){
     stage("Checkout") {
       sh 'echo Checking out code from github'
       final scmVars = checkout scm
@@ -49,17 +50,12 @@ node(label: "jenkins-slave") {
     if (deployGitBranch == 'master') {
        stage("Publish") {
          sh 'echo Publishing images to Dockerhub'
-         withCredentials(
-           [[$class: 'UsernamePasswordMultiBinding',
-             credentialsId: 'iwibot-admin-user-dockerhub',
-             usernameVariable: 'USERNAME',
-             passwordVariable: 'PASSWORD']]
-         ){
-           sh 'docker login -u "$USERNAME" -p "$PASSWORD"'
-           docker.image("${IMAGE_BASE_NAME}:${IMAGE_TAG}").push()
-           docker.image("${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG}").push()
-           docker.image("${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}").push()
-         }
+
+         sh 'docker login -u "${JENKINS_DOCKERHUB_USER}" -p "${JENKINS_DOCKERHUB_PASSWORD}"'
+         docker.image("${IMAGE_BASE_NAME}:${IMAGE_TAG}").push()
+         docker.image("${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG}").push()
+         docker.image("${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}").push()
+         
        }
     }
     if (deployGitBranch == 'master') {
@@ -68,6 +64,7 @@ node(label: "jenkins-slave") {
          sh 'make rancherdeploydev'
          sh 'echo Deployed to dev'
        }
+    }
     }
   }
   catch (e) {
