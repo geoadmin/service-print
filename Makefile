@@ -29,6 +29,7 @@ PIP_CMD := $(INSTALL_DIR)/bin/pip
 PSERVE_CMD := $(INSTALL_DIR)/bin/pserve
 PYTHON_CMD := $(INSTALL_DIR)/bin/python
 COVERAGE_CMD := $(INSTALL_DIR)/bin/coverage
+RANCHER_CMD := /root/bin/rancher2
 
 # Colors
 RESET := $(shell tput sgr0 || '')
@@ -245,9 +246,9 @@ define build_templates
 endef
 
 define start_service
-	rancher --access-key $1 --secret-key $2 --url $3 rm --stop --type stack service-print-$4 || echo "no stack service-print-$4"
+	${RANCHER_CMD} --access-key $1 --secret-key $2 --url $3 rm --stop --type stack service-print-$4 || echo "no stack service-print-$4"
 	sleep 2
-	rancher --access-key $1 --secret-key $2 --url $3 up --stack service-print-$4 --pull --force-upgrade --confirm-upgrade -d
+	${RANCHER_CMD} --access-key $1 --secret-key $2 --url $3 up --stack service-print-$4 --pull --force-upgrade --confirm-upgrade -d
 endef
 
 define get_rancher_deploy_val
