@@ -1,7 +1,6 @@
 import os
 import time
 import re
-import urllib
 import requests
 from collections import OrderedDict
 from urllib.parse import urlparse, parse_qs, urlunparse

@@ -403,7 +403,8 @@ def create_and_merge(info):
                 '[_merge_pdfs {}] Starting writing merged PDF [ {} kB ] file {}'.format(
                     jobid, single_file_size / 1024., merged_pdf_filename))
             start_time = time.time()
-            command = ["/usr/bin/pdfunite"] + pdf_to_merge + [merged_pdf_filename, ]
+            command = ["/usr/bin/pdfunite"] + \
+                pdf_to_merge + [merged_pdf_filename, ]
             subprocess.check_call(command)
 
             stop_time = time.time()
