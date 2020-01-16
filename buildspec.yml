@@ -1,0 +1,92 @@
+version: 0.2
+
+env:
+  variables:
+    IMAGE_BASE_NAME: "swisstopo/service-print"
+    IMAGE_BASE_NAME_NGINX: "swisstopo/service-proxywms-nginx"
+    IMAGE_BASE_NAME_TOMCAT: "swisstopo/service-proxywms-tomcat"
+    SHELL: /bin/bash
+    AWS_DEFAULT_REGION: eu-west-1
+  parameter-store:
+    CI_DOCKERHUB_USER: "/terraform-codepipeline-example/ci_dockerhub_user"
+    CI_DOCKERHUB_PASSWORD: "/terraform-codepipeline-example/ci_dockerhub_password"
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+    commands:
+      - echo "Installing softwares"
+      - echo SHELL=$SHELL
+      - curl -s -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
+      - chmod +x /usr/bin/docker-compose
+      - bash --version
+
+  pre_build:
+    commands:
+      - echo Configuring stuff...
+      - aws --version
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - GITHUB_BRANCH=${CODEBUILD_WEBHOOK_HEAD_REF#refs/heads/*}
+      - TODAY=$(date '+%Y%m%d')
+      - IMAGE_TAG=r_${TODAY}_${COMMIT_HASH}
+      - COMPOSE_PROJECT_NAME=${IMAGE_TAG}
+      - |-
+           if [ "${CODEBUILD_WEBHOOK_TRIGGER}" = pr/* ]; then
+             PULL_REQUEST=${CODEBUILD_WEBHOOK_TRIGGER#pr/*}
+           fi
+      - |-
+           if [ "${GIT_BRANCH}" != master  ]; then
+               LATEST=${GITHUB_BRANCH:-staging}
+           else
+               LATEST=latest
+           fi
+      - echo "=========== VERSIONS ============="
+      - docker --version
+      - docker-compose --version
+      - python --version
+      - python2 --version
+      - bash --version
+      - echo "=========== VARIABLES ============="
+      - echo CODEBUILD_RESOLVED_SOURCE_VERSION=${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - echo CODEBUILD_SOURCE_VERSION=${CODEBUILD_SOURCE_VERSION}
+      - echo CODEBUILD_WEBHOOK_BASE_REF=${CODEBUILD_WEBHOOK_BASE_REF}
+      - echo CODEBUILD_WEBHOOK_HEAD_REF=${CODEBUILD_WEBHOOK_HEAD_REF=}
+      - echo CODEBUILD_WEBHOOK_TRIGGER=${CODEBUILD_WEBHOOK_TRIGGER}
+      - echo CODEBUILD_SOURCE_VERSION=${CODEBUILD_SOURCE_VERSION}
+      - echo CODEBUILD_BUILD_ID=${CODEBUILD_BUILD_ID}
+      - echo CODEBUILD_SOURCE_REPO_URL=${CODEBUILD_SOURCE_REPO_URL}
+      - echo COMMIT_HASH=${COMMIT_HASH}
+      - echo PULL_REQUEST=${PULL_REQUEST}
+      - echo GITHUB_BRANCH=${GITHUB_BRANCH}
+      - echo IMAGE_TAG=${IMAGE_TAG}
+      - echo "==================================="
+  build:
+    commands:
+      - echo Build started on $(date)
+      - echo Building the Docker image...
+      - make cleanall
+      - echo "export IMAGE_TAG=${IMAGE_TAG}" >> rc_user
+      - make dockerbuild CI=true
+
+      
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - docker-compose -p "${IMAGE_TAG}" up -d
+      - docker ps -a
+      - sleep 5
+      - echo Testing
+      - NGINX_OK=$(docker ps -aq --filter status="running" --filter name="${COMPOSE_PROJECT_NAME}_nginx") && if [ -z "$NGINX_OK"  ]; then exit 1; fi
+      - TOMCAT_OK=$(docker ps -aq --filter status="running" --filter name="${COMPOSE_PROJECT_NAME}_tomcat") && if [ -z "$TOMCAT_OK"  ]; then exit 1; fi
+      - WSGI_OK=$(docker ps -aq --filter status="running" --filter name="${COMPOSE_PROJECT_NAME}") && if [ -z "$WSGI_OK"  ]; then exit 1; fi
+      - echo Containers are running!
+      - DOCKER_CONTAINER_ID="$(docker ps | grep "python3 print3" | awk '{ print $1   }')"
+      - docker exec -i "$DOCKER_CONTAINER_ID" coverage run --source=proxywms --omit=proxywms/wsgi.py setup.py test
+      - docker exec -i "$DOCKER_CONTAINER_ID" coverage run --source=print3 --omit=print3/wsgi.py setup.py test
+      - echo All tests are successful
+      - echo Pushing the Docker image...
+      - docker login -u "$CI_DOCKERHUB_USER" -p "$CI_DOCKERHUB_PASSWORD"
+      - make dockertag
+      - make dockerpush
+      - echo "Great success"
