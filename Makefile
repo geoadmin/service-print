@@ -5,7 +5,8 @@ GIT_BRANCH := $(shell if [ -f '.venv/deployed-git-branch' ]; then cat .venv/depl
 GIT_COMMIT_HASH ?= $(shell git rev-parse --verify HEAD)
 GIT_COMMIT_DATE ?= $(shell git log -1  --date=iso --pretty=format:%cd)
 APACHE_BASE_PATH ?= main
-VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else python -c "print __import__('time').strftime('%s')"; fi)
+VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true'  ] && [ '$(LAST_VERSION)' != '-none-'  ]; \
+							 then echo $(LAST_VERSION); else date +'%s'; fi)
 BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
 PRINT_SERVER_HOST ?= service-print.dev.bgdi.ch
 TOMCAT_SERVER_URL ?= //service-print.dev.bgdi.ch
