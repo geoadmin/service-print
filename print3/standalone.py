@@ -15,9 +15,9 @@ class StandaloneApplication(BaseApplication):
 
     def load_config(self):
         config = {key: value for key, value in self.options.items()
-            if key in self.cfg.settings and value is not None}
+                  if key in self.cfg.settings and value is not None}
         for key, value in config.items():
-            self.cfg.set(key.lower(), value)    
+            self.cfg.set(key.lower(), value)
 
     def load(self):
         return self.application
