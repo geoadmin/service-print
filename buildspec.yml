@@ -30,6 +30,7 @@ phases:
       - GITHUB_BRANCH=${CODEBUILD_WEBHOOK_HEAD_REF#refs/heads/*}
       - TODAY=$(date '+%Y%m%d')
       - IMAGE_TAG=r_${TODAY}_${COMMIT_HASH}
+      - CONFIG_TAG=${COMMIT_HASH}
       - COMPOSE_PROJECT_NAME=${IMAGE_TAG}
       - |-
            if [ "${CODEBUILD_WEBHOOK_TRIGGER}" = pr/* ]; then
@@ -60,6 +61,7 @@ phases:
       - echo PULL_REQUEST=${PULL_REQUEST}
       - echo GITHUB_BRANCH=${GITHUB_BRANCH}
       - echo IMAGE_TAG=${IMAGE_TAG}
+      - echo CONFIG_TAG=${CONFIG_TAG}
       - echo "==================================="
   build:
     commands:
@@ -82,11 +84,17 @@ phases:
       - WSGI_OK=$(docker ps -aq --filter status="running" --filter name="${COMPOSE_PROJECT_NAME}") && if [ -z "$WSGI_OK"  ]; then exit 1; fi
       - echo Containers are running!
       - DOCKER_CONTAINER_ID="$(docker ps | grep "python3 print3" | awk '{ print $1   }')"
-      - docker exec -i "$DOCKER_CONTAINER_ID" coverage run --source=proxywms --omit=proxywms/wsgi.py setup.py test
       - docker exec -i "$DOCKER_CONTAINER_ID" coverage run --source=print3 --omit=print3/wsgi.py setup.py test
       - echo All tests are successful
       - echo Pushing the Docker image...
       - docker login -u "$CI_DOCKERHUB_USER" -p "$CI_DOCKERHUB_PASSWORD"
-      - make dockertag
-      - make dockerpush
+      - docker tag "${IMAGE_BASE_NAME}:${IMAGE_TAG}" "${IMAGE_BASE_NAME}:${LATEST}"
+      - docker tag "${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG}" "${IMAGE_BASE_NAME_NGINX}:${LATEST}"
+      - docker tag "${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}"  "${IMAGE_BASE_NAME_TOMCAT}:${LATEST}"
+      - docker push "${IMAGE_BASE_NAME}:${IMAGE_TAG}"
+      - docker push "${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG}"
+      - docker push "${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}"
+      - docker push "${IMAGE_BASE_NAME}:${LATEST}"
+      - docker push "${IMAGE_BASE_NAME_NGINX}:${LATEST}"
+      - docker push "${IMAGE_BASE_NAME_TOMCAT}:${LATEST}"
       - echo "Success"
