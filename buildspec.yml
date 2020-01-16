@@ -3,8 +3,8 @@ version: 0.2
 env:
   variables:
     IMAGE_BASE_NAME: "swisstopo/service-print"
-    IMAGE_BASE_NAME_NGINX: "swisstopo/service-proxywms-nginx"
-    IMAGE_BASE_NAME_TOMCAT: "swisstopo/service-proxywms-tomcat"
+    IMAGE_BASE_NAME_NGINX: "swisstopo/service-print-nginx"
+    IMAGE_BASE_NAME_TOMCAT: "swisstopo/service-print-tomcat"
     SHELL: /bin/bash
     AWS_DEFAULT_REGION: eu-west-1
   parameter-store:
