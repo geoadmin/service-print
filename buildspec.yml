@@ -8,8 +8,8 @@ env:
     SHELL: /bin/bash
     AWS_DEFAULT_REGION: eu-west-1
   parameter-store:
-    CI_DOCKERHUB_USER: "/terraform-codepipeline-example/ci_dockerhub_user"
-    CI_DOCKERHUB_PASSWORD: "/terraform-codepipeline-example/ci_dockerhub_password"
+    CI_DOCKERHUB_USER: "/dockerhub/user"
+    CI_DOCKERHUB_PASSWORD: "/dockerhub/password"
 
 phases:
   install:
