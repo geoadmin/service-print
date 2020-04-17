@@ -259,8 +259,11 @@ docker-compose.yml::
 	${MAKO_CMD} --var "rancher_deploy=$(RANCHER_DEPLOY)" \
 		--var "image_tag=$(IMAGE_TAG)" \
 		--var "nginx_port=$(NGINX_PORT)" \
+		--var "nginx_log_level=$(NGINX_LOG_LEVEL)" \
+		--var "nginx_workers=$(NGINX_WORKERS)" \
 		--var "wsgi_port=$(WSGI_PORT)" \
 		--var "tomcat_port=$(TOMCAT_PORT)" \
+		--var "catalina_opts=$(CATALINA_OPTS)" \
 		--var "rancher_label=$(RANCHER_LABEL)" \
 		--var "print_env=$(PRINT_ENV)" docker-compose.yml.in > docker-compose.yml
 

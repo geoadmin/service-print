@@ -9,6 +9,8 @@ services:
     - ${rancher_label}.env
     environment:
       NGINX_PORT: ${nginx_port}
+      NGINX_LOG_LEVEL: ${nginx_log_level}
+      NGINX_WORKERS: ${nginx_workers}
     network_mode: "host"
     ports:
     - "${nginx_port}:${nginx_port}"
@@ -30,7 +32,7 @@ services:
     - ${rancher_label}.env
     environment:
       TOMCAT_PORT: ${tomcat_port}
-      CATALINA_OPTS: -Xmx2g -Xms2g -XX:MaxPermSize=1024m -Dsun.net.inetaddr.ttl=30
+      CATALINA_OPTS: "-Xmx${catalina_opts} -Xms${catalina_opts} -XX:MaxPermSize=1024m -Dsun.net.inetaddr.ttl=30" 
     ports:
       - "${tomcat_port}:8080"
     volumes:
