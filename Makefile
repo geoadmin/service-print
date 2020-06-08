@@ -11,6 +11,7 @@ BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
 PRINT_SERVER_HOST ?= service-print.dev.bgdi.ch
 TOMCAT_SERVER_URL ?= //service-print.dev.bgdi.ch
 TOMCAT_BASE_URL ?= ajp://localhost:8009
+REFERER ?= https://print.geo.admin.ch
 PRINT_INPUT :=  checker *.html *.yaml *.png WEB-INF
 #PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
 #PRINT_OUTPUT := $(PRINT_OUTPUT_BASE).war
