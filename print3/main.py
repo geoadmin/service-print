@@ -43,13 +43,18 @@ LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
 PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')
 API_URL = os.environ.get('API_URL', 'https://api3.geo.admin.ch')
 TOMCAT_SERVER_URL = '%s' % os.environ.get('TOMCAT_SERVER_URL')
-TOMCAT_LOCAL_SERVER_URL = '//localhost:%s' % os.environ.get('TOMCAT_PORT')
+DEFAULT_TOMCAT_LOCAL_SERVER_URL = '//localhost:%s' % os.environ.get(
+    'TOMCAT_PORT')
+TOMCAT_LOCAL_SERVER_URL = os.environ.get(
+    'TOMCAT_LOCAL_SERVER_URL',
+    DEFAULT_TOMCAT_LOCAL_SERVER_URL)
 PRINT_SERVER_HOST = os.environ.get('PRINT_SERVER_HOST')
 NUMBER_POOL_PROCESSES = multiprocessing.cpu_count()
+LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
 
 app = Flask(__name__)
-logging.basicConfig(level=LOGLEVEL, stream=sys.stdout)
+logging.basicConfig(level=LOGLEVEL, format=LOG_FORMAT, stream=sys.stdout)
 logger = logging.getLogger('print')
 multi_logger = multiprocessing.log_to_stderr()
 multi_logger.setLevel(LOGLEVEL)
@@ -197,7 +202,7 @@ def print_create_post():
         logger.debug(json.dumps(spec, indent=2))
 
     # Remove older files on the system
-    logger.debug('Removing older files on system')
+    logger.info('Removing older files on system')
     delete_old_files(PRINT_TEMP_DIR)
 
     scheme = request.headers.get('X-Forwarded-Proto',
@@ -209,7 +214,7 @@ def print_create_post():
 
     info_filename = create_info_file(PRINT_TEMP_DIR, unique_filename)
     with open(info_filename, 'w+') as outfile:
-        json.dump({'status': 'ongoing'}, outfile)
+        outfile.write(json.dumps({'status': 'ongoing'}))
 
     info = (
         spec,
@@ -336,9 +341,10 @@ def worker(job):
 
     return (timestamp, None)
 
-
 # Function to be used on process to create all
 # pdfs and merge them
+
+
 def create_and_merge(info):
 
     lock = multiprocessing.Manager().Lock()
@@ -379,6 +385,7 @@ def create_and_merge(info):
         pdf_to_merge = []
         for pdf in sorted(pdfs, key=lambda x: x[0]):
             ts, localname = pdf
+            single_file_size = 0
             if localname is not None:
                 try:
                     single_file_size = os.path.getsize(localname)
