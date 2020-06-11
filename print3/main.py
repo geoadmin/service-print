@@ -30,14 +30,17 @@ from print3.utils import (
     create_pdf_path,
     create_info_file,
     create_cancel_file,
+    to_bool,
     _increment_info)
 
 from print3.config import MAPFISH_FILE_PREFIX, MAPFISH_MULTI_FILE_PREFIX, \
-    USE_MULTIPROCESS, VERIFY_SSL, LOG_SPEC_FILES, REFERER_URL
+    LOG_SPEC_FILES, REFERER_URL
 
 import logging
 
 
+USE_MULTIPROCESS = to_bool(os.environ.get('USE_MULTIPROCESS', True))
+VERIFY_SSL = to_bool(os.environ.get('VERIFY_SSL', False))
 WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
 LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
 PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')

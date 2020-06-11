@@ -5,6 +5,7 @@ import requests
 from collections import OrderedDict
 from urllib.parse import urlparse, parse_qs, urlunparse
 from urllib.parse import urlencode, quote, unquote
+from distutils.util import strtobool
 
 import json
 
@@ -22,6 +23,12 @@ log = logging.getLogger(__name__)
 req_session = requests.Session()
 req_session.mount('http://', requests.adapters.HTTPAdapter(max_retries=0))
 req_session.mount('https://', requests.adapters.HTTPAdapter(max_retries=0))
+
+
+def to_bool(string):
+    if isinstance(string, bool):
+        return string
+    return bool(strtobool(string))
 
 
 def create_pdf_path(print_temp_dir, unique_filename):
