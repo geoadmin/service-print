@@ -393,6 +393,10 @@ def create_and_merge(info):
                     pdf_to_merge.append(localname)
                     info_json['merged'] += 1
                     write_info()
+                except FileNotFoundError:
+                    logger.error(
+                        "[_merge_pdfs {}] File {} not found. Not merging this one".format(
+                            jobid, localname))
                 except Exception as e:
                     logger.error(
                         '[_merge_pdfs {}] Failed to append file {} [ {} kB] to merger PDF'.format(
