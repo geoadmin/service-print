@@ -1345,3 +1345,146 @@ layouts:
               classSpace: 5
               backgroundColor: white
               layerFontSize: 9
+
+#---------------------------------------
+# A6 landscape:
+#---------------------------------------
+layouts:
+  5 A6 landscape:
+    mainPage:
+      rotation: true
+      pageSize: A6
+      landscape: true
+#---------------------------------------
+# Map   352x200
+#---------------------------------------
+      items:
+        - !map
+          width: 365
+          height: 220
+
+#---------------------------------------
+# Logo
+#---------------------------------------
+        - !columns
+          absoluteX: 20
+          absoluteY: 45
+          width: 123
+          items:
+              - !image
+                   align: left
+                   maxWidth: 123
+                   maxHeight: 35
+                   url: "${configDir}/logo_ch.png"
+
+#---------------------------------------
+# North arrow 185 220
+#---------------------------------------
+        - !columns
+          absoluteY: 270
+          absoluteX: 330
+          width: 50
+          items:
+            - !image
+              rotation: '${rotation}'
+              align: right
+              maxWidth: 35
+              maxHeight: 46
+              url: "${configDir}/north_arrow.png"
+
+#---------------------------------------
+# QRCodei x: 108 --> 80 
+#---------------------------------------
+        - !columns
+          absoluteY: 74
+          absoluteX: 330
+          width: 64
+          items:
+            - !image
+              align: right
+              maxWidth: 64
+              maxHeight: 64
+              url: "${qrcodeurl}"
+
+#---------------------------------------
+# Copyright
+#---------------------------------------
+        - !columns
+          absoluteY: 23
+          absoluteX: 153
+          width: 200
+          items:
+            - !text
+              fontSize: 7
+              align: left
+              fontColor: black
+              text: |
+                ${dataOwner}
+
+#-------------------------------------
+# Scalesbar 107x300
+#-------------------------------------
+        - !columns
+          absoluteY: 107
+          absoluteX: 280
+          width: 128
+          config:
+            borderWidth: 0.5
+          items:
+              - !text
+                fontSize: 43
+                text: ' '
+                backgroundColor: white
+        - !columns
+          absoluteY: 102
+          absoluteX: 300
+          width: 124
+          nbColumns: 1
+          items:
+            - !scalebar
+                type: line
+                units: m
+                color: black
+                align: center
+                fontSize: 8
+                maxSize: 128
+            - !text
+              condition: langde
+              fontSize: 7
+              align: center
+              text: |
+                Massstab 1: ${format %,d scale}
+                Gedruckt am ${now dd.MM.yyyy HH:mm z}
+                ${shortLink}
+            - !text
+              condition: langfr
+              fontSize: 7
+              align: center
+              text: |
+                Echelle 1: ${format %,d scale}
+                Imprimé le ${now dd.MM.yyyy HH:mm z}
+                ${shortLink}
+            - !text
+              condition: langen
+              fontSize: 7
+              align: center
+              text: |
+                Scale 1: ${format %,d scale}
+                Printed on ${now dd.MM.yyyy HH:mm z}
+                ${shortLink}
+            - !text
+              condition: langrm
+              fontSize: 7
+              align: center
+              text: |
+                Scala 1: ${format %,d scale}
+                Stampà il(s) ${now dd.MM.yyyy HH:mm z}
+                ${shortLink}
+            - !text
+              condition: langit
+              fontSize: 7
+              align: center
+              text: |
+                Scala 1: ${format %,d scale}
+                Stampato il ${now dd.MM.yyyy HH:mm z}
+                ${shortLink}
