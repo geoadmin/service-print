@@ -1425,8 +1425,8 @@ layouts:
 # Scalesbar 107x300
 #-------------------------------------
         - !columns
-          absoluteY: 107
-          absoluteX: 280
+          absoluteY: 87
+          absoluteX: 250
           width: 128
           config:
             borderWidth: 0.5
@@ -1436,8 +1436,8 @@ layouts:
                 text: ' '
                 backgroundColor: white
         - !columns
-          absoluteY: 102
-          absoluteX: 300
+          absoluteY: 82
+          absoluteX: 250
           width: 124
           nbColumns: 1
           items:
@@ -1462,8 +1462,6 @@ layouts:
               align: center
               text: |
                 Echelle 1: ${format %,d scale}
-                Imprimé le ${now dd.MM.yyyy HH:mm z}
-                ${shortLink}
             - !text
               condition: langen
               fontSize: 7
