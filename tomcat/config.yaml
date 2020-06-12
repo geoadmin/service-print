@@ -1426,28 +1426,28 @@ layouts:
 #-------------------------------------
         - !columns
           absoluteY: 87
-          absoluteX: 250
+          absoluteX: 260
           width: 128
           config:
-            borderWidth: 0.5
+            borderWidth: 0.0
           items:
               - !text
-                fontSize: 43
+                fontSize: 12
                 text: ' '
                 backgroundColor: white
         - !columns
           absoluteY: 82
-          absoluteX: 250
+          absoluteX: 260
           width: 124
           nbColumns: 1
           items:
-            - !scalebar
-                type: line
-                units: m
-                color: black
-                align: center
-                fontSize: 8
-                maxSize: 128
+            #- !scalebar
+            #    type: line
+            #    units: m
+            #    color: black
+            #    align: center
+            #    fontSize: 8
+            #    maxSize: 128
             - !text
               condition: langde
               fontSize: 7
