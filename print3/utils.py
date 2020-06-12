@@ -11,10 +11,11 @@ import json
 
 from print3.config import (
     MAPFISH_MULTI_FILE_PREFIX,
-    VERIFY_SSL,
     USE_LV95_SERVICES,
     REFERER_URL)
 
+
+VERIFY_SSL = True 
 
 import logging
 log = logging.getLogger(__name__)

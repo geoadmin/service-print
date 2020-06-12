@@ -39,8 +39,8 @@ from print3.config import MAPFISH_FILE_PREFIX, MAPFISH_MULTI_FILE_PREFIX, \
 import logging
 
 
-USE_MULTIPROCESS = to_bool(os.environ.get('USE_MULTIPROCESS', True))
 VERIFY_SSL = to_bool(os.environ.get('VERIFY_SSL', False))
+USE_MULTIPROCESS = to_bool(os.environ.get('USE_MULTIPROCESS', True))
 WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
 LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
 PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')
@@ -133,7 +133,7 @@ def _retry_read(filename, is_json=False):
                 data = json.loads(raw_data)
             else:
                 data = raw_data
-    except IOError:
+    except (IOError, FileNotFoundError):
         raise Exception('Cannot read file {}'.format(filename))
     except ValueError:
         raise Exception(
@@ -400,6 +400,7 @@ def create_and_merge(info):
                     logger.error(
                         "[_merge_pdfs {}] File {} not found. Not merging this one".format(
                             jobid, localname))
+                    return False
                 except Exception as e:
                     logger.error(
                         '[_merge_pdfs {}] Failed to append file {} [ {} kB] to merger PDF'.format(
