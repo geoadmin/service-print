@@ -1349,7 +1349,7 @@ layouts:
 #---------------------------------------
 # A6 landscape:
 #---------------------------------------
-layouts:
+
   5 A6 landscape:
     mainPage:
       rotation: true
@@ -1381,8 +1381,8 @@ layouts:
 # North arrow 185 220
 #---------------------------------------
         - !columns
-          absoluteY: 280
-          absoluteX: 340
+          absoluteY: 270
+          absoluteX: 350
           width: 35
           items:
             - !image
@@ -1415,7 +1415,8 @@ layouts:
           width: 200
           items:
             - !text
-              fontSize: 7
+              font: Helvetica-Oblique
+              fontSize: 5
               align: left
               fontColor: black
               text: |
@@ -1436,7 +1437,7 @@ layouts:
                 text: ' '
                 backgroundColor: white
         - !columns
-          absoluteY: 72
+          absoluteY: 74
           absoluteX: 300
           width: 95
           nbColumns: 1
@@ -1454,8 +1455,6 @@ layouts:
               align: center
               text: |
                 Massstab 1: ${format %,d scale}
-                Gedruckt am ${now dd.MM.yyyy HH:mm z}
-                ${shortLink}
             - !text
               condition: langfr
               fontSize: 7
