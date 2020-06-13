@@ -1396,14 +1396,14 @@ layouts:
 # QRCodei x: 108 --> 80 
 #---------------------------------------
         - !columns
-          absoluteY: 64
-          absoluteX: 340
-          width: 55
+          absoluteY: 58
+          absoluteX: 345
+          width: 50
           items:
             - !image
               align: right
-              maxWidth: 55
-              maxHeight: 55
+              maxWidth: 50
+              maxHeight: 50
               url: "${qrcodeurl}"
 
 #---------------------------------------
@@ -1426,8 +1426,8 @@ layouts:
 #-------------------------------------
         - !columns
           absoluteY: 75
-          absoluteX: 330
-          width: 60
+          absoluteX: 290
+          width: 100
           config:
             borderWidth: 0.0
           items:
