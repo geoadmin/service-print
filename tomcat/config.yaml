@@ -1381,15 +1381,15 @@ layouts:
 # North arrow 185 220
 #---------------------------------------
         - !columns
-          absoluteY: 270
-          absoluteX: 330
-          width: 50
+          absoluteY: 280
+          absoluteX: 340
+          width: 35
           items:
             - !image
               rotation: '${rotation}'
               align: right
-              maxWidth: 35
-              maxHeight: 46
+              maxWidth: 24
+              maxHeight: 35
               url: "${configDir}/north_arrow.png"
 
 #---------------------------------------
@@ -1397,7 +1397,7 @@ layouts:
 #---------------------------------------
         - !columns
           absoluteY: 55
-          absoluteX: 350
+          absoluteX: 347
           width: 50
           items:
             - !image
@@ -1436,8 +1436,8 @@ layouts:
                 text: ' '
                 backgroundColor: white
         - !columns
-          absoluteY: 82
-          absoluteX: 335
+          absoluteY: 72
+          absoluteX: 300
           width: 95
           nbColumns: 1
           items:
@@ -1461,7 +1461,7 @@ layouts:
               fontSize: 7
               align: center
               text: |
-                Echelle 1: ${format %,d scale}
+                Échelle 1: ${format %,d scale}
             - !text
               condition: langen
               fontSize: 7
