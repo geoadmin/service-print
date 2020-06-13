@@ -1397,7 +1397,7 @@ layouts:
 #---------------------------------------
         - !columns
           absoluteY: 64
-          absoluteX: 330
+          absoluteX: 340
           width: 55
           items:
             - !image
@@ -1426,7 +1426,7 @@ layouts:
 #-------------------------------------
         - !columns
           absoluteY: 75
-          absoluteX: 320
+          absoluteX: 330
           width: 60
           config:
             borderWidth: 0.0
@@ -1437,8 +1437,8 @@ layouts:
                 backgroundColor: white
         - !columns
           absoluteY: 82
-          absoluteX: 260
-          width: 124
+          absoluteX: 335
+          width: 55
           nbColumns: 1
           items:
             #- !scalebar
