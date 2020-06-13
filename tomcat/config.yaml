@@ -1425,20 +1425,20 @@ layouts:
 #-------------------------------------
 # Scalesbar 107x300
 #-------------------------------------
+        #- !columns
+        #  absoluteY: 75
+        #  absoluteX: 290
+        #  width: 100
+        #  config:
+        #    borderWidth: 0.0
+        #  items:
+        #      - !text
+        #        fontSize: 12
+        #        text: ' '
+        #        backgroundColor: white
         - !columns
-          absoluteY: 75
-          absoluteX: 290
-          width: 100
-          config:
-            borderWidth: 0.0
-          items:
-              - !text
-                fontSize: 12
-                text: ' '
-                backgroundColor: white
-        - !columns
-          absoluteY: 74
-          absoluteX: 300
+          absoluteY: 52
+          absoluteX: 260
           width: 95
           nbColumns: 1
           items:
