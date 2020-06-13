@@ -1396,8 +1396,8 @@ layouts:
 # QRCodei x: 108 --> 80 
 #---------------------------------------
         - !columns
-          absoluteY: 58
-          absoluteX: 345
+          absoluteY: 55
+          absoluteX: 350
           width: 50
           items:
             - !image
@@ -1438,7 +1438,7 @@ layouts:
         - !columns
           absoluteY: 82
           absoluteX: 335
-          width: 55
+          width: 95
           nbColumns: 1
           items:
             #- !scalebar
