@@ -8,8 +8,14 @@ APACHE_BASE_PATH ?= main
 VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true'  ] && [ '$(LAST_VERSION)' != '-none-'  ]; \
 							 then echo $(LAST_VERSION); else date +'%s'; fi)
 BASEWAR ?= print-servlet-2.1.3-SNAPSHOT.war
+# Url for all print operations (create.json, printprogress, etc.)
 PRINT_SERVER_HOST ?= service-print.dev.bgdi.ch
+# For multiprint, using nginx or an ELB as a cheap way
+# to balance the single print on all tomcat servers
 TOMCAT_SERVER_URL ?= //service-print.dev.bgdi.ch
+# Usually, an nginx and tomcat are on the same 'host'.
+# nginx acts as a proxy for tomcat, via 'localhost'
+TOMCAT_LOCAL_SERVER_URL ?= //localhost:$(TOMCAT_PORT)
 TOMCAT_BASE_URL ?= ajp://localhost:8009
 REFERER ?= https://print.geo.admin.ch
 PRINT_INPUT :=  checker *.html *.yaml *.png WEB-INF
