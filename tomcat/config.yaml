@@ -1367,14 +1367,14 @@ layouts:
 # Logo  280
 #---------------------------------------
         - !columns
-          absoluteX: 20
-          absoluteY: 61
-          width: 123
+          absoluteX: 25
+          absoluteY: 51
+          width: 87
           items:
               - !image
                    align: left
-                   maxWidth: 123
-                   maxHeight: 35
+                   maxWidth: 87
+                   maxHeight: 25
                    url: "${configDir}/logo_ch.png"
 
 #---------------------------------------
