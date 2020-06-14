@@ -1345,3 +1345,138 @@ layouts:
               classSpace: 5
               backgroundColor: white
               layerFontSize: 9
+
+#---------------------------------------
+# A6 landscape:
+#---------------------------------------
+
+  5 A6 landscape:
+    mainPage:
+      rotation: true
+      pageSize: A6
+      landscape: true
+#---------------------------------------
+# Map   352x200
+#---------------------------------------
+      items:
+        - !map
+          width: 365
+          height: 250
+          
+#---------------------------------------
+# Logo  280
+#---------------------------------------
+        - !columns
+          absoluteX: 20
+          absoluteY: 278
+          width: 123
+          items:
+              - !image
+                   align: left
+                   maxWidth: 123
+                   maxHeight: 35
+                   url: "${configDir}/logo_ch.png"
+
+#---------------------------------------
+# North arrow 185 220
+#---------------------------------------
+        - !columns
+          absoluteY: 270
+          absoluteX: 350
+          width: 35
+          items:
+            - !image
+              rotation: '${rotation}'
+              align: right
+              maxWidth: 24
+              maxHeight: 35
+              url: "${configDir}/north_arrow.png"
+
+#---------------------------------------
+# QRCodei x: 108 --> 80 
+#---------------------------------------
+        - !columns
+          absoluteY: 55
+          absoluteX: 347
+          width: 50
+          items:
+            - !image
+              align: right
+              maxWidth: 50
+              maxHeight: 50
+              url: "${qrcodeurl}"
+
+#---------------------------------------
+# Copyright
+#---------------------------------------
+        - !columns
+          absoluteY: 23
+          absoluteX: 153
+          width: 200
+          items:
+            - !text
+              font: Helvetica-Oblique
+              fontSize: 5
+              align: left
+              fontColor: black
+              text: |
+                ${dataOwner}
+
+#-------------------------------------
+# Scalesbar 107x300
+#-------------------------------------
+        #- !columns
+        #  absoluteY: 75
+        #  absoluteX: 290
+        #  width: 100
+        #  config:
+        #    borderWidth: 0.0
+        #  items:
+        #      - !text
+        #        fontSize: 12
+        #        text: ' '
+        #        backgroundColor: white
+        - !columns
+          absoluteY: 52
+          absoluteX: 260
+          width: 95
+          nbColumns: 1
+          items:
+            #- !scalebar
+            #    type: line
+            #    units: m
+            #    color: black
+            #    align: center
+            #    fontSize: 8
+            #    maxSize: 128
+            - !text
+              condition: langde
+              fontSize: 7
+              align: center
+              text: |
+                Massstab 1: ${format %d scale}
+            - !text
+              condition: langfr
+              fontSize: 7
+              align: center
+              text: |
+                Échelle 1: ${format %d scale}
+            - !text
+              condition: langen
+              fontSize: 7
+              align: center
+              text: |
+                Scale 1: ${format %d scale}
+            - !text
+              condition: langrm
+              fontSize: 7
+              align: center
+              text: |
+                Scala 1: ${format %d scale}
+            - !text
+              condition: langit
+              fontSize: 7
+              align: center
+              text: |
+                Scala 1: ${format %d scale}
+
