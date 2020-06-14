@@ -1438,8 +1438,9 @@ layouts:
                 backgroundColor: white
         - !columns
           absoluteY: 25
-          absoluteX: 270
-          width: 50
+          # 230 is safer
+          absoluteX: 200
+          width: 80
           nbColumns: 1
           items:
             - !scalebar
@@ -1500,7 +1501,9 @@ layouts:
         - !columns
           absoluteY: 25
           absoluteX: 27
-          width: 360
+          width: 200
+          config:
+            borderWidth: 0.0
           items:
             - !text
               condition: langde
@@ -1537,3 +1540,4 @@ layouts:
               align: left
               text: |
                 geo.admin.ch - geoportal federale • www.geo.admin.ch/copyright • Scala 1: ${format %d scale}
+  
