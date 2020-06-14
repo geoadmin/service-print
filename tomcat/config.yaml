@@ -1396,14 +1396,14 @@ layouts:
 # QRCodei x: 108 --> 80 
 #---------------------------------------
         - !columns
-          absoluteY: 60
-          absoluteX: 343
-          width: 50
+          absoluteY: 35
+          absoluteX: 368
+          width: 25
           items:
             - !image
               align: right
-              maxWidth: 50
-              maxHeight: 50
+              maxWidth: 25
+              maxHeight: 25
               url: "${qrcodeurl}"
 
 #-------------------------------------
@@ -1495,33 +1495,33 @@ layouts:
               font: Helvetica-Oblique
               align: left
               text: |
-                geo.admin.ch - Bundesgeoportal • www.geo.admin.ch/copyright • Massstab 1: ${format %d scale}
+                geo.admin.ch - Bundesgeoportal • www.geo.admin.ch/copyright • Massstab 1: ${format %,d scale}
             - !text
               condition: langfr
               fontSize: 5
               font: Helvetica-Oblique
               align: left
               text: |
-                geo.admin.ch - géoportail fédéral • www.geo.admin.ch/copyright • Échelle 1: ${format %d scale} 
+                geo.admin.ch - géoportail fédéral • www.geo.admin.ch/copyright • Échelle 1: ${format %,d scale} 
             - !text
               condition: langen
               fontSize: 5
               font: Helvetica-Oblique
               align: left
               text: |
-                geo.admin.ch - federal geoportal • www.geo.admin.ch/copyright • Scale 1: ${format %d scale}
+                geo.admin.ch - federal geoportal • www.geo.admin.ch/copyright • Scale 1: ${format %,d scale}
             - !text
               condition: langrm
               fontSize: 5
               font: Helvetica-Oblique
               align: left
               text: |
-                geo.admin.ch - geoportal federale • www.geo.admin.ch/copyright • Scala 1: ${format %d scale}
+                geo.admin.ch - geoportal federale • www.geo.admin.ch/copyright • Scala 1: ${format %,d scale}
             - !text
               condition: langit
               fontSize: 5
               font: Helvetica-Oblique
               align: left
               text: |
-                geo.admin.ch - geoportal federale • www.geo.admin.ch/copyright • Scala 1: ${format %d scale}
+                geo.admin.ch - geoportal federale • www.geo.admin.ch/copyright • Scala 1: ${format %,d scale}
   
