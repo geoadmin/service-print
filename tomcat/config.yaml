@@ -1426,7 +1426,7 @@ layouts:
 # Scalesbar 107x300
 #-------------------------------------
         - !columns
-          absoluteY: 38
+          absoluteY: 27
           absoluteX: 25
           width: 80
           config:
@@ -1437,49 +1437,63 @@ layouts:
                 text: ' '
                 backgroundColor: white
         - !columns
-          absoluteY: 35
-          absoluteX: 27
-          width: 75
+          absoluteY: 25
+          absoluteX: 270
+          width: 50
           nbColumns: 1
           items:
-            #- !scalebar
-            #    type: line
-            #    units: m
-            #    color: black
-            #    align: center
-            #    fontSize: 8
-            #    maxSize: 128
+            - !scalebar
+                type: line
+                units: m
+                color: black
+                align: center
+                fontSize: 5
+                maxSize: 50
+            #- !text
+            #  condition: langde
+            #  fontSize: 7
+            #  align: center
+            #  text: |
+            #    Massstab 1: ${format %d scale}
+            #- !text
+            #  condition: langfr
+            #  fontSize: 7
+            #  align: center
+            #  text: |
+            #    Échelle 1: ${format %d scale}
+            #- !text
+            #  condition: langen
+            #  fontSize: 7
+            #  align: center
+            #  text: |
+            #    Scale 1: ${format %d scale}
+            #- !text
+            #  condition: langrm
+            #  fontSize: 7
+            #  align: center
+            #  text: |
+            #    Scala 1: ${format %d scale}
+            #- !text
+            #  condition: langit
+            #  fontSize: 7
+            #  align: center
+            #  text: |
+            #    Scala 1: ${format %d scale}
+            
+#-----------------------------
+# Copyright
+#-----------------------------
+        - !columns
+          absoluteY: 20
+          absoluteX: 27
+          width: 360
+          items:
             - !text
-              condition: langde
-              fontSize: 7
-              align: center
+              fontSize: 5
+              align: left
               text: |
-                Massstab 1: ${format %d scale}
-            - !text
-              condition: langfr
-              fontSize: 7
-              align: center
-              text: |
-                Échelle 1: ${format %d scale}
-            - !text
-              condition: langen
-              fontSize: 7
-              align: center
-              text: |
-                Scale 1: ${format %d scale}
-            - !text
-              condition: langrm
-              fontSize: 7
-              align: center
-              text: |
-                Scala 1: ${format %d scale}
-            - !text
-              condition: langit
-              fontSize: 7
-              align: center
-              text: |
-                Scala 1: ${format %d scale}
-
+                Source: ${dataOwner}
+            
 #---------------------------------------
 # Disclaimer
 #---------------------------------------
@@ -1494,32 +1508,32 @@ layouts:
               font: Helvetica-Oblique
               align: left
               text: |
-                Haftung: Obwohl die Bundesbehörden mit aller Sorgfalt auf die Richtigkeit der veröffentlichten Informationen achten, kann hinsichtlich der inhaltlichen Richtigkeit, Genauigkeit, Aktualität, Zuverlässigkeit und Vollständigkeit dieser Informationen keine Gewährleistung übernommen werden.Copyright, Bundesbehörden der Schweizerischen Eidgenossenschaft. http://www.disclaimer.admin.ch
+                geo.admin.ch - Bundesgeoportal • www.geo.admin.ch/copyright • Massstab 1: ${format %d scale}
             - !text
               condition: langfr
               fontSize: 5
               font: Helvetica-Oblique
               align: left
               text: |
-                Responsabilité: Malgré la grande attention qu'elles portent à la justesse des informations diffusées sur ce site, les autorités fédérales ne peuvent endosser aucune responsabilité quant à la fidélité, à l'exactitude, à l'actualité, à la fiabilité et à l'intégralité de ces informations. Droits d'auteur: autorités de la Confédération suisse. http://www.disclaimer.admin.ch/conditions_dutilisation.html
+                geo.admin.ch - géoportail fédéral • www.geo.admin.ch/copyright • Échelle 1: ${format %d scale} 
             - !text
               condition: langen
               fontSize: 5
               font: Helvetica-Oblique
               align: left
               text: |
-                Limitation of liability. Although every care has been taken by the Federal Authorities to ensure the accuracy of the information published, no warranty can be given in respect of the accuracy, reliability, up-to-dateness or completeness of this information. Copyright, Swiss federal authorities. http://www.disclaimer.admin.ch/terms_and_conditions.html
+                geo.admin.ch - federal geoportal • www.geo.admin.ch/copyright • Scale 1: ${format %d scale}
             - !text
               condition: langrm
               fontSize: 5
               font: Helvetica-Oblique
               align: left
               text: |
-                Responsabladad: Malgrà che las autoritads dattan bain adatg che las infurmaziuns publitgadas sin questa pagina d'internet sajan correctas, na pon ellas surpigliar nagina responsabladad per la correctadad dal cuntegn, per l'exactezza, per l'actualitad, per l'autenticitad e per la cumplettezza da talas infurmaziuns. Copyright: autoritads da la confederaziun svizra. http://www.disclaimer.admin.ch
+                geo.admin.ch - geoportal federale • www.geo.admin.ch/copyright • Scala 1: ${format %d scale}
             - !text
               condition: langit
               fontSize: 5
               font: Helvetica-Oblique
               align: left
               text: |
-                Responsabilità: Nonostante si presti grande attenzione allâesattezza delle informazioni pubblicate su questo sito, le autorità federali declinano ogni responsabilità per la fedeltà, lâesattezza, lâattualità, lâaffidabilità e la completezza di tali informazioni. Diritti dâautore: autorità della Confederazione Svizzera, anno. http://www.disclaimer.admin.ch/basi_legali.html
+                geo.admin.ch - geoportal federale • www.geo.admin.ch/copyright • Scala 1: ${format %d scale}
