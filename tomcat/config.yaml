@@ -1396,8 +1396,8 @@ layouts:
 # QRCodei x: 108 --> 80 
 #---------------------------------------
         - !columns
-          absoluteY: 55
-          absoluteX: 347
+          absoluteY: 73
+          absoluteX: 343
           width: 50
           items:
             - !image
@@ -1485,36 +1485,41 @@ layouts:
 #---------------------------------------
         - !columns
           absoluteY: 25
-          absoluteX: 25
-          width: 350
+          absoluteX: 27
+          width: 360
           items:
             - !text
               condition: langde
               fontSize: 5
+              font: Helvetica-Oblique
               align: left
               text: |
                 Haftung: Obwohl die Bundesbehörden mit aller Sorgfalt auf die Richtigkeit der veröffentlichten Informationen achten, kann hinsichtlich der inhaltlichen Richtigkeit, Genauigkeit, Aktualität, Zuverlässigkeit und Vollständigkeit dieser Informationen keine Gewährleistung übernommen werden.Copyright, Bundesbehörden der Schweizerischen Eidgenossenschaft. http://www.disclaimer.admin.ch
             - !text
               condition: langfr
-              fontSize: 6
+              fontSize: 5
+              font: Helvetica-Oblique
               align: left
               text: |
                 Responsabilité: Malgré la grande attention qu'elles portent à la justesse des informations diffusées sur ce site, les autorités fédérales ne peuvent endosser aucune responsabilité quant à la fidélité, à l'exactitude, à l'actualité, à la fiabilité et à l'intégralité de ces informations. Droits d'auteur: autorités de la Confédération suisse. http://www.disclaimer.admin.ch/conditions_dutilisation.html
             - !text
               condition: langen
-              fontSize: 6
+              fontSize: 5
+              font: Helvetica-Oblique
               align: left
               text: |
                 Limitation of liability. Although every care has been taken by the Federal Authorities to ensure the accuracy of the information published, no warranty can be given in respect of the accuracy, reliability, up-to-dateness or completeness of this information. Copyright, Swiss federal authorities. http://www.disclaimer.admin.ch/terms_and_conditions.html
             - !text
               condition: langrm
-              fontSize: 6
+              fontSize: 5
+              font: Helvetica-Oblique
               align: left
               text: |
                 Responsabladad: Malgrà che las autoritads dattan bain adatg che las infurmaziuns publitgadas sin questa pagina d'internet sajan correctas, na pon ellas surpigliar nagina responsabladad per la correctadad dal cuntegn, per l'exactezza, per l'actualitad, per l'autenticitad e per la cumplettezza da talas infurmaziuns. Copyright: autoritads da la confederaziun svizra. http://www.disclaimer.admin.ch
             - !text
               condition: langit
-              fontSize: 6
+              fontSize: 5
+              font: Helvetica-Oblique
               align: left
               text: |
                 Responsabilità: Nonostante si presti grande attenzione allâesattezza delle informazioni pubblicate su questo sito, le autorità federali declinano ogni responsabilità per la fedeltà, lâesattezza, lâattualità, lâaffidabilità e la completezza di tali informazioni. Diritti dâautore: autorità della Confederazione Svizzera, anno. http://www.disclaimer.admin.ch/basi_legali.html
