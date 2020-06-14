@@ -31,6 +31,7 @@ services:
     environment:
       TOMCAT_PORT: ${tomcat_port}
       CATALINA_OPTS: -Xmx2g -Xms2g -XX:MaxPermSize=1024m -Dsun.net.inetaddr.ttl=30
+      JAVA_OPTS:  -Duser.language=de -Duser.region=CH
     ports:
       - "${tomcat_port}:8080"
     volumes:
