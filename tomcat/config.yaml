@@ -1368,7 +1368,7 @@ layouts:
 #---------------------------------------
         - !columns
           absoluteX: 25
-          absoluteY: 51
+          absoluteY: 35
           width: 87
           items:
               - !image
@@ -1409,22 +1409,24 @@ layouts:
 #-------------------------------------
 # Scalesbar 107x300
 #-------------------------------------
-        - !columns
-          absoluteY: 27
-          absoluteX: 25
-          width: 100
-          config:
-            borderWidth: 0.0
-          items:
-              - !text
-                fontSize: 12
-                text: ' '
-                backgroundColor: white
+        # !columns
+        # absoluteY: 27
+        # absoluteX: 25
+        # width: 100
+        # config:
+        #   borderWidth: 0.0
+        # items:
+        #     - !text
+        #       fontSize: 12
+        #       text: ' '
+        #       backgroundColor: white
         - !columns
           absoluteY: 25
-          absoluteX: 230
-          width: 100
+          absoluteX: 310
+          width: 60
           nbColumns: 1
+          config:
+            borderWidth: 0.0
           items:
             - !scalebar
                 type: line
@@ -1432,7 +1434,7 @@ layouts:
                 color: black
                 align: center
                 fontSize: 5
-                maxSize: 99
+                maxSize: 58
             #- !text
             #  condition: langde
             #  fontSize: 7
@@ -1469,8 +1471,8 @@ layouts:
 #-----------------------------
         - !columns
           absoluteY: 20
-          absoluteX: 27
-          width: 360
+          absoluteX: 95
+          width: 340
           items:
             - !text
               font: Helvetica-Oblique
@@ -1484,8 +1486,8 @@ layouts:
 #---------------------------------------
         - !columns
           absoluteY: 25
-          absoluteX: 27
-          width: 200
+          absoluteX: 95
+          width: 215
           config:
             borderWidth: 0.0
           items:
