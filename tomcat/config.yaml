@@ -1422,8 +1422,7 @@ layouts:
                 backgroundColor: white
         - !columns
           absoluteY: 25
-          # 230 is safer
-          absoluteX: 220
+          absoluteX: 230
           width: 100
           nbColumns: 1
           items:
@@ -1433,7 +1432,7 @@ layouts:
                 color: black
                 align: center
                 fontSize: 5
-                maxSize: 90
+                maxSize: 99
             #- !text
             #  condition: langde
             #  fontSize: 7
