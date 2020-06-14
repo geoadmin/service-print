@@ -1,5 +1,5 @@
 # allowed DPIs
-dpis: [150]
+dpis: [150, 254]
 
 #
 # the list of allowed hosts
@@ -1409,37 +1409,37 @@ layouts:
 #---------------------------------------
 # Copyright
 #---------------------------------------
-        - !columns
-          absoluteY: 23
-          absoluteX: 153
-          width: 200
-          items:
-            - !text
-              font: Helvetica-Oblique
-              fontSize: 5
-              align: left
-              fontColor: black
-              text: |
-                ${dataOwner}
+        #- !columns
+        #  absoluteY: 23
+        #  absoluteX: 153
+        #  width: 200
+        #  items:
+        #    - !text
+        #      font: Helvetica-Oblique
+        #      fontSize: 5
+        #      align: left
+        #      fontColor: black
+        #      text: |
+        #        ${dataOwner}
 
 #-------------------------------------
 # Scalesbar 107x300
 #-------------------------------------
-        #- !columns
-        #  absoluteY: 75
-        #  absoluteX: 290
-        #  width: 100
-        #  config:
-        #    borderWidth: 0.0
-        #  items:
-        #      - !text
-        #        fontSize: 12
-        #        text: ' '
-        #        backgroundColor: white
         - !columns
-          absoluteY: 52
-          absoluteX: 260
-          width: 95
+          absoluteY: 38
+          absoluteX: 25
+          width: 80
+          config:
+            borderWidth: 0.0
+          items:
+              - !text
+                fontSize: 12
+                text: ' '
+                backgroundColor: white
+        - !columns
+          absoluteY: 35
+          absoluteX: 27
+          width: 75
           nbColumns: 1
           items:
             #- !scalebar
