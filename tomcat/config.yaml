@@ -1368,7 +1368,7 @@ layouts:
 #---------------------------------------
         - !columns
           absoluteX: 20
-          absoluteY: 278
+          absoluteY: 61
           width: 123
           items:
               - !image
@@ -1396,7 +1396,7 @@ layouts:
 # QRCodei x: 108 --> 80 
 #---------------------------------------
         - !columns
-          absoluteY: 73
+          absoluteY: 60
           absoluteX: 343
           width: 50
           items:
@@ -1406,29 +1406,13 @@ layouts:
               maxHeight: 50
               url: "${qrcodeurl}"
 
-#---------------------------------------
-# Copyright
-#---------------------------------------
-        #- !columns
-        #  absoluteY: 23
-        #  absoluteX: 153
-        #  width: 200
-        #  items:
-        #    - !text
-        #      font: Helvetica-Oblique
-        #      fontSize: 5
-        #      align: left
-        #      fontColor: black
-        #      text: |
-        #        ${dataOwner}
-
 #-------------------------------------
 # Scalesbar 107x300
 #-------------------------------------
         - !columns
           absoluteY: 27
           absoluteX: 25
-          width: 80
+          width: 100
           config:
             borderWidth: 0.0
           items:
@@ -1439,8 +1423,8 @@ layouts:
         - !columns
           absoluteY: 25
           # 230 is safer
-          absoluteX: 200
-          width: 80
+          absoluteX: 220
+          width: 100
           nbColumns: 1
           items:
             - !scalebar
@@ -1449,7 +1433,7 @@ layouts:
                 color: black
                 align: center
                 fontSize: 5
-                maxSize: 50
+                maxSize: 90
             #- !text
             #  condition: langde
             #  fontSize: 7
@@ -1490,6 +1474,7 @@ layouts:
           width: 360
           items:
             - !text
+              font: Helvetica-Oblique
               fontSize: 5
               align: left
               text: |
