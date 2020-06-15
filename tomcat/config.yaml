@@ -1356,7 +1356,7 @@ layouts:
       pageSize: A6
       landscape: true
 #---------------------------------------
-# Map   352x200
+# Map   
 #---------------------------------------
       items:
         - !map
@@ -1364,7 +1364,7 @@ layouts:
           height: 250
           
 #---------------------------------------
-# Logo  280
+# Logo  
 #---------------------------------------
         - !columns
           absoluteX: 25
@@ -1378,7 +1378,7 @@ layouts:
                    url: "${configDir}/logo_ch.png"
 
 #---------------------------------------
-# North arrow 185 220
+# North arrow 
 #---------------------------------------
         - !columns
           absoluteY: 270
@@ -1393,7 +1393,7 @@ layouts:
               url: "${configDir}/north_arrow.png"
 
 #---------------------------------------
-# QRCodei x: 108 --> 80 
+# QRCode
 #---------------------------------------
         - !columns
           absoluteY: 35
@@ -1407,7 +1407,7 @@ layouts:
               url: "${qrcodeurl}"
 
 #-------------------------------------
-# Scalesbar 107x300
+# Scalesbar 
 #-------------------------------------
         # !columns
         # absoluteY: 27
@@ -1435,36 +1435,6 @@ layouts:
                 align: center
                 fontSize: 5
                 maxSize: 58
-            #- !text
-            #  condition: langde
-            #  fontSize: 7
-            #  align: center
-            #  text: |
-            #    Massstab 1: ${format %d scale}
-            #- !text
-            #  condition: langfr
-            #  fontSize: 7
-            #  align: center
-            #  text: |
-            #    Échelle 1: ${format %d scale}
-            #- !text
-            #  condition: langen
-            #  fontSize: 7
-            #  align: center
-            #  text: |
-            #    Scale 1: ${format %d scale}
-            #- !text
-            #  condition: langrm
-            #  fontSize: 7
-            #  align: center
-            #  text: |
-            #    Scala 1: ${format %d scale}
-            #- !text
-            #  condition: langit
-            #  fontSize: 7
-            #  align: center
-            #  text: |
-            #    Scala 1: ${format %d scale}
             
 #-----------------------------
 # Copyright
@@ -1479,7 +1449,7 @@ layouts:
               fontSize: 5
               align: left
               text: |
-                Source: ${dataOwner}
+                ${dataOwner}
             
 #---------------------------------------
 # Disclaimer
