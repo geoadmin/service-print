@@ -6,6 +6,11 @@ It uses the standard *mapfish print protocol* of [MapFish Print v2](http://www.m
 extended for multipages print.
 
 
+**AWS CodeBuild Status**
+
+![Build Status](https://codebuild.eu-central-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiTTJEekNvVkFwRS9OUjdrQkNRMktKNFM1a0JFYUVmZUVzY3dyUDFmbUNON0Ntc3ovR290K01CbjkyRlYwTnF0cFVFOW9SUTc5NTdUNlhoK2FndklrZG5ZPSIsIml2UGFyYW1ldGVyU3BlYyI6IlVqdUE3WldydmhGUHNNQ0YiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+
+
 # Architecture
 
 ## Elastic Load Balancer
