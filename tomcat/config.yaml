@@ -1,6 +1,18 @@
 # allowed DPIs
 dpis: [150, 254]
 
+# output formats
+formats:
+  - pdf
+  - png
+  - jpeg
+
+  # output formats
+formats:
+  - pdf
+  - png
+  - jpeg
+
 # the list of allowed hosts
 #
 hosts:
