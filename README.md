@@ -1,7 +1,7 @@
 Print Service
 =============
 
-Print service for [https://map.geo.admin.ch], based on [MapFish Print v2](http://mapfish.github.io/)
+Print service for [https://map.geo.admin.ch], based on [MapFish Print v2](http://www.mapfish.org/)
 It uses the standard *mapfish print protocol* of [MapFish Print v2](http://www.mapfish.org/doc/print/),
 extended for multipages print.
 
