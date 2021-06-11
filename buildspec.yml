@@ -1,26 +1,35 @@
 version: 0.2
-
 env:
   variables:
-    IMAGE_BASE_NAME: "swisstopo/service-print"
-    IMAGE_BASE_NAME_NGINX: "swisstopo/service-print-nginx"
-    IMAGE_BASE_NAME_TOMCAT: "swisstopo/service-print-tomcat"
+    IMAGE_BASE_NAME: "974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print"
+    IMAGE_BASE_NAME_NGINX: "nginx:1.20"
+    IMAGE_BASE_NAME_TOMCAT: "974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat"
     SHELL: /bin/bash
     AWS_DEFAULT_REGION: eu-west-1
-  parameter-store:
-    CI_DOCKERHUB_USER: "/dockerhub/user"
-    CI_DOCKERHUB_PASSWORD: "/dockerhub/password"
+    AWS_ECR_REGION: eu-central-1
+    REGISTRY: service-print
 
 phases:
   install:
     runtime-versions:
       docker: 18
     commands:
+      TODO HERE
+      - exit 1
       - echo "Installing softwares"
       - echo SHELL=$SHELL
       - curl -s -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
       - chmod +x /usr/bin/docker-compose
       - bash --version
+      - echo "Installing necessary dependencies"
+      - apt-get update && apt-get install -y pass gnupg2
+      - echo "Install aws cli v2 for docker login to ECR registry"
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip
+      - ./aws/install
+      - aws --version
+      - echo "Login to AWS ECR docker registry"
+      - aws ecr get-login-password --region ${AWS_ECR_REGION} | docker login --username AWS --password-stdin ${REGISTRY}
 
   pre_build:
     commands:
@@ -87,14 +96,10 @@ phases:
       - docker exec -i "$DOCKER_CONTAINER_ID" coverage run --source=print3 --omit=print3/wsgi.py setup.py test
       - echo All tests are successful
       - echo Pushing the Docker image...
-      - docker login -u "$CI_DOCKERHUB_USER" -p "$CI_DOCKERHUB_PASSWORD"
       - docker tag "${IMAGE_BASE_NAME}:${IMAGE_TAG}" "${IMAGE_BASE_NAME}:${LATEST}"
-      - docker tag "${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG}" "${IMAGE_BASE_NAME_NGINX}:${LATEST}"
       - docker tag "${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}"  "${IMAGE_BASE_NAME_TOMCAT}:${LATEST}"
       - docker push "${IMAGE_BASE_NAME}:${IMAGE_TAG}"
-      - docker push "${IMAGE_BASE_NAME_NGINX}:${IMAGE_TAG}"
       - docker push "${IMAGE_BASE_NAME_TOMCAT}:${IMAGE_TAG}"
       - docker push "${IMAGE_BASE_NAME}:${LATEST}"
-      - docker push "${IMAGE_BASE_NAME_NGINX}:${LATEST}"
       - docker push "${IMAGE_BASE_NAME_TOMCAT}:${LATEST}"
       - echo "Success"

@@ -28,6 +28,12 @@ USER_SOURCE ?= rc_user
 CURRENT_DIR := $(shell pwd)
 INSTALL_DIR := $(CURRENT_DIR)/.venv
 
+# Docker variables
+DOCKER_REGISTRY = 974517877189.dkr.ecr.eu-central-1.amazonaws.com
+
+# AWS variables
+AWS_DEFAULT_REGION = eu-central-1
+
 # Commands
 AUTOPEP8_CMD := $(INSTALL_DIR)/bin/autopep8
 FLAKE8_CMD := $(INSTALL_DIR)/bin/flake8
@@ -66,10 +72,11 @@ help:
 	@echo "--------------------------------------------------------------------------"
 	@echo "|                         DOCKER DEVELOPMENT                             |"
 	@echo "--------------------------------------------------------------------------"
+	@echo "- dockerlogin        Login to the AWS ECR registery for pulling/pushing docker images"
 	@echo "- dockerbuild        Builds a docker image using the current directory"
 	@echo "- dockerrun          Creates and runs all the containers (in the background)"
 	@echo "- dockertag          Tag the images 'staging' with $(IMAGE_TAG)"
-	@echo "- dockerpush         Push the images $(IMAGE_TAG) to dockerhub"
+	@echo "- dockerpush         Push the images $(IMAGE_TAG) to the repository"
 	@echo
 	@echo "--------------------------------------------------------------------------"
 	@echo "|                       RANCHER DEPLOYMENT                               |"
@@ -90,6 +97,7 @@ help:
 	@echo "TOMCAT_PORT:         ${TOMCAT_PORT}"
 	@echo "BASEWAR:             ${BASEWAR}"
 	@echo "INSTALL_DIR:         ${INSTALL_DIR}"
+	@echo "NGINX_IMAGE_VERSION: ${NGINX_IMAGE_VERSION}"
 	@echo
 
 
@@ -179,6 +187,10 @@ setup: .venv/requirements.timestamp .venv/dev-requirements.timestamp
 		@echo "${GREEN}Setting up virtual environement...${RESET}";
 		python3 -m venv  $(INSTALL_DIR) &&  ${PIP_CMD} install --upgrade pip setuptools
 
+.PHONY: dockerlogin
+dockerlogin:
+	aws --profile swisstopo-bgdi-builder ecr get-login-password --region $(AWS_DEFAULT_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY)
+
 .PHONY: dockerbuild
 dockerbuild: composetemplateuser
 	docker-compose build
@@ -186,23 +198,20 @@ dockerbuild: composetemplateuser
 .PHONY: dockertag
 dockertag: guard-IMAGE_TAG
 		 @if [ "${IMAGE_TAG}" != "staging"  ]; then\
-				docker tag swisstopo/service-print:staging swisstopo/service-print:$(IMAGE_TAG); \
-				docker tag swisstopo/service-print-tomcat:staging swisstopo/service-print-tomcat:$(IMAGE_TAG); \
-				docker tag swisstopo/service-print-nginx:staging swisstopo/service-print-nginx:$(IMAGE_TAG); \
+				docker tag $(DOCKER_REGISTRY)/service-print:staging $(DOCKER_REGISTRY)/service-print:$(IMAGE_TAG); \
+				docker tag $(DOCKER_REGISTRY)/service-print-tomcat:staging $(DOCKER_REGISTRY)/service-print-tomcat:$(IMAGE_TAG); \
 		fi
 
 .PHONY: dockerpush
 dockerpush: guard-IMAGE_TAG
 	  @echo Will push the following images;\
 		docker images | grep $(IMAGE_TAG);\
-		docker push swisstopo/service-print-tomcat:$(IMAGE_TAG);\
-		docker push swisstopo/service-print-nginx:$(IMAGE_TAG);\
-		docker push swisstopo/service-print:$(IMAGE_TAG);
+		docker push $(DOCKER_REGISTRY)/service-print-tomcat:$(IMAGE_TAG);\
+		docker push $(DOCKER_REGISTRY)/service-print:$(IMAGE_TAG);
 
 .PHONY: composetemplateuser
 composetemplateuser: .venv/dev-requirements.timestamp
 	source rc_user && envsubst < rancher-compose.yml.in > rancher-compose.yml && \
-	envsubst "$(printf '${%s} ' $(/bin/bash -c "compgen -A variable"))" < nginx/nginx.conf.in > nginx/nginx.conf
 	source rc_user && export RANCHER_DEPLOY=false && make docker-compose.yml
 
 .PHONY: dockerrun
@@ -266,6 +275,7 @@ docker-compose.yml::
 	${MAKO_CMD} --var "rancher_deploy=$(RANCHER_DEPLOY)" \
 		--var "image_tag=$(IMAGE_TAG)" \
 		--var "nginx_port=$(NGINX_PORT)" \
+		--var "nginx_image_version=$(NGINX_IMAGE_VERSION)" \
 		--var "wsgi_port=$(WSGI_PORT)" \
 		--var "tomcat_port=$(TOMCAT_PORT)" \
 		--var "rancher_label=$(RANCHER_LABEL)" \

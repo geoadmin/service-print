@@ -169,9 +169,8 @@ This generate a new  file *service-print-main.war* using the `BASEWAR` war file.
 
 This build three docker images, labeled `staging`:
 
-    swisstopo/service-print          staging               538532a4bed5        2 minutes ago       374.5 MB
-    swisstopo/service-print-nginx    staging               f67aa9b5baa1        35 hours ago        152.3 MB
-    swisstopo/service-print-tomcat   staging               17c35a184a46        4 days ago          424.7 MB
+    974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print          staging               538532a4bed5        2 minutes ago       374.5 MB
+    974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat   staging               17c35a184a46        4 days ago          424.7 MB
 
 
 ## Running locally
@@ -302,9 +301,8 @@ Set `RANCHER_ACCESS_KEY`, `RANCHER_SECRET_KEY` and `RANCHER_URL` pointing to the
 
 ## Push you images to dockerhub
 
-    docker push swisstopo/service-print:staging
-    docker push swisstopo/service-print-nginx:staging 
-    docker push swisstopo/service-print-tomcat:staging 
+    docker push 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print:staging
+    docker push 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat:staging
 
 ## Deploy your images to rancher
 
@@ -331,9 +329,8 @@ Do not ever use images tagged with `staging` on rancher `int` and `prod` environ
    
 Tag the `staging` images with the last git commit short hash:
 
-    docker tag swisstopo/service-print:staging swisstopo/service-print:83ed21d    
-    docker tag swisstopo/service-print-nginx:staging swisstopo/service-print-nginx:83ed21d    
-    docker tag swisstopo/service-print-tomcat:staging swisstopo/service-print-tomcat:83ed21d    
+    docker tag 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print:staging 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print:83ed21d
+    docker tag 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat:staging 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat:83ed21d
 
 or with
 
@@ -344,9 +341,8 @@ or with
 
 Push the newly tagged instances to dockerhub
 
-    docker push swisstopo/service-print:83ed21d    
-    docker push swisstopo/service-print-nginx:83ed21d    
-    docker push swisstopo/service-print-tomcat:83ed21d    
+    docker push 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print:83ed21d
+    docker push 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat:83ed21d    
 
 or with
 

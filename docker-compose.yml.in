@@ -1,19 +1,17 @@
 version: '2'
 services:
   nginx:
-% if rancher_deploy == 'false':
-    build: nginx/
-% endif
-    image: swisstopo/service-print-nginx:${image_tag}
+    image: nginx:${nginx_image_version}
     env_file:
     - ${rancher_label}.env
     environment:
       NGINX_PORT: ${nginx_port}
-    network_mode: "host"
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx/
     ports:
     - "${nginx_port}:${nginx_port}"
     volumes:
       - /var/local/efs-applications-rw/print/${rancher_label}:/var/local/print
+      - ./nginx:/etc/nginx/templates
     depends_on:
     - tomcat
     - wsgi
@@ -25,7 +23,7 @@ services:
 % if rancher_deploy == 'false':
     build: tomcat/
 % endif
-    image: swisstopo/service-print-tomcat:${image_tag}
+    image: 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat:${image_tag}
     env_file:
     - ${rancher_label}.env
     environment:
@@ -44,7 +42,7 @@ services:
 % if rancher_deploy == 'false':
     build: .
 % endif
-    image: swisstopo/service-print:${image_tag}
+    image: 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print:${image_tag}
     env_file:
     - ${rancher_label}.env
     environment:
@@ -52,7 +50,6 @@ services:
     command :
     - python3
     - print3/wsgi.py
-    network_mode: "host"
     ports:
     - "${wsgi_port}:${wsgi_port}"
     volumes:
