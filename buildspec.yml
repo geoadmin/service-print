@@ -14,8 +14,6 @@ phases:
     runtime-versions:
       docker: 18
     commands:
-      TODO HERE
-      - exit 1
       - echo "Installing softwares"
       - echo SHELL=$SHELL
       - curl -s -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
