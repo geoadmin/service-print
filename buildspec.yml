@@ -2,9 +2,9 @@ version: 0.2
 env:
   variables:
     REGISTRY: "974517877189.dkr.ecr.eu-central-1.amazonaws.com"
-    IMAGE_BASE_NAME: "${REGISTRY}/service-print"
+    IMAGE_BASE_NAME: "974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print"
     IMAGE_BASE_NAME_NGINX: "nginx:1.20"
-    IMAGE_BASE_NAME_TOMCAT: "${REGISTRY}/service-print-tomcat"
+    IMAGE_BASE_NAME_TOMCAT: "974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat"
     SHELL: /bin/bash
     AWS_DEFAULT_REGION: eu-west-1
     USER: "aws_code_build"
