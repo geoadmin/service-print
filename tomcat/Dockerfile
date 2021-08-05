@@ -1,6 +1,8 @@
-FROM swisstopo/tomcat7-base
+FROM tomcat:7-jre7
 
+# setup base
 ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && apt-get install -y gettext bash tzdata apt-utils
 ENV TZ=Europe/Zurich
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get install --reinstall -y locales
