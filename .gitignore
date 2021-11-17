@@ -30,3 +30,4 @@ rc_prod
 print3/wsgi.py
 nginx/nginx.conf
 wsgi.log
+tomcat/WEB-INF/classes/log4j.properties
