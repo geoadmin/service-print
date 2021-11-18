@@ -47,6 +47,7 @@ services:
     - ${rancher_label}.env
     environment:
       WSGI_PORT: ${wsgi_port}
+      RESPONSE_SCHEME: http
     command :
     - python3
     - print3/wsgi.py

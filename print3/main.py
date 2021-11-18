@@ -34,7 +34,7 @@ from print3.utils import (
     _increment_info)
 
 from print3.config import MAPFISH_FILE_PREFIX, MAPFISH_MULTI_FILE_PREFIX, \
-    LOG_SPEC_FILES, REFERER_URL
+    LOG_SPEC_FILES, REFERER_URL, DEFAULT_RESPONSE_SCHEME
 
 import logging
 
@@ -44,6 +44,7 @@ USE_MULTIPROCESS = to_bool(os.environ.get('USE_MULTIPROCESS', True))
 WMS_SOURCE_URL = 'http://localhost:%s' % os.environ.get('WMS_PORT')
 LOGLEVEL = int(os.environ.get('PRINT_LOGLEVEL', logging.DEBUG))
 PRINT_TEMP_DIR = os.environ.get('PRINT_TEMP_DIR', '/var/local/print')
+RESPONSE_SCHEME = os.environ.get('RESPONSE_SCHEME', DEFAULT_RESPONSE_SCHEME)
 API_URL = os.environ.get('API_URL', 'https://api3.geo.admin.ch')
 TOMCAT_SERVER_URL = '%s' % os.environ.get('TOMCAT_SERVER_URL')
 DEFAULT_TOMCAT_LOCAL_SERVER_URL = '//localhost:%s' % os.environ.get(
@@ -208,8 +209,7 @@ def print_create_post():
     logger.info('Removing older files on system')
     delete_old_files(PRINT_TEMP_DIR)
 
-    scheme = request.headers.get('X-Forwarded-Proto',
-                                 request.scheme)
+    scheme = RESPONSE_SCHEME
     headers = dict(request.headers)
     headers.pop("Host", headers)
     unique_filename = datetime.datetime.now().strftime(
