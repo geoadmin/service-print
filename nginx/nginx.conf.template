@@ -97,14 +97,14 @@ http {
       # Do not cache anything
       expires off;
 
-      proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/pdf/;
+      proxy_pass http://service-print-tomcat:${TOMCAT_PORT}/service-print-main/pdf/;
     }
     # For migration
     location /service-print-main/ {
       # Do not cache anything
       expires off;
 
-      proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/;
+      proxy_pass http://service-print-tomcat:${TOMCAT_PORT}/service-print-main/;
     }
 
     # proxying wsgi
@@ -119,7 +119,7 @@ http {
       expires off;
       etag off;
 
-      proxy_pass http://localhost:${WSGI_PORT}/printmulti/;
+      proxy_pass http://service-print-wsgi:${WSGI_PORT}/printmulti/;
     }
     location  /printprogress {
       add_header 'Access-Control-Allow-Origin' '*' always;
@@ -131,7 +131,7 @@ http {
       expires off;
       etag off;
 
-      proxy_pass http://localhost:${WSGI_PORT}/printprogress;
+      proxy_pass http://service-print-wsgi:${WSGI_PORT}/printprogress;
     }
     location  /printcancel {
       add_header 'Access-Control-Allow-Origin' '*' always;
@@ -143,7 +143,7 @@ http {
       expires off;
       etag off;
 
-      proxy_pass http://localhost:${WSGI_PORT}/printcancel;
+      proxy_pass http://service-print-wsgi:${WSGI_PORT}/printcancel;
     }
 
 
@@ -169,15 +169,15 @@ http {
     }
     location /tomcat_checker {
       expires off;
-      proxy_pass http://localhost:${TOMCAT_PORT}/service-print-main/checker;
+      proxy_pass http://service-print-tomcat:${TOMCAT_PORT}/service-print-main/checker;
     }
     location /wsgi_checker {
       expires off;
-      proxy_pass http://localhost:${WSGI_PORT}/checker;
+      proxy_pass http://service-print-wsgi:${WSGI_PORT}/checker;
     }
     location /backend_checker {
       expires off;
-      proxy_pass http://localhost:${WSGI_PORT}/backend_checker;
+      proxy_pass http://service-print-wsgi:${WSGI_PORT}/backend_checker;
     }
   }
 }
