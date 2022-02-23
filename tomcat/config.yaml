@@ -1,7 +1,18 @@
 # allowed DPIs
-dpis: [150, 254]
+dpis: [150, 256]
 
-#
+# output formats
+formats:
+  - pdf
+  - png
+  - jpeg
+
+  # output formats
+formats:
+  - pdf
+  - png
+  - jpeg
+
 # the list of allowed hosts
 #
 hosts:
@@ -1396,14 +1407,14 @@ layouts:
 # QRCode
 #---------------------------------------
         - !columns
-          absoluteY: 35
-          absoluteX: 368
-          width: 25
+          absoluteY: 42
+          absoluteX: 361
+          width: 32
           items:
             - !image
               align: right
-              maxWidth: 25
-              maxHeight: 25
+              maxWidth: 32
+              maxHeight: 32
               url: "${qrcodeurl}"
 
 #-------------------------------------
@@ -1422,7 +1433,7 @@ layouts:
         #       backgroundColor: white
         - !columns
           absoluteY: 25
-          absoluteX: 310
+          absoluteX: 303
           width: 60
           nbColumns: 1
           config:
@@ -1457,7 +1468,7 @@ layouts:
         - !columns
           absoluteY: 25
           absoluteX: 95
-          width: 215
+          width: 208
           config:
             borderWidth: 0.0
           items:
