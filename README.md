@@ -153,10 +153,15 @@ or serving with `gunicorn`
 
 The war file `print-servlet-2.1.3-SNAPSHOT.war` is based on the mapfish-print 2.1.3 branch [#46d901520](https://github.com/mapfish/mapfish-print/commit/46d9015209fb2d975cee3f580bf387cd2f15b2e0)
 
-If you update files in the `tomcat` directory, you'll have to rebuild the `.war` file
+If you update any files in the `service-print/tomcat` directory, for instance, if you want to build a `warfile`with a different log level or update the print template, you'll have to rebuild the `.war` file
 using the command:
 
+    export TOMCAT_LOG_LEVEL=DEBUG
+
+    make tomcat/WEB-INF/classes/log4j.properties
+
     make printwar
+
 
 This generate a new  file *service-print-main.war* using the `BASEWAR` war file.
 
@@ -177,7 +182,7 @@ This build three docker images, labeled `staging`:
 
     make dockerrun
 
-or
+or manually
 
     docker-compose up
    
