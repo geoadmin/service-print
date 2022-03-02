@@ -264,7 +264,7 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY_PROD \
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
 		envsubst < nginx/nginx.conf.template > nginx/nginx.conf && \
-		envsubst < tomcat/WEB-INF/classes/log4j.properties.template > tomcat/WEB-INF/classes/log4j.properties && \
+		envsubst < tomcat/WEB-INF/classes/log4j.properties.template > tomcat/WEB-INF/classes/log4j.properties
 endef
 
 define start_service
