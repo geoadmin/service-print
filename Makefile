@@ -17,6 +17,7 @@ TOMCAT_SERVER_URL ?= //service-print.dev.bgdi.ch
 # nginx acts as a proxy for tomcat, via 'localhost'
 TOMCAT_LOCAL_SERVER_URL ?= //localhost:$(TOMCAT_PORT)
 TOMCAT_BASE_URL ?= ajp://localhost:8009
+TOMCAT_LOG_LEVEL ?= INFO
 REFERER ?= https://print.geo.admin.ch
 PRINT_INPUT :=  checker *.html *.yaml *.png WEB-INF
 #PRINT_OUTPUT_BASE := /srv/tomcat/tomcat1/webapps/service-print-$(APACHE_BASE_PATH)
@@ -106,7 +107,7 @@ all: setup templates
 
 setup: .venv
 
-templates: tomcat/WEB-INF/web.xml print3/static/index.html
+templates: tomcat/WEB-INF/web.xml print3/static/index.html tomcat/WEB-INF/log4j.properties
 
 .PHONY: user
 user:
@@ -136,8 +137,9 @@ autolint:
 	${AUTOPEP8_CMD} --in-place --aggressive --aggressive --verbose --ignore=${PEP8_IGNORE} $(PYTHON_FILES)
 
 .PHONY: printwar
-printwar: tomcat/WEB-INF/web.xml
-	echo "${GREEN}Updating print war...${RESET}" && \
+printwar: tomcat/WEB-INF/web.xml tomcat/WEB-INF/classes/log4j.properties
+	echo "${GREEN}Updating print war..." && \
+	echo "with tomcat log level=${TOMCAT_LOG_LEVEL} ${RESET}" && \
 	cd tomcat && \
 	rm -f service-print-$(APACHE_BASE_PATH).war && \
 	mkdir temp_$(VERSION) && \
@@ -149,6 +151,10 @@ printwar: tomcat/WEB-INF/web.xml
 	echo "${GREEN}Print war creation was successful.${RESET}" &&  cd .. && \
 	echo "${GREEN}Removing temp directory${RESET}" && \
 	rm -rf temp_$(VERSION)
+
+tomcat/WEB-INF/classes/log4j.properties:
+	envsubst < tomcat/WEB-INF/classes/log4j.properties.template > tomcat/WEB-INF/classes/log4j.properties
+
 
 tomcat/WEB-INF/web.xml.in:
 	@echo "${GREEN}Template file tomcat/WEB-INF/web.xml has changed${RESET}"
@@ -258,7 +264,7 @@ rancherdeployprod: guard-RANCHER_ACCESS_KEY_PROD \
 define build_templates
 		export $(shell cat $1.env) && export RANCHER_DEPLOY=$2 && \
 		envsubst < nginx/nginx.conf.template > nginx/nginx.conf && \
-		envsubst < rancher-compose.yml.in > rancher-compose.yml && make docker-compose.yml
+		envsubst < tomcat/WEB-INF/classes/log4j.properties.template > tomcat/WEB-INF/classes/log4j.properties
 endef
 
 define start_service
@@ -295,6 +301,7 @@ clean:
 		rm -f nginx/nginx.conf
 		rm -f rancher-compose.yml
 		rm -f docker-compose.yml
+		rm -f tomcat/WEB-INF/classes/log4j.properties
 		rm -f .venv/requirements.timestamp
 		rm -f .venv/dev-requirements.timestamp
 
