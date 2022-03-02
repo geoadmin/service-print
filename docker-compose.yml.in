@@ -2,6 +2,7 @@ version: '2'
 services:
   nginx:
     image: nginx:${nginx_image_version}
+    container_name: service-print-nginx
     env_file:
     - ${rancher_label}.env
     environment:
@@ -20,18 +21,17 @@ services:
       io.rancher.container.pull_image: always
       io.rancher.scheduler.global: 'true'
   tomcat:
-% if rancher_deploy == 'false':
     build: tomcat/
-% endif
     image: 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print-tomcat:${image_tag}
+    container_name: service-print-tomcat
     env_file:
     - ${rancher_label}.env
     environment:
       TOMCAT_PORT: ${tomcat_port}
       CATALINA_OPTS: -Xmx2g -Xms2g -XX:MaxPermSize=1024m -Dsun.net.inetaddr.ttl=30
       JAVA_OPTS:  -Duser.language=de -Duser.region=CH
-    ports:
-      - "${tomcat_port}:8080"
+    expose:
+      - "8080"
     volumes:
       - /var/local/efs-applications-rw/print/${rancher_label}:/var/local/print
     labels:
@@ -39,10 +39,9 @@ services:
       io.rancher.container.pull_image: always
       io.rancher.scheduler.global: 'true'
   wsgi:
-% if rancher_deploy == 'false':
     build: .
-% endif
     image: 974517877189.dkr.ecr.eu-central-1.amazonaws.com/service-print:${image_tag}
+    container_name: service-print-wsgi
     env_file:
     - ${rancher_label}.env
     environment:
@@ -50,8 +49,8 @@ services:
     command :
     - python3
     - print3/wsgi.py
-    ports:
-    - "${wsgi_port}:${wsgi_port}"
+    expose:
+    - "${wsgi_port}"
     volumes:
       - /var/local/efs-applications-rw/print/${rancher_label}:/var/local/print
     depends_on:
